@@ -1,5 +1,6 @@
 # Temporary extracted materials
 tmp/
+.worktrees/
 
 # Node.js dependencies and common local artifacts
 node_modules/
