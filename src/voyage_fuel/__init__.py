@@ -18,6 +18,7 @@ from .models import (
     VoyageResult,
 )
 from .json_io import calculate_voyage_json
+from .factors import builtin_path_ids, get_definition, get_builtin_factor, resolve_factor
 
 __all__ = [
     "EtsResult",
@@ -30,4 +31,8 @@ __all__ = [
     "VoyageInput",
     "VoyageResult",
     "calculate_voyage_json",
+    "builtin_path_ids",
+    "get_definition",
+    "get_builtin_factor",
+    "resolve_factor",
 ]
