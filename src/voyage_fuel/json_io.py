@@ -6,13 +6,24 @@ from decimal import Decimal
 from typing import Any, Mapping
 
 from .calculator import calculate_voyage
-from .factors import get_builtin_factor
+from .factors import resolve_factor
 from .models import FuelComponent, VoyageInput
 
 
 def _component(payload: Mapping[str, Any]) -> FuelComponent:
+    qualification = str(payload.get("qualificationStatus", "NOT_DEMONSTRATED"))
+    e_value = payload.get("e")
+    eu_value = payload.get("eu")
+    cslip = payload.get("cslip")
+    verified_wt = payload.get("verifiedWtT")
     return FuelComponent(
-        factor=get_builtin_factor(payload["pathId"]),
+        factor=resolve_factor(
+            payload["pathId"], qualification_status=qualification,
+            e_value=None if e_value is None else Decimal(str(e_value)),
+            eu_value=None if eu_value is None else Decimal(str(eu_value)),
+            cslip_percent=None if cslip is None else Decimal(str(cslip)),
+            verified_wt_t=None if verified_wt is None else Decimal(str(verified_wt)),
+        ),
         price_per_tonne=None if payload.get("pricePerTonne") is None else Decimal(str(payload["pricePerTonne"])),
         eligible_biomass_fraction=Decimal(str(payload.get("eligibleBiomassFraction", "0"))),
         qualification_status=str(payload.get("qualificationStatus", "NOT_DEMONSTRATED")),

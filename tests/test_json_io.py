@@ -23,6 +23,23 @@ class JsonIoTests(unittest.TestCase):
         self.assertEqual([row["ratio"] for row in result["scenarios"]], ["0", "0.20", "1"])
         self.assertEqual(result["scenarios"][1]["execution_status"], "EXECUTION_CONDITIONS_PENDING")
 
+    def test_json_resolves_rfnbo_qualification_inputs(self):
+        payload = {
+            "reportYear": 2025,
+            "departurePort": "CNSHG",
+            "arrivalPort": "NLRTM",
+            "baseline": {"pathId": "MDO", "massTonnes": "1", "pricePerTonne": "600"},
+            "candidate": {
+                "pathId": "E_DIESEL", "pricePerTonne": "1000",
+                "qualificationStatus": "ASSUMED_ELIGIBLE", "e": "28.2", "eu": "20",
+            },
+            "euaPricePerTCO2e": None,
+            "candidateAllowsPureUse": True,
+        }
+        result = json.loads(calculate_voyage_json(json.dumps(payload)))
+        self.assertEqual(result["scenarios"][1]["ratio"], "1")
+        self.assertEqual(result["scenarios"][1]["fuel_eu"]["wt_t_intensity_g_per_mj"], "4.1")
+
 
 if __name__ == "__main__":
     unittest.main()
