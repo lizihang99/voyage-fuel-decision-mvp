@@ -104,16 +104,79 @@ def _factor_from_definition(definition: FuelDefinition, status: str, wt_t: Decim
         cf_n2o_g_per_g=definition.cf_n2o_g_per_g or Decimal("0"), rwd=definition.rwd,
         cslip_percent=definition.cslip_percent,
         methane_slip_applicable=definition.methane_slip_applicable, factor_status=status,
+        csf_ch4_g_per_g=Decimal("1") if definition.methane_slip_applicable else Decimal("0"),
     )
 
 
 def get_builtin_factor(path_id: str) -> FuelFactor:
+    return resolve_factor(path_id)
+
+
+def _validated_cslip(definition: FuelDefinition, cslip_percent: Optional[Decimal], status: str) -> FuelDefinition:
+    if cslip_percent is None:
+        if definition.cslip_required and status == "VERIFIED":
+            raise ValueError(f"BLOCKED: recognized Cslip required for {definition.path_id}")
+        return definition
+    cslip = Decimal(str(cslip_percent))
+    if not Decimal("0") <= cslip <= Decimal("100"):
+        raise ValueError(f"INVALID_CSLIP: {definition.path_id}")
+    if not definition.methane_slip_applicable and cslip != Decimal("0"):
+        raise ValueError(f"INVALID_CSLIP: non-methane path {definition.path_id}")
+    return FuelDefinition(
+        path_id=definition.path_id, equipment_id=definition.equipment_id, factor_level=definition.factor_level,
+        wt_t_mode=definition.wt_t_mode, lcv_mj_per_g=definition.lcv_mj_per_g, wt_t_g_per_mj=definition.wt_t_g_per_mj,
+        cf_co2_g_per_g=definition.cf_co2_g_per_g, cf_ch4_g_per_g=definition.cf_ch4_g_per_g,
+        cf_n2o_g_per_g=definition.cf_n2o_g_per_g, cslip_percent=cslip, rwd=definition.rwd,
+        fallback_path_id=definition.fallback_path_id, category=definition.category,
+        cslip_required=definition.cslip_required, methane_slip_applicable=definition.methane_slip_applicable,
+        default_e_g_per_mj=definition.default_e_g_per_mj, default_eu_g_per_mj=definition.default_eu_g_per_mj,
+    )
+
+
+def resolve_factor(path_id: str, qualification_status: str = "NOT_DEMONSTRATED",
+                   e_value: Optional[Decimal] = None, eu_value: Optional[Decimal] = None,
+                   cslip_percent: Optional[Decimal] = None, verified_wt_t: Optional[Decimal] = None) -> FuelFactor:
     definition = get_definition(path_id)
-    if definition.wt_t_mode == "BIO_E":
+    status = str(qualification_status).upper()
+    if status not in {"NOT_DEMONSTRATED", "ASSUMED_ELIGIBLE", "VERIFIED_ELIGIBLE", "INELIGIBLE"}:
+        raise ValueError(f"BLOCKED: unsupported qualification status {qualification_status}")
+    if definition.wt_t_mode == "RFNBO_E":
+        if status in {"NOT_DEMONSTRATED", "INELIGIBLE"}:
+            return resolve_factor(definition.fallback_path_id or "", "NOT_DEMONSTRATED")
+        if status == "VERIFIED_ELIGIBLE" and (e_value is None or eu_value is None):
+            raise ValueError(f"BLOCKED: verified RFNBO requires E and eu for {definition.path_id}")
+        e = Decimal(str(e_value)) if e_value is not None else definition.default_e_g_per_mj
+        eu = Decimal(str(eu_value)) if eu_value is not None else definition.default_eu_g_per_mj
+        if e is None or eu is None:
+            raise ValueError(f"BLOCKED: RFNBO requires E and eu for {definition.path_id}")
+        if e > Decimal("28.2"):
+            raise ValueError(f"BLOCKED: RFNBO E exceeds 28.2 for {definition.path_id}")
+        resolved = _validated_cslip(definition, cslip_percent, "VERIFIED" if status == "VERIFIED_ELIGIBLE" else "ESTIMATED")
+        return FuelFactor(
+            path_id=resolved.path_id, lcv_mj_per_g=resolved.lcv_mj_per_g, wt_t_g_per_mj=e - eu,
+            cf_co2_g_per_g=resolved.cf_co2_g_per_g or Decimal("0"), cf_ch4_g_per_g=resolved.cf_ch4_g_per_g or Decimal("0"),
+            cf_n2o_g_per_g=resolved.cf_n2o_g_per_g or Decimal("0"), rwd=Decimal("2"), cslip_percent=resolved.cslip_percent,
+            methane_slip_applicable=resolved.methane_slip_applicable,
+            factor_status="VERIFIED" if status == "VERIFIED_ELIGIBLE" else "ESTIMATED",
+            csf_ch4_g_per_g=Decimal("1") if resolved.methane_slip_applicable else Decimal("0"),
+        )
+    if definition.wt_t_mode == "CERTIFIED":
+        if verified_wt_t is not None:
+            resolved = _validated_cslip(definition, cslip_percent, "VERIFIED")
+            return _factor_from_definition(resolved, "VERIFIED", Decimal(str(verified_wt_t)))
         if definition.default_e_g_per_mj is None:
-            raise ValueError(f"BLOCKED: missing default E for {definition.path_id}")
-        wt_t = definition.default_e_g_per_mj - definition.cf_co2_g_per_g / definition.lcv_mj_per_g
-        return _factor_from_definition(definition, "ESTIMATED", wt_t)
+            raise ValueError(f"BLOCKED: certified WtT required for {definition.path_id}")
+        return _factor_from_definition(definition, "ESTIMATED", definition.default_e_g_per_mj)
+    if definition.wt_t_mode == "BIO_E":
+        e = Decimal(str(e_value)) if e_value is not None else definition.default_e_g_per_mj
+        if e is None:
+            raise ValueError(f"BLOCKED: biofuel E required for {definition.path_id}")
+        status_out = "VERIFIED" if status == "VERIFIED_ELIGIBLE" and e_value is not None else "ESTIMATED"
+        resolved = _validated_cslip(definition, cslip_percent, status_out)
+        return _factor_from_definition(resolved, status_out, e - (resolved.cf_co2_g_per_g or Decimal("0")) / resolved.lcv_mj_per_g)
     if definition.wt_t_g_per_mj is None:
-        raise ValueError(f"BLOCKED: qualification required for {definition.path_id}")
-    return _factor_from_definition(definition, "FIXED" if definition.factor_level == "A" else "ESTIMATED", definition.wt_t_g_per_mj)
+        raise ValueError(f"BLOCKED: WtT required for {definition.path_id}")
+    if status == "VERIFIED_ELIGIBLE" and verified_wt_t is None and definition.cslip_required:
+        raise ValueError(f"BLOCKED: recognized Cslip required for {definition.path_id}")
+    resolved = _validated_cslip(definition, cslip_percent, "VERIFIED" if verified_wt_t is not None else "ESTIMATED")
+    return _factor_from_definition(resolved, "VERIFIED" if verified_wt_t is not None else ("FIXED" if definition.factor_level == "A" else "ESTIMATED"), Decimal(str(verified_wt_t)) if verified_wt_t is not None else definition.wt_t_g_per_mj)
