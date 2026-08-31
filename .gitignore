@@ -1,0 +1,9 @@
+# Temporary extracted materials
+tmp/
+
+# Node.js dependencies and common local artifacts
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
