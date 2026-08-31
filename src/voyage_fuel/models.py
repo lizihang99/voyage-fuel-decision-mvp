@@ -75,6 +75,8 @@ class FuelDefinition:
     category: str = ""
     cslip_required: bool = False
     methane_slip_applicable: bool = False
+    default_e_g_per_mj: Optional[Decimal] = None
+    default_eu_g_per_mj: Optional[Decimal] = None
 
     def __post_init__(self) -> None:
         for name in ("lcv_mj_per_g", "wt_t_g_per_mj", "cf_co2_g_per_g", "cf_ch4_g_per_g", "cf_n2o_g_per_g", "cslip_percent", "rwd"):
