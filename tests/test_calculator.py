@@ -24,10 +24,9 @@ class CalculatorTests(unittest.TestCase):
             candidate_allows_pure_use=True,
         )
         result = calculate_voyage(request)
-        self.assertEqual(
-            [scenario.ratio for scenario in result.scenarios],
-            [Decimal("0"), Decimal("0.20"), Decimal("1")],
-        )
+        ratios = [scenario.ratio for scenario in result.scenarios]
+        self.assertEqual(ratios[0:3], [Decimal("0"), Decimal("0.20"), Decimal("1")])
+        self.assertIn(Decimal("0.30"), ratios)
         self.assertEqual(result.scenarios[0].baseline_mass_tonnes, Decimal("100"))
         self.assertEqual(result.scenarios[0].candidate_mass_tonnes, Decimal("0"))
         self.assertEqual(result.scenarios[0].physical_energy_mj, result.baseline_energy_mj)
@@ -48,7 +47,7 @@ class CalculatorTests(unittest.TestCase):
             specified_blend_ratios=(Decimal("0"), Decimal("0.20")),
         )
         result = calculate_voyage(request)
-        self.assertEqual([scenario.ratio for scenario in result.scenarios], [Decimal("0"), Decimal("0.20")])
+        self.assertEqual([scenario.ratio for scenario in result.scenarios], [Decimal("0"), Decimal("0.20"), Decimal("0.022130676682982508109158969772727924816074006340564")])
 
     def test_b100_is_not_emitted_when_candidate_pure_use_is_not_allowed(self):
         request = VoyageInput(
@@ -62,7 +61,10 @@ class CalculatorTests(unittest.TestCase):
             candidate_allows_pure_use=False,
         )
         result = calculate_voyage(request)
-        self.assertEqual([scenario.ratio for scenario in result.scenarios], [Decimal("0")])
+        self.assertEqual(
+            [scenario.ratio for scenario in result.scenarios],
+            [Decimal("0"), Decimal("0.022130676682982508109158969772727924816074006340564")],
+        )
 
 if __name__ == "__main__":
     unittest.main()

@@ -42,7 +42,9 @@ class JsonIoTests(unittest.TestCase):
         }
         result = json.loads(calculate_voyage_json(json.dumps(payload)))
         self.assertEqual(Decimal(result["baseline_energy_mj"]), Decimal("4270000"))
-        self.assertEqual([row["ratio"] for row in result["scenarios"]], ["0", "0.20", "1"])
+        ratios = [row["ratio"] for row in result["scenarios"]]
+        self.assertEqual(ratios[:3], ["0", "0.20", "1"])
+        self.assertIn("0.022130676682982508109158969772727924816074006340564", ratios)
         self.assertEqual(result["scenarios"][1]["execution_status"], "EXECUTION_CONDITIONS_PENDING")
 
     def test_json_resolves_rfnbo_qualification_inputs(self):

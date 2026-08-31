@@ -31,16 +31,18 @@ def calculate_voyage(request: VoyageInput) -> VoyageResult:
     requested = (Decimal("0"), *request.specified_blend_ratios)
     if request.candidate_allows_pure_use:
         requested = (*requested, Decimal("1"))
-    if request.candidate_supply_tonnes is not None or request.incremental_budget is not None:
+    # Report points are a finite, deduplicated projection of the continuous search.
+    if constraints.x_cap != Decimal("1") or request.candidate_allows_pure_use:
         requested = (*requested, constraints.x_cap)
-        if constraints.x_budget is not None:
-            requested = (*requested, constraints.x_budget)
-        if constraints.x_supply is not None:
-            requested = (*requested, constraints.x_supply)
-        if constraints.x_target_min is not None:
-            requested = (*requested, constraints.x_target_min)
-        if constraints.x_max_improvement is not None:
-            requested = (*requested, constraints.x_max_improvement)
+    if request.incremental_budget is not None and constraints.x_budget is not None:
+        requested = (*requested, constraints.x_budget)
+    if request.candidate_supply_tonnes is not None and constraints.x_supply is not None:
+        requested = (*requested, constraints.x_supply)
+    if constraints.x_target_min is not None:
+        requested = (*requested, constraints.x_target_min)
+    if (constraints.x_max_improvement is not None
+            and (constraints.x_max_improvement != Decimal("1") or request.candidate_allows_pure_use)):
+        requested = (*requested, constraints.x_max_improvement)
     ratios = tuple(dict.fromkeys(requested))
     scenarios = []
     for ratio in ratios:
