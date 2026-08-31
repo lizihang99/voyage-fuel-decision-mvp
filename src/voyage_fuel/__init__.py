@@ -8,6 +8,7 @@ getcontext().prec = max(getcontext().prec, 50)
 
 from .models import (
     EtsResult,
+    ConstraintResult,
     FuelAmount,
     FuelComponent,
     FuelEuResult,
@@ -18,10 +19,12 @@ from .models import (
     VoyageResult,
 )
 from .json_io import calculate_voyage_json
+from .constraints import calculate_constraints, calculate_minimum_target_ratio
 from .factors import builtin_path_ids, get_definition, get_builtin_factor, resolve_factor
 
 __all__ = [
     "EtsResult",
+    "ConstraintResult",
     "FuelAmount",
     "FuelComponent",
     "FuelEuResult",
@@ -31,6 +34,8 @@ __all__ = [
     "VoyageInput",
     "VoyageResult",
     "calculate_voyage_json",
+    "calculate_constraints",
+    "calculate_minimum_target_ratio",
     "builtin_path_ids",
     "get_definition",
     "get_builtin_factor",

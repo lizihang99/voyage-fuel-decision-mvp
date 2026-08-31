@@ -47,6 +47,14 @@ def _request(payload: Mapping[str, Any]) -> VoyageInput:
         specified_blend_ratios=tuple(Decimal(str(value)) for value in payload.get("specifiedBlendRatios", ())),
         max_blend_ratio=Decimal(str(payload.get("maxBlendRatio", "1"))),
         candidate_allows_pure_use=bool(payload.get("candidateAllowsPureUse", False)),
+        candidate_supply_tonnes=(
+            None if payload.get("candidateSupplyTonnes") is None
+            else Decimal(str(payload["candidateSupplyTonnes"]))
+        ),
+        incremental_budget=(
+            None if payload.get("incrementalBudget") is None
+            else Decimal(str(payload["incrementalBudget"]))
+        ),
     )
 
 

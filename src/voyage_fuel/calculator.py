@@ -3,6 +3,7 @@
 from decimal import Decimal
 
 from .emissions import calculate_eu_ets, calculate_fueleu
+from .constraints import calculate_constraints
 from .energy import baseline_energy_mj, blend_masses_tonnes, fuel_cost, sum_known_costs
 from .models import FuelAmount, VoyageInput, VoyageResult, ScenarioResult
 from .ports import calculate_scope_rates
@@ -15,9 +16,31 @@ def calculate_voyage(request: VoyageInput) -> VoyageResult:
         request.arrival_port,
     )
     baseline_energy = baseline_energy_mj(request.baseline_mass_tonnes, request.baseline_component.factor)
+    constraints = calculate_constraints(
+        report_year=request.report_year,
+        baseline_mass_tonnes=request.baseline_mass_tonnes,
+        baseline=request.baseline_component,
+        candidate=request.candidate_component,
+        scope=scope_rates,
+        candidate_supply_tonnes=request.candidate_supply_tonnes,
+        incremental_budget=request.incremental_budget,
+        max_blend_ratio=request.max_blend_ratio,
+        eua_price_per_tco2e=request.eua_price_per_tco2e,
+        baseline_energy_mj=baseline_energy,
+    )
     requested = (Decimal("0"), *request.specified_blend_ratios)
     if request.candidate_allows_pure_use:
         requested = (*requested, Decimal("1"))
+    if request.candidate_supply_tonnes is not None or request.incremental_budget is not None:
+        requested = (*requested, constraints.x_cap)
+        if constraints.x_budget is not None:
+            requested = (*requested, constraints.x_budget)
+        if constraints.x_supply is not None:
+            requested = (*requested, constraints.x_supply)
+        if constraints.x_target_min is not None:
+            requested = (*requested, constraints.x_target_min)
+        if constraints.x_max_improvement is not None:
+            requested = (*requested, constraints.x_max_improvement)
     ratios = tuple(dict.fromkeys(requested))
     scenarios = []
     for ratio in ratios:
@@ -48,10 +71,12 @@ def calculate_voyage(request: VoyageInput) -> VoyageResult:
                 fuel_eu=fuel_eu,
                 model_cost=total_cost,
                 execution_status="EXECUTION_CONDITIONS_PENDING",
+                constraint_status=("FEASIBLE" if ratio <= constraints.x_cap else "CONSTRAINT_INFEASIBLE"),
             )
         )
     return VoyageResult(
         baseline_energy_mj=baseline_energy,
         scope_rates=scope_rates,
         scenarios=tuple(scenarios),
+        constraints=constraints,
     )

@@ -197,10 +197,16 @@ class VoyageInput:
     specified_blend_ratios: tuple[Decimal, ...] = ()
     max_blend_ratio: Decimal = ONE
     candidate_allows_pure_use: bool = False
+    candidate_supply_tonnes: Optional[Decimal] = None
+    incremental_budget: Optional[Decimal] = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "baseline_mass_tonnes", as_decimal(self.baseline_mass_tonnes))
         object.__setattr__(self, "max_blend_ratio", as_decimal(self.max_blend_ratio))
+        if self.candidate_supply_tonnes is not None:
+            object.__setattr__(self, "candidate_supply_tonnes", as_decimal(self.candidate_supply_tonnes))
+        if self.incremental_budget is not None:
+            object.__setattr__(self, "incremental_budget", as_decimal(self.incremental_budget))
         object.__setattr__(
             self,
             "specified_blend_ratios",
@@ -210,6 +216,10 @@ class VoyageInput:
             raise ValueError("baseline_mass_tonnes must be positive")
         if not ZERO <= self.max_blend_ratio <= ONE:
             raise ValueError("max_blend_ratio must be between 0 and 1")
+        if self.candidate_supply_tonnes is not None and self.candidate_supply_tonnes < ZERO:
+            raise ValueError("candidate_supply_tonnes must be non-negative")
+        if self.incremental_budget is not None and self.incremental_budget < ZERO:
+            raise ValueError("incremental_budget must be non-negative")
         if any(not ZERO <= ratio <= self.max_blend_ratio for ratio in self.specified_blend_ratios):
             raise ValueError("specified_blend_ratios must be within max_blend_ratio")
         if self.eua_price_per_tco2e is not None:
@@ -229,6 +239,7 @@ class ScenarioResult:
     fuel_eu: FuelEuResult
     model_cost: Optional[Decimal]
     execution_status: str
+    constraint_status: str = "FEASIBLE"
 
 
 @dataclass(frozen=True)
@@ -236,3 +247,23 @@ class VoyageResult:
     baseline_energy_mj: Decimal
     scope_rates: ScopeRates
     scenarios: tuple[ScenarioResult, ...]
+    constraints: Optional["ConstraintResult"] = None
+
+
+@dataclass(frozen=True)
+class ConstraintResult:
+    """Continuous blend bounds and FuelEU target search results."""
+
+    max_blend_ratio: Decimal
+    candidate_supply_tonnes: Optional[Decimal]
+    incremental_budget: Optional[Decimal]
+    x_budget: Optional[Decimal]
+    x_supply: Optional[Decimal]
+    x_cap: Decimal
+    target_status: str
+    x_target_min_unconstrained: Optional[Decimal]
+    x_target_min: Optional[Decimal]
+    x_target_min_cost: Optional[Decimal]
+    x_max_improvement: Optional[Decimal]
+    x_cost_min: Optional[Decimal]
+    warning_codes: tuple[str, ...] = ()
