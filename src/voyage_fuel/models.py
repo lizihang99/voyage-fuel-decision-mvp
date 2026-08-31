@@ -141,6 +141,7 @@ class VoyageInput:
     eua_price_per_tco2e: Optional[Decimal]
     specified_blend_ratios: tuple[Decimal, ...] = ()
     max_blend_ratio: Decimal = ONE
+    candidate_allows_pure_use: bool = False
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "baseline_mass_tonnes", as_decimal(self.baseline_mass_tonnes))

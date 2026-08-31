@@ -17,6 +17,7 @@ from .models import (
     VoyageInput,
     VoyageResult,
 )
+from .json_io import calculate_voyage_json
 
 __all__ = [
     "EtsResult",
@@ -28,4 +29,5 @@ __all__ = [
     "ScopeRates",
     "VoyageInput",
     "VoyageResult",
+    "calculate_voyage_json",
 ]

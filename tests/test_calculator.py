@@ -20,9 +20,13 @@ class CalculatorTests(unittest.TestCase):
             eua_price_per_tco2e=Decimal("80"),
             specified_blend_ratios=(Decimal("0.20"),),
             max_blend_ratio=Decimal("0.30"),
+            candidate_allows_pure_use=True,
         )
         result = calculate_voyage(request)
-        self.assertEqual([scenario.ratio for scenario in result.scenarios], [Decimal("0"), Decimal("0.20")])
+        self.assertEqual(
+            [scenario.ratio for scenario in result.scenarios],
+            [Decimal("0"), Decimal("0.20"), Decimal("1")],
+        )
         self.assertEqual(result.scenarios[0].baseline_mass_tonnes, Decimal("100"))
         self.assertEqual(result.scenarios[0].candidate_mass_tonnes, Decimal("0"))
         self.assertEqual(result.scenarios[0].physical_energy_mj, result.baseline_energy_mj)
@@ -45,6 +49,19 @@ class CalculatorTests(unittest.TestCase):
         result = calculate_voyage(request)
         self.assertEqual([scenario.ratio for scenario in result.scenarios], [Decimal("0"), Decimal("0.20")])
 
+    def test_b100_is_not_emitted_when_candidate_pure_use_is_not_allowed(self):
+        request = VoyageInput(
+            report_year=2025,
+            departure_port="CNSHG",
+            arrival_port="NLRTM",
+            baseline_component=FuelComponent(get_builtin_factor("MDO"), Decimal("600")),
+            baseline_mass_tonnes=Decimal("100"),
+            candidate_component=FuelComponent(get_builtin_factor("UCO_FAME"), Decimal("1000")),
+            eua_price_per_tco2e=None,
+            candidate_allows_pure_use=False,
+        )
+        result = calculate_voyage(request)
+        self.assertEqual([scenario.ratio for scenario in result.scenarios], [Decimal("0")])
 
 if __name__ == "__main__":
     unittest.main()

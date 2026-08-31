@@ -15,7 +15,10 @@ def calculate_voyage(request: VoyageInput) -> VoyageResult:
         request.arrival_port,
     )
     baseline_energy = baseline_energy_mj(request.baseline_mass_tonnes, request.baseline_component.factor)
-    ratios = tuple(dict.fromkeys((Decimal("0"), *request.specified_blend_ratios)))
+    requested = (Decimal("0"), *request.specified_blend_ratios)
+    if request.candidate_allows_pure_use:
+        requested = (*requested, Decimal("1"))
+    ratios = tuple(dict.fromkeys(requested))
     scenarios = []
     for ratio in ratios:
         baseline_mass, candidate_mass = blend_masses_tonnes(

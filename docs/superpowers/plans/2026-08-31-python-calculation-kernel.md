@@ -19,6 +19,7 @@
 - FuelEU 结果是航次级比例估算，不得表述为正式年度合规余额或真实罚款。
 - 执行状态统一为 `EXECUTION_CONDITIONS_PENDING`。
 - 第一阶段仅实现已选测试路径 `MDO`、`HFO`、`UCO_FAME`，因子目录接口保留后续扩展位置。
+- 航次编排在候选燃料显式允许单独使用时加入 B100；JSON 边界通过 `voyage_fuel.json_io.calculate_voyage_json` 提供精度不丢失的字符串化输出。
 
 ---
 
