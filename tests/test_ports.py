@@ -19,6 +19,10 @@ class PortScopeTests(unittest.TestCase):
         self.assertIsNone(rates.fuel_eu_scope_rate)
         self.assertFalse(rates.fuel_eu_applicable)
 
+    def test_rejects_year_outside_mvp_range(self):
+        with self.assertRaises(ValueError):
+            calculate_scope_rates(2031, "CNSHG", "NLRTM")
+
 
 if __name__ == "__main__":
     unittest.main()

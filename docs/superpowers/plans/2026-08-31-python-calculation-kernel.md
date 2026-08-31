@@ -31,10 +31,10 @@
 - Create: `tests/test_models.py`
 
 **Interfaces:**
-- Produces immutable dataclasses `FuelFactor`, `FuelComponent`, `VoyageInput`, `BlendScenario`, `ScenarioResult`。
+- Produces immutable dataclasses `FuelFactor`, `FuelComponent`, `VoyageInput`, `ScenarioResult`。
 - Decimal 字段由调用方传入 `Decimal`；解析辅助函数负责把十进制字符串转为 `Decimal`。
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 from decimal import Decimal
@@ -66,21 +66,21 @@ if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `python -m unittest tests.test_models -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'voyage_fuel'`.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create the package and frozen dataclasses with the exact fields used by the test and later tasks. Validate non-negative prices and positive LCV in `__post_init__`.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `python -m unittest tests.test_models -v`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/voyage_fuel tests
@@ -101,7 +101,7 @@ git commit -m "feat: add Python calculation models"
 - `fuel_cost(mass_tonnes: Decimal, component: FuelComponent) -> Decimal | None`
 - `model_cost(baseline_cost: Decimal | None, candidate_cost: Decimal | None, eua_cost: Decimal | None) -> Decimal | None`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 from decimal import Decimal
@@ -113,14 +113,14 @@ from voyage_fuel.models import FuelComponent
 
 
 class EnergyTests(unittest.TestCase):
-    def test_twenty_five_percent_blend_preserves_baseline_energy(self):
+    def test_twenty_percent_blend_preserves_baseline_energy(self):
         baseline = FuelComponent(get_builtin_factor("MDO"), Decimal("600"))
         candidate = FuelComponent(
             get_builtin_factor("UCO_FAME"), Decimal("1000"),
             eligible_biomass_fraction=Decimal("1"),
         )
         energy = baseline_energy_mj(Decimal("100"), baseline.factor)
-        baseline_t, candidate_t = blend_masses_tonnes(energy, baseline, candidate, Decimal("0.25"))
+        baseline_t, candidate_t = blend_masses_tonnes(energy, baseline, candidate, Decimal("0.20"))
         self.assertEqual(baseline_t, Decimal("82.1944177093358999041880991"))
         self.assertEqual(candidate_t, Decimal("20.5486044273339749760470248"))
         self.assertEqual(
@@ -134,21 +134,21 @@ if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `python -m unittest tests.test_energy -v`
 Expected: FAIL because `voyage_fuel.energy` and `voyage_fuel.factors` do not exist.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Register `MDO`, `HFO`, `MGO` alias, and `UCO_FAME` using the authoritative factor values. Compute total mass from `baseline_energy / weighted_lcv`, then split by mass ratio without rounding. Reject ratios outside `[0, 1]` and non-positive weighted LCV.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `python -m unittest tests.test_energy -v`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/voyage_fuel/factors.py src/voyage_fuel/energy.py tests/test_energy.py
@@ -168,25 +168,25 @@ git commit -m "feat: add factor registry and energy blending"
 - `calculate_scope_rates(year: int, departure_port: str, arrival_port: str, table: Mapping[str, PortIdentity] | None = None) -> ScopeRates`
 - `calculate_eu_ets(year: int, components: Sequence[FuelAmount], scope: ScopeRates, eua_price_per_tco2e: Decimal | None) -> EtsResult`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Add tests for an ordinary EU/third-country pair returning EU ETS geo rate `0.5`, surrender rate `0.7` in 2025, and FuelEU scope `0.5`; add tests asserting a 2024 LNG/HFO result excludes CH4/N2O from EUAs while 2026 includes all three gases.
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `python -m unittest tests.test_ports tests.test_ets -v`
 Expected: FAIL because the Python port and emissions modules do not exist.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Read the existing formal CSV with `csv.DictReader`, validate the five-character UN/LOCODE and stored statuses, preserve OMR FuelEU half-energy behavior, and apply the calculation-spec GWP and surrender rates. Keep raw gas tonnes in the result and expose the included gas names.
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `python -m unittest tests.test_ports tests.test_ets -v`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/voyage_fuel/ports.py src/voyage_fuel/emissions.py tests/test_ports.py tests/test_ets.py
@@ -202,28 +202,28 @@ git commit -m "feat: add Python port scope and EU ETS"
 - Create: `tests/test_calculator.py`
 
 **Interfaces:**
-- `calculate_fueleu(year: int, physical_energy_mj: Decimal, components: Sequence[FuelAmount], fuel_eu_scope_rate: Decimal | None) -> FuelEuResult`
+- `calculate_fueleu(year: int, amounts: Sequence[FuelAmount], fuel_eu_scope_rate: Decimal | None) -> FuelEuResult`
 - `calculate_voyage(request: VoyageInput) -> VoyageResult`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Add tests for 2025 `sFuelEU=0.5` returning the same GHGI as 100% scope with half the balance, 2024 returning null FuelEU target/GHGI/CB/penalty, and the vector-D penalty formula returning `255916.80 EUR` for the specified deficit.
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `python -m unittest tests.test_fueleu tests.test_calculator -v`
 Expected: FAIL because FuelEU and voyage orchestration are not implemented.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Aggregate `D_RWD`, `N_WtT`, and `N_TtW` with FuelEU GWP values, calculate the 2025-2029 target `89.3368`, classify positive/zero/negative balance, and calculate the indicative penalty only for deficits. Build B0, specified ratios, and optional B100 scenarios using the energy helpers; attach `EXECUTION_CONDITIONS_PENDING` to every result.
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `python -m unittest discover -s tests -v`
 Expected: all Python tests PASS and the existing Node port tests still PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/voyage_fuel/emissions.py src/voyage_fuel/calculator.py tests/test_fueleu.py tests/test_calculator.py
@@ -236,7 +236,7 @@ git commit -m "feat: calculate voyage FuelEU results"
 - Modify: `README.md`
 - Modify: `docs/superpowers/specs/2026-08-07-voyage-fuel-decision-calculation-spec.md`
 
-- [ ] **Step 1: Run Python and Node test suites**
+- [x] **Step 1: Run Python and Node test suites**
 
 ```bash
 python -m unittest discover -s tests -v
@@ -245,15 +245,15 @@ node --test port-identity-mapping.test.mjs port-scope-rates.test.mjs
 
 Expected: all tests pass with zero failures.
 
-- [ ] **Step 2: Run precision and link checks**
+- [x] **Step 2: Run precision and link checks**
 
 Re-run the documented Markdown link check and assert the energy-conservation vector using an unrounded `Decimal` result.
 
-- [ ] **Step 3: Update project status**
+- [x] **Step 3: Update project status**
 
 Document that the Python kernel first slice is implemented, while the remaining factor paths, constraints, UI, and exports are pending.
 
-- [ ] **Step 4: Commit and push**
+- [x] **Step 4: Commit and push**
 
 ```bash
 git add README.md docs/superpowers/specs/2026-08-07-voyage-fuel-decision-calculation-spec.md

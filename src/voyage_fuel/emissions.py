@@ -3,12 +3,16 @@
 from decimal import Decimal
 from typing import Optional, Sequence
 
-from .models import EtsResult, FuelAmount, ScopeRates
+from .models import EtsResult, FuelAmount, FuelEuResult, ScopeRates
 
 
 GRAMS_PER_TONNE = Decimal("1000000")
 ETS_GWP_CH4 = Decimal("28")
 ETS_GWP_N2O = Decimal("265")
+FUELEU_GWP_CH4 = Decimal("25")
+FUELEU_GWP_N2O = Decimal("298")
+FUELEU_REFERENCE = Decimal("91.16")
+TONNES_TO_GRAMS = Decimal("1000000")
 
 
 def calculate_eu_ets(
@@ -60,4 +64,109 @@ def calculate_eu_ets(
         ets_co2e_pre_scope_t=pre_scope,
         euas_required=euas,
         eua_cost=eua_cost,
+    )
+
+
+def _fueleu_target(year: int) -> Optional[Decimal]:
+    if year in range(2025, 2030):
+        return Decimal("89.3368")
+    if year == 2030:
+        return Decimal("85.6904")
+    return None
+
+
+def _ttw_mass_eq(amount: FuelAmount) -> Decimal:
+    factor = amount.component.factor
+    combustion_eq = (
+        factor.cf_co2_g_per_g
+        + FUELEU_GWP_CH4 * factor.cf_ch4_g_per_g
+        + FUELEU_GWP_N2O * factor.cf_n2o_g_per_g
+    )
+    if factor.methane_slip_applicable:
+        if factor.cslip_percent is None:
+            raise ValueError(f"Cslip required for methane-slip path: {factor.path_id}")
+        p = factor.cslip_percent / Decimal("100")
+    else:
+        p = Decimal("0")
+    slip_eq = (
+        factor.csf_co2_g_per_g
+        + FUELEU_GWP_CH4 * factor.csf_ch4_g_per_g
+        + FUELEU_GWP_N2O * factor.csf_n2o_g_per_g
+    )
+    return (Decimal("1") - p) * combustion_eq + p * slip_eq
+
+
+def calculate_fueleu(
+    year: int,
+    amounts: Sequence[FuelAmount],
+    fuel_eu_scope_rate: Optional[Decimal],
+) -> FuelEuResult:
+    physical_energy = Decimal("0")
+    denominator_rwd = Decimal("0")
+    wt_t_numerator = Decimal("0")
+    tt_w_numerator = Decimal("0")
+    for amount in amounts:
+        mass_g = amount.mass_tonnes * GRAMS_PER_TONNE
+        factor = amount.component.factor
+        physical_energy += mass_g * factor.lcv_mj_per_g
+        denominator_rwd += mass_g * factor.lcv_mj_per_g * factor.rwd
+        wt_t_numerator += mass_g * factor.lcv_mj_per_g * factor.wt_t_g_per_mj
+        tt_w_numerator += mass_g * _ttw_mass_eq(amount)
+
+    if year == 2024 or fuel_eu_scope_rate is None:
+        return FuelEuResult(
+            status="NOT_YET_APPLICABLE" if year == 2024 else "NOT_APPLICABLE",
+            physical_energy_mj=physical_energy,
+            scoped_energy_mj=Decimal("0"),
+            denominator_rwd_mj=None,
+            wt_t_intensity_g_per_mj=None,
+            tt_w_intensity_g_per_mj=None,
+            ghgi_actual_g_per_mj=None,
+            target_g_per_mj=None,
+            compliance_balance_g=None,
+            compliance_balance_t=None,
+            indicative_penalty_eur=None,
+        )
+
+    scope = fuel_eu_scope_rate
+    scoped_energy = physical_energy * scope
+    if scope == Decimal("0"):
+        return FuelEuResult(
+            status="OUT_OF_SCOPE",
+            physical_energy_mj=physical_energy,
+            scoped_energy_mj=Decimal("0"),
+            denominator_rwd_mj=None,
+            wt_t_intensity_g_per_mj=None,
+            tt_w_intensity_g_per_mj=None,
+            ghgi_actual_g_per_mj=None,
+            target_g_per_mj=None,
+            compliance_balance_g=None,
+            compliance_balance_t=None,
+            indicative_penalty_eur=None,
+        )
+    if denominator_rwd <= Decimal("0"):
+        raise ValueError("FuelEU denominator must be positive")
+    wt_t_intensity = wt_t_numerator / denominator_rwd
+    tt_w_intensity = tt_w_numerator / denominator_rwd
+    ghgi = wt_t_intensity + tt_w_intensity
+    target = _fueleu_target(year)
+    if target is None:
+        raise ValueError(f"Unsupported FuelEU year: {year}")
+    balance_g = (target - ghgi) * scoped_energy
+    status = "SURPLUS_ESTIMATE" if balance_g > 0 else "DEFICIT_ESTIMATE" if balance_g < 0 else "ON_TARGET_ESTIMATE"
+    penalty = None
+    if balance_g < 0:
+        penalty = abs(balance_g) / (ghgi * Decimal("41000")) * Decimal("2400")
+    return FuelEuResult(
+        status=status,
+        physical_energy_mj=physical_energy,
+        scoped_energy_mj=scoped_energy,
+        denominator_rwd_mj=denominator_rwd,
+        wt_t_intensity_g_per_mj=wt_t_intensity,
+        tt_w_intensity_g_per_mj=tt_w_intensity,
+        ghgi_actual_g_per_mj=ghgi,
+        target_g_per_mj=target,
+        compliance_balance_g=balance_g,
+        compliance_balance_t=balance_g / TONNES_TO_GRAMS,
+        indicative_penalty_eur=penalty,
     )

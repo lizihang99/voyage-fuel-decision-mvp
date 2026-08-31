@@ -113,3 +113,70 @@ class EtsResult:
     ets_co2e_pre_scope_t: Decimal
     euas_required: Decimal
     eua_cost: Optional[Decimal]
+
+
+@dataclass(frozen=True)
+class FuelEuResult:
+    status: str
+    physical_energy_mj: Decimal
+    scoped_energy_mj: Decimal
+    denominator_rwd_mj: Optional[Decimal]
+    wt_t_intensity_g_per_mj: Optional[Decimal]
+    tt_w_intensity_g_per_mj: Optional[Decimal]
+    ghgi_actual_g_per_mj: Optional[Decimal]
+    target_g_per_mj: Optional[Decimal]
+    compliance_balance_g: Optional[Decimal]
+    compliance_balance_t: Optional[Decimal]
+    indicative_penalty_eur: Optional[Decimal]
+
+
+@dataclass(frozen=True)
+class VoyageInput:
+    report_year: int
+    departure_port: str
+    arrival_port: str
+    baseline_component: FuelComponent
+    baseline_mass_tonnes: Decimal
+    candidate_component: FuelComponent
+    eua_price_per_tco2e: Optional[Decimal]
+    specified_blend_ratios: tuple[Decimal, ...] = ()
+    max_blend_ratio: Decimal = ONE
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "baseline_mass_tonnes", as_decimal(self.baseline_mass_tonnes))
+        object.__setattr__(self, "max_blend_ratio", as_decimal(self.max_blend_ratio))
+        object.__setattr__(
+            self,
+            "specified_blend_ratios",
+            tuple(as_decimal(ratio) for ratio in self.specified_blend_ratios),
+        )
+        if self.baseline_mass_tonnes <= ZERO:
+            raise ValueError("baseline_mass_tonnes must be positive")
+        if not ZERO <= self.max_blend_ratio <= ONE:
+            raise ValueError("max_blend_ratio must be between 0 and 1")
+        if any(not ZERO <= ratio <= self.max_blend_ratio for ratio in self.specified_blend_ratios):
+            raise ValueError("specified_blend_ratios must be within max_blend_ratio")
+        if self.eua_price_per_tco2e is not None:
+            object.__setattr__(self, "eua_price_per_tco2e", as_decimal(self.eua_price_per_tco2e))
+            if self.eua_price_per_tco2e < ZERO:
+                raise ValueError("eua_price_per_tco2e must be non-negative")
+
+
+@dataclass(frozen=True)
+class ScenarioResult:
+    ratio: Decimal
+    baseline_mass_tonnes: Decimal
+    candidate_mass_tonnes: Decimal
+    physical_energy_mj: Decimal
+    fuel_cost: Optional[Decimal]
+    eu_ets: EtsResult
+    fuel_eu: FuelEuResult
+    model_cost: Optional[Decimal]
+    execution_status: str
+
+
+@dataclass(frozen=True)
+class VoyageResult:
+    baseline_energy_mj: Decimal
+    scope_rates: ScopeRates
+    scenarios: tuple[ScenarioResult, ...]
