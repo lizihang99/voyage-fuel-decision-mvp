@@ -12,7 +12,7 @@ class JsonIoTests(unittest.TestCase):
             "departurePort": "CNSHG",
             "arrivalPort": "NLRTM",
             "baseline": {"pathId": "MDO", "massTonnes": "100", "pricePerTonne": "600"},
-            "candidate": {"pathId": "UCO_FAME", "pricePerTonne": "1000", "eligibleBiomassFraction": "1"},
+            "candidate": {"pathId": "UCO_FAME", "pricePerTonne": "1000", "eligibleBiomassFraction": "1", "qualificationStatus": "ASSUMED_ELIGIBLE"},
             "euaPricePerTCO2e": "80",
             "specifiedBlendRatios": ["0.20"],
             "maxBlendRatio": "1",

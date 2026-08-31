@@ -15,7 +15,8 @@ class CalculatorTests(unittest.TestCase):
             baseline_component=FuelComponent(get_builtin_factor("MDO"), Decimal("600")),
             baseline_mass_tonnes=Decimal("100"),
             candidate_component=FuelComponent(
-                get_builtin_factor("UCO_FAME"), Decimal("1000"), eligible_biomass_fraction=Decimal("1")
+                get_builtin_factor("UCO_FAME"), Decimal("1000"), eligible_biomass_fraction=Decimal("1"),
+                qualification_status="ASSUMED_ELIGIBLE"
             ),
             eua_price_per_tco2e=Decimal("80"),
             specified_blend_ratios=(Decimal("0.20"),),

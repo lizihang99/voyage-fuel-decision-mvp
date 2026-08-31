@@ -12,7 +12,7 @@ class FuelEuTests(unittest.TestCase):
         amounts = [
             FuelAmount(FuelComponent(get_builtin_factor("HFO"), Decimal("600")), Decimal("0.5")),
             FuelAmount(
-                FuelComponent(get_builtin_factor("UCO_FAME"), Decimal("1000"), eligible_biomass_fraction=Decimal("1")),
+                FuelComponent(get_builtin_factor("UCO_FAME"), Decimal("1000"), eligible_biomass_fraction=Decimal("1"), qualification_status="ASSUMED_ELIGIBLE"),
                 Decimal("0.5"),
             ),
         ]

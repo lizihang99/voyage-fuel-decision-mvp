@@ -12,6 +12,7 @@ class EnergyTests(unittest.TestCase):
         candidate = FuelComponent(
             get_builtin_factor("UCO_FAME"), Decimal("1000"),
             eligible_biomass_fraction=Decimal("1"),
+            qualification_status="ASSUMED_ELIGIBLE",
         )
         energy = baseline_energy_mj(Decimal("100"), baseline.factor)
         baseline_t, candidate_t = blend_masses_tonnes(energy, baseline, candidate, Decimal("0.20"))

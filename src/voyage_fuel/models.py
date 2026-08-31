@@ -30,6 +30,8 @@ class FuelFactor:
     csf_co2_g_per_g: Decimal = ZERO
     csf_ch4_g_per_g: Decimal = ZERO
     csf_n2o_g_per_g: Decimal = ZERO
+    na_fields: tuple[str, ...] = ()
+    cslip_semantics: str = "NA"
 
     def __post_init__(self) -> None:
         for field_name in (
@@ -54,6 +56,7 @@ class FuelFactor:
             raise ValueError("rwd must be positive")
         if self.cslip_percent is not None and not ZERO <= self.cslip_percent <= HUNDRED:
             raise ValueError("cslip_percent must be between 0 and 100")
+        object.__setattr__(self, "na_fields", tuple(self.na_fields))
 
 
 @dataclass(frozen=True)
@@ -77,12 +80,33 @@ class FuelDefinition:
     methane_slip_applicable: bool = False
     default_e_g_per_mj: Optional[Decimal] = None
     default_eu_g_per_mj: Optional[Decimal] = None
+    default_lcv_mj_per_g: Optional[Decimal] = None
+    default_wt_t_g_per_mj: Optional[Decimal] = None
+    default_cf_co2_g_per_g: Optional[Decimal] = None
+    default_cf_ch4_g_per_g: Optional[Decimal] = None
+    default_cf_n2o_g_per_g: Optional[Decimal] = None
+    default_cslip_percent: Optional[Decimal] = None
 
     def __post_init__(self) -> None:
-        for name in ("lcv_mj_per_g", "wt_t_g_per_mj", "cf_co2_g_per_g", "cf_ch4_g_per_g", "cf_n2o_g_per_g", "cslip_percent", "rwd"):
+        for name in (
+            "lcv_mj_per_g", "wt_t_g_per_mj", "cf_co2_g_per_g", "cf_ch4_g_per_g",
+            "cf_n2o_g_per_g", "cslip_percent", "rwd", "default_lcv_mj_per_g",
+            "default_wt_t_g_per_mj", "default_cf_co2_g_per_g", "default_cf_ch4_g_per_g",
+            "default_cf_n2o_g_per_g", "default_cslip_percent",
+        ):
             value = getattr(self, name)
             if value is not None:
                 object.__setattr__(self, name, as_decimal(value))
+        for default_name, formal_name in (
+            ("default_lcv_mj_per_g", "lcv_mj_per_g"),
+            ("default_wt_t_g_per_mj", "wt_t_g_per_mj"),
+            ("default_cf_co2_g_per_g", "cf_co2_g_per_g"),
+            ("default_cf_ch4_g_per_g", "cf_ch4_g_per_g"),
+            ("default_cf_n2o_g_per_g", "cf_n2o_g_per_g"),
+            ("default_cslip_percent", "cslip_percent"),
+        ):
+            if getattr(self, default_name) is None and getattr(self, formal_name) is not None:
+                object.__setattr__(self, default_name, getattr(self, formal_name))
 
 
 @dataclass(frozen=True)
@@ -100,6 +124,8 @@ class FuelComponent:
         object.__setattr__(self, "eligible_biomass_fraction", as_decimal(self.eligible_biomass_fraction))
         if not ZERO <= self.eligible_biomass_fraction <= ONE:
             raise ValueError("eligible_biomass_fraction must be between 0 and 1")
+        if self.qualification_status.upper() in {"NOT_DEMONSTRATED", "INELIGIBLE"} and self.eligible_biomass_fraction != ZERO:
+            raise ValueError("INVALID_BIOMASS_FRACTION: qualification does not permit eligible biomass")
 
 
 @dataclass(frozen=True)

@@ -26,10 +26,24 @@
 - 非甲烷路径收到非零 Cslip 且无明确支持规则时返回 `INVALID_CSLIP`。
 - `UCO_FAME` 的默认 E=14.9 通过 `WtT=E-CfCO2/LCV` 高精度推导，默认状态为 `ESTIMATED`，不能标记为 `FIXED`。
 
+## Audit Baseline
+
+2026-08-31 已完成逐字段机器审计。目录同时保存正式法规字段和参考网站默认快照：默认 B 级路径使用快照 LCV/WtT，显式 E 或认可 WtT 输入才使用正式公式和正式 LCV。`NA/null`、法规数值 0、`RC` 和用户场景值不再合并；解析后的 `FuelFactor` 保留 `na_fields` 和 `cslip_semantics` 元数据，供 JSON 和报告复核。
+
+审计已锁定以下规则：
+
+- 36 条路径的正式 LCV、WtT 模式、排放因子、Cslip 适用性和 RWD 与《燃料因子库规范》逐项一致；`ELECTRICITY_OPS` 仍不开放；
+- B 级默认 WtT 直接读取快照，BIO/RFNBO 显式输入时分别按 `E-CfCO2/LCV` 和 `E-eu` 计算；
+- RFNBO 全部回退映射、`E<=28.2`、假设/核验状态和 RWD=2 已测试；
+- LNG、生物 LNG、e-LNG 的设备级 Cslip 保留固定设备来源；LPG/NH3 默认零值为 `SA`，认可输入为 `VERIFIED`，缺失认可值时阻断；
+- `NOT_DEMONSTRATED` 或 `INELIGIBLE` 不得声明非零 `eligibleBiomassFraction`；
+- 自定义燃料逐字段证据对象、预算/供应量约束、报告和前端仍不在本阶段。
+
 ## Acceptance
 
 - 36 条开放路径均可枚举；`ELECTRICITY_OPS` 不可作为航行燃料查询。
 - 关键 A/B 路径数值与燃料因子规范一致。
 - RFNBO 回退、估算、核验和缺失输入阻断均有测试。
 - Cslip 设备差异和 RC Cslip 规则均有测试。
+- 36 条路径正式字段、默认快照、资格分支和 `NA/SA/VERIFIED` 语义均有逐字段审计测试。
 - 现有能源、EU ETS、FuelEU、航次和 JSON 测试保持通过。
