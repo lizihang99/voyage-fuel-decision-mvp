@@ -199,6 +199,7 @@ class VoyageInput:
     candidate_allows_pure_use: bool = False
     candidate_supply_tonnes: Optional[Decimal] = None
     incremental_budget: Optional[Decimal] = None
+    compliance_improvement_value: Optional[Decimal] = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "baseline_mass_tonnes", as_decimal(self.baseline_mass_tonnes))
@@ -207,6 +208,8 @@ class VoyageInput:
             object.__setattr__(self, "candidate_supply_tonnes", as_decimal(self.candidate_supply_tonnes))
         if self.incremental_budget is not None:
             object.__setattr__(self, "incremental_budget", as_decimal(self.incremental_budget))
+        if self.compliance_improvement_value is not None:
+            object.__setattr__(self, "compliance_improvement_value", as_decimal(self.compliance_improvement_value))
         object.__setattr__(
             self,
             "specified_blend_ratios",
@@ -220,6 +223,8 @@ class VoyageInput:
             raise ValueError("candidate_supply_tonnes must be non-negative")
         if self.incremental_budget is not None and self.incremental_budget < ZERO:
             raise ValueError("incremental_budget must be non-negative")
+        if self.compliance_improvement_value is not None and self.compliance_improvement_value < ZERO:
+            raise ValueError("compliance_improvement_value must be non-negative")
         if any(not ZERO <= ratio <= self.max_blend_ratio for ratio in self.specified_blend_ratios):
             raise ValueError("specified_blend_ratios must be within max_blend_ratio")
         if self.eua_price_per_tco2e is not None:
@@ -240,6 +245,8 @@ class ScenarioResult:
     model_cost: Optional[Decimal]
     execution_status: str
     constraint_status: str = "FEASIBLE"
+    compliance_improvement_tco2e: Optional[Decimal] = None
+    reference_adjusted_cost: Optional[Decimal] = None
 
 
 @dataclass(frozen=True)
@@ -248,6 +255,7 @@ class VoyageResult:
     scope_rates: ScopeRates
     scenarios: tuple[ScenarioResult, ...]
     constraints: Optional["ConstraintResult"] = None
+    economics: Optional["EconomicsResult"] = None
 
 
 @dataclass(frozen=True)
@@ -266,4 +274,30 @@ class ConstraintResult:
     x_target_min_cost: Optional[Decimal]
     x_max_improvement: Optional[Decimal]
     x_cost_min: Optional[Decimal]
+    warning_codes: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class EuaBreakEvenResult:
+    value: Optional[Decimal]
+    status: str
+
+
+@dataclass(frozen=True)
+class ValueSwitchPoint:
+    from_ratio: Decimal
+    to_ratio: Decimal
+    value_star: Decimal
+
+
+@dataclass(frozen=True)
+class EconomicsResult:
+    comparison_status: str
+    pc_break_even: Optional[Decimal]
+    pe_break_even: Optional[Decimal]
+    pe_break_even_status: str
+    comparison_value: Optional[Decimal]
+    cost_min_ratio: Optional[Decimal]
+    cost_sorted_ratios: tuple[Decimal, ...]
+    switch_points: tuple[ValueSwitchPoint, ...]
     warning_codes: tuple[str, ...] = ()

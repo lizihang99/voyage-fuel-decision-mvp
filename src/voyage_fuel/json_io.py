@@ -55,6 +55,10 @@ def _request(payload: Mapping[str, Any]) -> VoyageInput:
             None if payload.get("incrementalBudget") is None
             else Decimal(str(payload["incrementalBudget"]))
         ),
+        compliance_improvement_value=(
+            None if payload.get("complianceImprovementValue") is None
+            else Decimal(str(payload["complianceImprovementValue"]))
+        ),
     )
 
 

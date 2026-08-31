@@ -19,12 +19,15 @@ class JsonIoTests(unittest.TestCase):
             "euaPricePerTCO2e": "80",
             "candidateSupplyTonnes": "10",
             "incrementalBudget": "5000",
+            "complianceImprovementValue": "268.31901315986921862",
             "maxBlendRatio": "0.30",
             "candidateAllowsPureUse": True,
         }
         result = json.loads(calculate_voyage_json(json.dumps(payload)))
         self.assertEqual(result["constraints"]["target_status"], "TARGET_REACHABLE")
         self.assertEqual(result["constraints"]["x_supply"], "0.098682690085509590940605500346660503813265541945921")
+        self.assertEqual(result["economics"]["comparison_value"], "268.31901315986921862")
+        self.assertLess(abs(Decimal(result["economics"]["pc_break_even"]) - Decimal("630.76546135831381733")), Decimal("1e-18"))
         b100 = next(row for row in result["scenarios"] if row["ratio"] == "1")
         self.assertEqual(b100["constraint_status"], "CONSTRAINT_INFEASIBLE")
 

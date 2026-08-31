@@ -4,6 +4,7 @@ from decimal import Decimal
 
 from .emissions import calculate_eu_ets, calculate_fueleu
 from .constraints import calculate_constraints
+from .economics import build_economics
 from .energy import baseline_energy_mj, blend_masses_tonnes, fuel_cost, sum_known_costs
 from .models import FuelAmount, VoyageInput, VoyageResult, ScenarioResult
 from .ports import calculate_scope_rates
@@ -76,9 +77,19 @@ def calculate_voyage(request: VoyageInput) -> VoyageResult:
                 constraint_status=("FEASIBLE" if ratio <= constraints.x_cap else "CONSTRAINT_INFEASIBLE"),
             )
         )
+    economics, enriched_scenarios = build_economics(
+        report_year=request.report_year,
+        baseline=request.baseline_component,
+        candidate=request.candidate_component,
+        scope=scope_rates,
+        eua_price_per_tco2e=request.eua_price_per_tco2e,
+        scenarios=tuple(scenarios),
+        comparison_value=request.compliance_improvement_value,
+    )
     return VoyageResult(
         baseline_energy_mj=baseline_energy,
         scope_rates=scope_rates,
-        scenarios=tuple(scenarios),
+        scenarios=enriched_scenarios,
         constraints=constraints,
+        economics=economics,
     )

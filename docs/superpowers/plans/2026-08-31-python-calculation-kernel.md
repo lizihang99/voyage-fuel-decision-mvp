@@ -261,3 +261,15 @@ git add README.md docs/superpowers/specs/2026-08-07-voyage-fuel-decision-calcula
 git commit -m "docs: record Python kernel baseline"
 git push -u origin python-calculation-kernel
 ```
+
+## 后续增量
+
+- [x] 预算、供应量、最大混兑比例约束与连续比例求解；
+- [x] 固定报告方案集合；
+- [x] 候选燃料临界吨价与 EUA 临界价格；
+- [x] FuelEU 合规改善参考价值、参考成本和真实下包络切换点；
+- [ ] 自定义燃料逐字段证据对象；
+- [ ] CSV/PDF 报告导出；
+- [ ] 前端界面。
+
+上述经济比较仍基于航次级 FuelEU 估算。它不代表正式年度合规结算、真实年度罚款或独立物理生命周期 WtW 减排。
