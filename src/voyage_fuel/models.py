@@ -82,3 +82,34 @@ class FuelAmount:
         object.__setattr__(self, "mass_tonnes", as_decimal(self.mass_tonnes))
         if self.mass_tonnes < ZERO:
             raise ValueError("mass_tonnes must be non-negative")
+
+
+@dataclass(frozen=True)
+class ScopeRates:
+    eu_ets_scope_rate: Decimal
+    eu_ets_surrender_rate: Decimal
+    eu_ets_effective_rate: Decimal
+    fuel_eu_scope_rate: Optional[Decimal]
+    fuel_eu_applicable: bool
+
+    def __post_init__(self) -> None:
+        for field_name in (
+            "eu_ets_scope_rate",
+            "eu_ets_surrender_rate",
+            "eu_ets_effective_rate",
+        ):
+            object.__setattr__(self, field_name, as_decimal(getattr(self, field_name)))
+        if self.fuel_eu_scope_rate is not None:
+            object.__setattr__(self, "fuel_eu_scope_rate", as_decimal(self.fuel_eu_scope_rate))
+
+
+@dataclass(frozen=True)
+class EtsResult:
+    raw_co2_t: Decimal
+    raw_ch4_t: Decimal
+    raw_n2o_t: Decimal
+    mrv_raw_co2e_t: Decimal
+    included_gases: tuple[str, ...]
+    ets_co2e_pre_scope_t: Decimal
+    euas_required: Decimal
+    eua_cost: Optional[Decimal]
