@@ -87,7 +87,7 @@
 
   Document that 36 paths are machine-checked, while custom evidence objects, constraints, reports and UI remain outside this audit.
 
-- [ ] **Step 3: Commit the verified audit**
+- [x] **Step 3: Commit the verified audit**
 
   ```powershell
   git add tests src docs README.md
