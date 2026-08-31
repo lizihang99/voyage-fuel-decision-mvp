@@ -57,6 +57,33 @@ class FuelFactor:
 
 
 @dataclass(frozen=True)
+class FuelDefinition:
+    """Catalog metadata used to resolve a path into a calculable factor."""
+
+    path_id: str
+    equipment_id: str
+    factor_level: str
+    wt_t_mode: str
+    lcv_mj_per_g: Optional[Decimal]
+    wt_t_g_per_mj: Optional[Decimal]
+    cf_co2_g_per_g: Optional[Decimal]
+    cf_ch4_g_per_g: Optional[Decimal]
+    cf_n2o_g_per_g: Optional[Decimal]
+    cslip_percent: Optional[Decimal]
+    rwd: Decimal
+    fallback_path_id: Optional[str] = None
+    category: str = ""
+    cslip_required: bool = False
+    methane_slip_applicable: bool = False
+
+    def __post_init__(self) -> None:
+        for name in ("lcv_mj_per_g", "wt_t_g_per_mj", "cf_co2_g_per_g", "cf_ch4_g_per_g", "cf_n2o_g_per_g", "cslip_percent", "rwd"):
+            value = getattr(self, name)
+            if value is not None:
+                object.__setattr__(self, name, as_decimal(value))
+
+
+@dataclass(frozen=True)
 class FuelComponent:
     factor: FuelFactor
     price_per_tonne: Optional[Decimal]
