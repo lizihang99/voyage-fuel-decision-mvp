@@ -96,7 +96,7 @@ git diff --check
 | M07 | 预算、供应、最大混兑和目标比例 | `VERIFIED` | `constraints.py`；`test_constraints.py` | 跨候选统一结论归M09 | 向量G和边界状态测试持续通过 |
 | M08 | 单候选经济临界点和下包络切换 | `VERIFIED` | `economics.py`；`test_economics.py` | 跨候选统一排序归M09 | 临界价、参考价值和下包络测试持续通过 |
 | M09 | 案例级多候选编排和统一比较 | `VERIFIED` | `case_calculator.py`；`case_comparison.py`；`test_case_calculator.py`；`test_case_comparison.py` | 追溯和展示归M10、M13-M15 | 多候选、共享B0、可行可比全局排序和局部阻断回归测试通过 |
-| M10 | 结构化状态、错误、追溯和版本 | `IN_PROGRESS` | 有部分字符串状态、自定义证据和CSV证据ID | 缺字段级错误、每方案计算状态、港口理由、回退轨迹和版本集合 | 结果逐项满足计算规格第13、14、17节 |
+| M10 | 结构化状态、错误、追溯和版本 | `VERIFIED` | `provenance.py`；`test_provenance.py`；任务5聚焦审查通过 | 报告和网页呈现归M13-M15 | 结果逐项满足计算规格第13、14、17节 |
 | M11 | 相对B0变化和条件式建议 | `VERIFIED` | `case_comparison.py`；`test_case_comparison.py` | 页面和报告呈现归M13-M15 | 原始Decimal差值、零基线、条件式结论和临界点关联测试通过 |
 | M12 | JSON/API输入输出契约 | `IN_PROGRESS` | `calculate_voyage_json()`支持一个候选 | 缺币种、Port of Call确认、候选数组和结构化错误响应 | 案例级JSON契约和API集成测试通过 |
 | M13 | CSV完整报告 | `IN_PROGRESS` | 已有固定列、原始Decimal和摘要记录 | 缺案例、港口、单位、版本、完整来源、状态和相对变化 | 满足计算规格第14节并与统一结果逐字段一致 |
@@ -565,7 +565,7 @@ Update M09 and M11 to `VERIFIED` only after the complete Python suite also passe
 - Consumes: formal port-table rows, requested and resolved factor paths, calculation-spec constants.
 - Produces: `PortDecision`, `FactorResolutionTrace`, `ResultProvenance` carried by every `DecisionCaseResult`.
 
-- [ ] **Step 1: Write failing provenance tests**
+- [x] **Step 1: Write failing provenance tests**
 
 Assert a Shanghai-Rotterdam 2026 case returns:
 
@@ -591,7 +591,7 @@ factorStatus = FIXED
 
 Also assert every case result carries non-empty calculation-spec, fuel-factor and port-rule versions plus a deduplicated source-ID collection.
 
-- [ ] **Step 2: Run provenance tests and confirm failure**
+- [x] **Step 2: Run provenance tests and confirm failure**
 
 ```powershell
 $env:PYTHONPATH='src'
@@ -600,7 +600,7 @@ $env:PYTHONPATH='src'
 
 Expected: FAIL because the current `ScopeRates` drops port identities/reasons and factors drop resolution trace metadata.
 
-- [ ] **Step 3: Preserve provenance at resolution boundaries**
+- [x] **Step 3: Preserve provenance at resolution boundaries**
 
 Add these constants and immutable contracts in `provenance.py`:
 
@@ -614,7 +614,7 @@ Do not infer provenance later from numeric results. `ports.py` must retain both 
 
 Aggregate source IDs from port rows, built-in factor field sources and custom `sourceEvidence`. `VERIFIED` continues to mean factor evidence completeness, not formal annual FuelEU verification or execution readiness.
 
-- [ ] **Step 4: Run provenance, port and factor audit tests**
+- [x] **Step 4: Run provenance, port and factor audit tests**
 
 ```powershell
 $env:PYTHONPATH='src'
@@ -624,7 +624,7 @@ node --test port-identity-mapping.test.mjs port-scope-rates.test.mjs
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit provenance support**
+- [x] **Step 5: Commit provenance support**
 
 ```powershell
 git add src/voyage_fuel/provenance.py src/voyage_fuel/models.py src/voyage_fuel/ports.py src/voyage_fuel/factors.py src/voyage_fuel/case_calculator.py tests/test_provenance.py docs/superpowers/plans/2026-09-01-mvp-delivery-plan.md
@@ -1146,6 +1146,7 @@ Use `superpowers:requesting-code-review` for a final review, address verified fi
 | 2026-09-01 | `3ac7ebf` | Python unittest 59；Node port tests 29；compileall；`git diff --check` | Current single-candidate kernel baseline verified |
 | 2026-09-01 | `1180092` | Task 1 focused contracts/models 10；Python unittest 67；compileall；`git diff --check` | Case contracts and report-year boundary verified |
 | 2026-09-01 | `a168b6b` | Task 2 focused JSON/factor tests 24；Python unittest 77；Node port tests 29；compileall；`git diff --check` | Structured case parsing, exact field issues and legacy JSON compatibility verified |
+| 2026-09-01 | `d019970` | Task 5 fix-focused provenance/port/factor tests 18；compileall；`git diff --check`；independent fix re-review | Factor/port provenance, partial unavailable states and OMR rule trace verified |
 | 2026-09-01 | `86e86a0` | Task 3 focused orchestration/kernel tests 16 | Multi-candidate B0 orchestration, local blocking and price-status isolation verified |
 | 2026-09-01 | `52abd74` | Task 4 focused calculation/comparison unittest 25；Python unittest 88；`git diff --check` | Cross-candidate Decimal projections, eligible rankings and conditional result contracts verified |
 
