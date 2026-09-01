@@ -125,7 +125,7 @@ class CaseComparisonTests(unittest.TestCase):
 
     def test_missing_prices_leave_calculable_scenarios_and_unavailable_cost_recommendations(self):
         result = calculate_decision_case(_case(
-            CandidateInput("uco", _component("UCO_FAME", None)),
+            CandidateInput("uco", _component("UCO_FAME", None), allows_pure_use=True),
             eua=None,
         ))
 
@@ -137,6 +137,58 @@ class CaseComparisonTests(unittest.TestCase):
             recommendation = next(item for item in result.recommendations if item.recommendation_id == recommendation_id)
             self.assertEqual(recommendation.status, "UNAVAILABLE")
             self.assertIn("PRICE_REQUIRED_FOR_COMPARISON", recommendation.assumptions)
+
+    def test_unreachable_target_keeps_feasible_maximum_compliance_improvement_conditional(self):
+        result = calculate_decision_case(_case(
+            CandidateInput(
+                "unreachable", _component("UCO_FAME", "1000"),
+                max_blend_ratio=Decimal("0.01"), supply_tonnes=Decimal("1"),
+            ),
+        ))
+
+        recommendation = next(
+            item for item in result.recommendations
+            if item.recommendation_id == "MAX_COMPLIANCE_IMPROVEMENT:unreachable"
+        )
+        self.assertEqual(recommendation.status, "CONDITIONAL")
+        self.assertEqual(recommendation.reason, "CONSTRAINT_RESULT")
+        self.assertIsNotNone(recommendation.scenario_id)
+        self.assertIn("TARGET_UNREACHABLE_UNDER_CONSTRAINTS", recommendation.assumptions)
+        self.assertIn("EXECUTION_CONDITIONS_PENDING", recommendation.assumptions)
+
+    def test_missing_prices_keep_feasible_maximum_compliance_improvement_conditional(self):
+        result = calculate_decision_case(_case(
+            CandidateInput("uco", _component("UCO_FAME", None), allows_pure_use=True),
+            eua=None,
+        ))
+
+        recommendation = next(
+            item for item in result.recommendations
+            if item.recommendation_id == "MAX_COMPLIANCE_IMPROVEMENT:uco"
+        )
+        self.assertEqual(recommendation.status, "CONDITIONAL")
+        self.assertEqual(recommendation.reason, "CONSTRAINT_RESULT")
+        self.assertIsNotNone(recommendation.scenario_id)
+        self.assertIn("CALCULABLE", recommendation.assumptions)
+        self.assertNotIn("PRICE_REQUIRED_FOR_COMPARISON", recommendation.assumptions)
+
+    def test_price_missing_unreachable_target_min_cost_keeps_both_limitations(self):
+        result = calculate_decision_case(_case(
+            CandidateInput(
+                "unreachable", _component("UCO_FAME", None),
+                max_blend_ratio=Decimal("0.01"), supply_tonnes=Decimal("1"),
+            ),
+            eua=None,
+        ))
+
+        recommendation = next(
+            item for item in result.recommendations
+            if item.recommendation_id == "TARGET_MIN_COST:unreachable"
+        )
+        self.assertEqual(recommendation.status, "UNAVAILABLE")
+        self.assertEqual(recommendation.reason, "TARGET_UNREACHABLE_UNDER_CONSTRAINTS")
+        self.assertIn("TARGET_UNREACHABLE_UNDER_CONSTRAINTS", recommendation.assumptions)
+        self.assertIn("PRICE_REQUIRED_FOR_COMPARISON", recommendation.assumptions)
 
 
 if __name__ == "__main__":

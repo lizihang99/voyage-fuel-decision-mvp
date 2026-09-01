@@ -153,7 +153,10 @@ def _candidate_recommendation(
     if candidate.voyage_result is None:
         return _unavailable(recommendation_id, condition, "CANDIDATE_BLOCKED", "CANDIDATE_BLOCKED")
     if target_status != "TARGET_REACHABLE":
-        return _unavailable(recommendation_id, condition, target_status, target_status)
+        assumptions = [target_status, *_candidate_assumptions(candidate)]
+        if candidate.calculation_status != "COMPARABLE":
+            assumptions.insert(1, "PRICE_REQUIRED_FOR_COMPARISON")
+        return _unavailable(recommendation_id, condition, target_status, *assumptions)
     if candidate.calculation_status != "COMPARABLE":
         return _unavailable(
             recommendation_id, condition, "PRICE_REQUIRED_FOR_COMPARISON",
@@ -168,6 +171,30 @@ def _candidate_recommendation(
         scenario_id=scenario.scenario_id,
         reason="CONSTRAINT_RESULT",
         assumptions=_candidate_assumptions(candidate),
+        status="CONDITIONAL",
+    )
+
+
+def _maximum_compliance_improvement_recommendation(
+    candidate: CandidateResult,
+    scenarios: tuple[CaseScenario, ...],
+    ratio: Decimal | None,
+    target_status: str,
+) -> ConditionalRecommendation:
+    recommendation_id = f"MAX_COMPLIANCE_IMPROVEMENT:{candidate.candidate_id}"
+    condition = "FUELEU_MAX_COMPLIANCE_IMPROVEMENT"
+    if candidate.voyage_result is None:
+        return _unavailable(recommendation_id, condition, "CANDIDATE_BLOCKED", "CANDIDATE_BLOCKED")
+    scenario = _scenario_for_ratio(scenarios, candidate.candidate_id, ratio)
+    assumptions = (*_candidate_assumptions(candidate), target_status)
+    if scenario is None or scenario.result.constraint_status != "FEASIBLE":
+        return _unavailable(recommendation_id, condition, "SCENARIO_UNAVAILABLE", *assumptions)
+    return ConditionalRecommendation(
+        recommendation_id=recommendation_id,
+        condition=condition,
+        scenario_id=scenario.scenario_id,
+        reason="CONSTRAINT_RESULT",
+        assumptions=(*assumptions, scenario.result.constraint_status),
         status="CONDITIONAL",
     )
 
@@ -212,8 +239,7 @@ def build_recommendations(
             f"TARGET_MIN_COST:{candidate.candidate_id}", "FUELEU_TARGET_MINIMUM_COST", candidate,
             scenarios, constraints.x_target_min_cost, constraints.target_status,
         ))
-        recommendations.append(_candidate_recommendation(
-            f"MAX_COMPLIANCE_IMPROVEMENT:{candidate.candidate_id}", "FUELEU_MAX_COMPLIANCE_IMPROVEMENT",
+        recommendations.append(_maximum_compliance_improvement_recommendation(
             candidate, scenarios, constraints.x_max_improvement, constraints.target_status,
         ))
 
