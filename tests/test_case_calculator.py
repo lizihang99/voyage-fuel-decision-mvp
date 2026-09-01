@@ -63,9 +63,9 @@ class CaseCalculatorTests(unittest.TestCase):
             if item.voyage_result is not None
             for scenario in item.voyage_result.scenarios
         ))
-        self.assertEqual(sum(scenario.ratio == Decimal("0") for scenario in result.scenarios), 0)
-        self.assertEqual(result.scenarios, ())
-        self.assertEqual(result.recommendations, ())
+        self.assertEqual(sum(scenario.scenario_id == "B0" for scenario in result.scenarios), 1)
+        self.assertGreater(len(result.scenarios), 1)
+        self.assertTrue(result.recommendations)
         self.assertEqual(result.candidate_results[0].voyage_result.economics.comparison_status, "COMPARABLE")
         self.assertEqual(result.candidate_results[1].voyage_result.economics.comparison_status, "COMPARABLE")
 

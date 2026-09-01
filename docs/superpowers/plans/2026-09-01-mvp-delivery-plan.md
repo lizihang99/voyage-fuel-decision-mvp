@@ -95,9 +95,9 @@ git diff --check
 | M06 | FuelEU航次级GHGI、余额和罚款等值 | `IMPLEMENTED` | `emissions.py`；`test_fueleu.py`；已覆盖2024、2025和向量D | 缺2026、2029、2030目标边界测试 | 适用性、年度目标、范围、余额和罚款向量通过 |
 | M07 | 预算、供应、最大混兑和目标比例 | `VERIFIED` | `constraints.py`；`test_constraints.py` | 跨候选统一结论归M09 | 向量G和边界状态测试持续通过 |
 | M08 | 单候选经济临界点和下包络切换 | `VERIFIED` | `economics.py`；`test_economics.py` | 跨候选统一排序归M09 | 临界价、参考价值和下包络测试持续通过 |
-| M09 | 案例级多候选编排和统一比较 | `IMPLEMENTED` | `case_calculator.py`；`test_case_calculator.py`；候选数组、稳定ID和案例输入契约 | 跨候选排序归 Task 4 | 一个案例可计算多个候选并保留B0 |
+| M09 | 案例级多候选编排和统一比较 | `VERIFIED` | `case_calculator.py`；`case_comparison.py`；`test_case_calculator.py`；`test_case_comparison.py` | 追溯和展示归M10、M13-M15 | 多候选、共享B0、可行可比全局排序和局部阻断回归测试通过 |
 | M10 | 结构化状态、错误、追溯和版本 | `IN_PROGRESS` | 有部分字符串状态、自定义证据和CSV证据ID | 缺字段级错误、每方案计算状态、港口理由、回退轨迹和版本集合 | 结果逐项满足计算规格第13、14、17节 |
-| M11 | 相对B0变化和条件式建议 | `IN_PROGRESS` | 有合规改善、比例边界和底层临界点 | 缺统一绝对/百分比变化和“条件-方案-原因-假设”对象 | 页面无需重算即可直接展示所有建议 |
+| M11 | 相对B0变化和条件式建议 | `VERIFIED` | `case_comparison.py`；`test_case_comparison.py` | 页面和报告呈现归M13-M15 | 原始Decimal差值、零基线、条件式结论和临界点关联测试通过 |
 | M12 | JSON/API输入输出契约 | `IN_PROGRESS` | `calculate_voyage_json()`支持一个候选 | 缺币种、Port of Call确认、候选数组和结构化错误响应 | 案例级JSON契约和API集成测试通过 |
 | M13 | CSV完整报告 | `IN_PROGRESS` | 已有固定列、原始Decimal和摘要记录 | 缺案例、港口、单位、版本、完整来源、状态和相对变化 | 满足计算规格第14节并与统一结果逐字段一致 |
 | M14 | PDF完整报告和共享显示配置 | `IN_PROGRESS` | 已有可生成、可提取文本的摘要PDF | 缺完整指标、依据、条件式建议和可调显示精度 | PDF满足MVP设计第14节并通过渲染检查 |
@@ -488,7 +488,7 @@ git commit -m "feat: calculate multi-candidate cases"
 - Consumes: case B0, each valid candidate's fixed report scenarios, constraints and economics results.
 - Produces: stable `CaseScenario` records, `MetricDelta` values, global rankings and `ConditionalRecommendation` objects.
 
-- [ ] **Step 1: Write failing cross-candidate comparison tests**
+- [x] **Step 1: Write failing cross-candidate comparison tests**
 
 Build a case with two candidates and assert:
 
@@ -500,7 +500,7 @@ Build a case with two candidates and assert:
 - candidates that cannot reach the GHGI target produce an explicit target status and do not silently disappear;
 - switch points retain candidate and scenario IDs on both sides of each transition.
 
-- [ ] **Step 2: Run comparison tests and confirm failure**
+- [x] **Step 2: Run comparison tests and confirm failure**
 
 ```powershell
 $env:PYTHONPATH='src'
@@ -509,7 +509,7 @@ $env:PYTHONPATH='src'
 
 Expected: FAIL because case-level scenario and recommendation builders do not exist.
 
-- [ ] **Step 3: Implement comparison as a pure projection**
+- [x] **Step 3: Implement comparison as a pure projection**
 
 `case_comparison.py` must not recalculate energy, emissions or compliance. It consumes `VoyageResult` objects and produces:
 
@@ -529,7 +529,7 @@ def build_recommendations(
 
 FuelEU compliance-improvement value may affect only `reference_adjusted_cost` sensitivity recommendations. It must never change `model_cost` or `CURRENT_MODEL_COST_MIN`. Recommendations with missing economic inputs use `status="UNAVAILABLE"` and include `PRICE_REQUIRED_FOR_COMPARISON` in assumptions.
 
-- [ ] **Step 4: Run all calculation and comparison tests**
+- [x] **Step 4: Run all calculation and comparison tests**
 
 ```powershell
 $env:PYTHONPATH='src'

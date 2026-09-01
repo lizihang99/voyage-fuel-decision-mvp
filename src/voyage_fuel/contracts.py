@@ -135,6 +135,11 @@ class ConditionalRecommendation:
     reason: str
     assumptions: tuple[str, ...]
     status: str
+    from_scenario_id: str | None = None
+    to_scenario_id: str | None = None
+    from_candidate_id: str | None = None
+    to_candidate_id: str | None = None
+    value_star: Decimal | None = None
 
 
 @dataclass(frozen=True)
@@ -144,6 +149,7 @@ class CaseScenario:
     calculation_status: str
     result: ScenarioResult
     deltas: Mapping[str, MetricDelta]
+    current_model_cost_rank: int | None = None
 
 
 @dataclass(frozen=True)

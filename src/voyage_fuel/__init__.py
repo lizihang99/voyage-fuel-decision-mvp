@@ -44,6 +44,7 @@ from .case_calculator import (
     calculate_decision_case,
     calculate_parsed_decision_case,
 )
+from .case_comparison import build_case_scenarios, build_recommendations, metric_delta
 from .constraints import calculate_constraints, calculate_minimum_target_ratio
 from .economics import (
     build_economics,
@@ -85,6 +86,9 @@ __all__ = [
     "calculate_baseline_scenario",
     "calculate_decision_case",
     "calculate_parsed_decision_case",
+    "build_case_scenarios",
+    "build_recommendations",
+    "metric_delta",
     "parse_component",
     "parse_decision_case",
     "calculate_constraints",

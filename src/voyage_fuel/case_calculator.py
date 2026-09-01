@@ -16,6 +16,7 @@ from .contracts import (
 )
 from .issues import issue_from_exception
 from .models import ScenarioResult, VoyageInput
+from .case_comparison import build_case_scenarios, build_recommendations
 
 
 _DOMAIN_PREFIXES = (
@@ -251,15 +252,18 @@ def calculate_decision_case(
             results = [item for item in ordered if item is not None]
         else:
             results.extend(projected_invalid)
+    candidate_results = tuple(results)
+    scenarios = build_case_scenarios(baseline, candidate_results)
+    recommendations = build_recommendations(scenarios, candidate_results)
     return DecisionCaseResult(
         report_year=request.report_year,
         departure_port=request.departure_port,
         arrival_port=request.arrival_port,
         currency=request.currency,
         baseline_scenario=baseline,
-        candidate_results=tuple(results),
-        scenarios=(),
-        recommendations=(),
+        candidate_results=candidate_results,
+        scenarios=scenarios,
+        recommendations=recommendations,
         issues=(*case_issue_list, *candidate_issues),
     )
 
