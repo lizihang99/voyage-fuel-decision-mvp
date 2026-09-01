@@ -12,12 +12,22 @@ class DisplayPrecisionTests(BrowserAppMixin, unittest.TestCase):
         try:
             self.fill_case(page, include_rfnbo=False)
             raw = self.calculate(page)
+            page.get_by_role("tab", name="Scenarios").click()
+            rows_before = self.scenario_rows(page)
+            self.assertEqual(rows_before[0][0], "B0")
+            self.assert_cost_ranking(page, raw)
             before = page.locator("#scenario-comparison-table").inner_text()
             page.locator("#precision-price").fill("0")
             page.locator("#precision-ratio").fill("0")
             page.wait_for_timeout(100)
             after = page.locator("#scenario-comparison-table").inner_text()
+            rows_after = self.scenario_rows(page)
             self.assertNotEqual(before, after)
+            self.assertEqual(
+                [(row[0], row[7]) for row in rows_before],
+                [(row[0], row[7]) for row in rows_after],
+            )
+            self.assert_cost_ranking(page, raw)
             self.assertEqual([row["scenario_id"] for row in raw["scenarios"][:3]], ["B0", "uco-quote-1@0.2", "uco-quote-1@0.3"])
             self.assertEqual(raw["baseline_scenario"]["physical_energy_mj"], "4270000.0000")
         finally:
