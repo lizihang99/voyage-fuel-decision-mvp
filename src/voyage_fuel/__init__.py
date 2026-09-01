@@ -21,6 +21,17 @@ from .models import (
     VoyageResult,
     ValueSwitchPoint,
 )
+from .contracts import (
+    CandidateInput,
+    CandidateResult,
+    CaseScenario,
+    ConditionalRecommendation,
+    DecisionCaseInput,
+    DecisionCaseResult,
+    Issue,
+    MetricDelta,
+    ParsedDecisionCase,
+)
 from .json_io import calculate_voyage_json
 from .constraints import calculate_constraints, calculate_minimum_target_ratio
 from .economics import (
@@ -48,6 +59,15 @@ __all__ = [
     "VoyageInput",
     "VoyageResult",
     "ValueSwitchPoint",
+    "CandidateInput",
+    "CandidateResult",
+    "CaseScenario",
+    "ConditionalRecommendation",
+    "DecisionCaseInput",
+    "DecisionCaseResult",
+    "Issue",
+    "MetricDelta",
+    "ParsedDecisionCase",
     "calculate_voyage_json",
     "calculate_constraints",
     "calculate_minimum_target_ratio",

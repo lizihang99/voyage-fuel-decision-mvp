@@ -67,7 +67,7 @@
 验证结果：
 
 ```text
-Python unittest: 59 passed
+Python unittest: 64 passed
 Node port tests: 29 passed
 Python compileall: passed
 git diff --check: passed
@@ -95,7 +95,7 @@ git diff --check
 | M06 | FuelEU航次级GHGI、余额和罚款等值 | `IMPLEMENTED` | `emissions.py`；`test_fueleu.py`；已覆盖2024、2025和向量D | 缺2026、2029、2030目标边界测试 | 适用性、年度目标、范围、余额和罚款向量通过 |
 | M07 | 预算、供应、最大混兑和目标比例 | `VERIFIED` | `constraints.py`；`test_constraints.py` | 跨候选统一结论归M09 | 向量G和边界状态测试持续通过 |
 | M08 | 单候选经济临界点和下包络切换 | `VERIFIED` | `economics.py`；`test_economics.py` | 跨候选统一排序归M09 | 临界价、参考价值和下包络测试持续通过 |
-| M09 | 案例级多候选编排和统一比较 | `NOT_STARTED` | 当前模型仅有一个 `candidate_component` | 候选数组、局部阻断、跨候选排序和稳定ID | 一个案例可计算多个候选并保留B0 |
+| M09 | 案例级多候选编排和统一比较 | `IN_PROGRESS` | `contracts.py`；`test_contracts.py`；已具备候选数组、稳定ID和案例输入契约 | 候选编排、局部阻断、跨候选排序 | 一个案例可计算多个候选并保留B0 |
 | M10 | 结构化状态、错误、追溯和版本 | `IN_PROGRESS` | 有部分字符串状态、自定义证据和CSV证据ID | 缺字段级错误、每方案计算状态、港口理由、回退轨迹和版本集合 | 结果逐项满足计算规格第13、14、17节 |
 | M11 | 相对B0变化和条件式建议 | `IN_PROGRESS` | 有合规改善、比例边界和底层临界点 | 缺统一绝对/百分比变化和“条件-方案-原因-假设”对象 | 页面无需重算即可直接展示所有建议 |
 | M12 | JSON/API输入输出契约 | `IN_PROGRESS` | `calculate_voyage_json()`支持一个候选 | 缺币种、Port of Call确认、候选数组和结构化错误响应 | 案例级JSON契约和API集成测试通过 |
