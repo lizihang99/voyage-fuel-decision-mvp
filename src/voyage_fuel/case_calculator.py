@@ -1,0 +1,269 @@
+"""Case-level orchestration over the single-voyage calculation kernel."""
+
+from __future__ import annotations
+
+from decimal import Decimal
+import re
+
+from .calculator import calculate_voyage
+from .contracts import (
+    CandidateInput,
+    CandidateResult,
+    DecisionCaseInput,
+    DecisionCaseResult,
+    Issue,
+    ParsedDecisionCase,
+)
+from .issues import issue_from_exception
+from .models import ScenarioResult, VoyageInput
+
+
+_DOMAIN_PREFIXES = (
+    "Port not found",
+    "Invalid UN/LOCODE",
+    "Supported reporting years",
+    "Unsupported reporting year",
+    "Unsupported FuelEU year",
+    "Cslip required",
+    "FuelEU denominator",
+    "mass_tonnes",
+    "baseline_mass_tonnes",
+    "weighted LCV",
+)
+_DOMAIN_CODES = frozenset({
+    "INVALID_YEAR",
+    "INVALID_PORT_CODE",
+    "PORT_NOT_FOUND",
+    "PORT_OF_CALL_CONFIRMATION_REQUIRED",
+    "INVALID_BASELINE_MASS",
+    "INVALID_LCV",
+    "INVALID_BLEND_RATIO",
+    "MISSING_REQUIRED_FACTOR",
+    "INVALID_CSLIP",
+    "INVALID_RWD",
+    "INVALID_EMISSION_FACTOR",
+    "INVALID_BIOMASS_FRACTION",
+    "RFNBO_E_EXCEEDS_LIMIT",
+    "PRICE_REQUIRED_FOR_COMPARISON",
+    "BUDGET_UNAVAILABLE_WITHOUT_PRICES",
+    "TARGET_NOT_APPLICABLE",
+    "TARGET_NO_SOLUTION",
+    "TARGET_UNREACHABLE_UNDER_CONSTRAINTS",
+    "ZERO_BASELINE",
+    "DUPLICATE_CANDIDATE_ID",
+    "INVALID_CANDIDATE_ID",
+    "INVALID_CANDIDATE_CONSTRAINT",
+    "INVALID_CURRENCY",
+    "INVALID_EUA_PRICE",
+})
+
+
+def _is_domain_error(error: ValueError) -> bool:
+    message = str(error).strip()
+    code = message.partition(":")[0]
+    return code in _DOMAIN_CODES or message.startswith(_DOMAIN_PREFIXES)
+
+
+def _candidate_issue(error: ValueError, candidate: CandidateInput) -> Issue:
+    return issue_from_exception(
+        error,
+        scope="CANDIDATE",
+        field="candidate",
+        candidate_id=candidate.candidate_id,
+        component=candidate.component.factor.path_id,
+    )
+
+
+def _case_issue(error: ValueError, field: str = "case") -> Issue:
+    return issue_from_exception(error, scope="CASE", field=field)
+
+
+def _voyage_input(request: DecisionCaseInput, candidate: CandidateInput) -> VoyageInput:
+    return VoyageInput(
+        report_year=request.report_year,
+        departure_port=request.departure_port,
+        arrival_port=request.arrival_port,
+        baseline_component=request.baseline_component,
+        baseline_mass_tonnes=request.baseline_mass_tonnes,
+        candidate_component=candidate.component,
+        eua_price_per_tco2e=request.eua_price_per_tco2e,
+        specified_blend_ratios=candidate.specified_blend_ratios,
+        max_blend_ratio=candidate.max_blend_ratio,
+        candidate_allows_pure_use=candidate.allows_pure_use,
+        candidate_supply_tonnes=candidate.supply_tonnes,
+        incremental_budget=candidate.incremental_budget,
+        compliance_improvement_value=candidate.compliance_improvement_value,
+    )
+
+
+def calculate_baseline_scenario(request: DecisionCaseInput) -> ScenarioResult:
+    """Calculate the shared B0 row once using the case baseline component."""
+    baseline_candidate = CandidateInput(
+        candidate_id="__baseline__",
+        component=request.baseline_component,
+        max_blend_ratio=Decimal("0"),
+    )
+    voyage = calculate_voyage(_voyage_input(request, baseline_candidate))
+    return voyage.scenarios[0]
+
+
+def _baseline_matches(left: ScenarioResult, right: ScenarioResult) -> bool:
+    return (
+        left.ratio == right.ratio
+        and left.baseline_mass_tonnes == right.baseline_mass_tonnes
+        and left.candidate_mass_tonnes == right.candidate_mass_tonnes
+        and left.physical_energy_mj == right.physical_energy_mj
+        and left.fuel_cost == right.fuel_cost
+        and left.eu_ets == right.eu_ets
+        and left.fuel_eu == right.fuel_eu
+        and left.model_cost == right.model_cost
+    )
+
+
+def _candidate_status(voyage: VoyageInput, result) -> str:
+    if (
+        voyage.baseline_component.price_per_tonne is not None
+        and voyage.candidate_component.price_per_tonne is not None
+        and voyage.eua_price_per_tco2e is not None
+        and result.economics is not None
+        and result.economics.comparison_status == "COMPARABLE"
+    ):
+        return "COMPARABLE"
+    return "CALCULABLE"
+
+
+def _invalid_candidate_results(initial_issues: tuple[Issue, ...]) -> tuple[CandidateResult, ...]:
+    """Project parser-rejected candidates back into stable candidate rows."""
+    indexed: list[tuple[int, Issue]] = []
+    for issue in initial_issues:
+        if issue.scope != "CANDIDATE":
+            continue
+        match = re.search(r"candidates\[(\d+)\]", issue.field)
+        indexed.append((int(match.group(1)) if match else 10**9, issue))
+    return tuple(
+        CandidateResult(
+            candidate_id=issue.candidate_id or f"candidates[{index}]",
+            calculation_status="BLOCKED",
+            voyage_result=None,
+            issues=(issue,),
+        )
+        for index, issue in sorted(indexed, key=lambda item: item[0])
+    )
+
+
+def _issue_index(issue: Issue) -> int | None:
+    match = re.search(r"candidates\[(\d+)\]", issue.field)
+    return int(match.group(1)) if match else None
+
+
+def calculate_decision_case(
+    request: DecisionCaseInput,
+    initial_issues: tuple[Issue, ...] = (),
+) -> DecisionCaseResult:
+    """Calculate all valid candidates while isolating candidate-local failures."""
+    case_issues = tuple(issue for issue in initial_issues if issue.scope == "CASE")
+    candidate_issues = tuple(issue for issue in initial_issues if issue.scope == "CANDIDATE")
+    try:
+        baseline = calculate_baseline_scenario(request)
+    except ValueError as error:
+        if not _is_domain_error(error):
+            raise
+        issue = _case_issue(error, field="departurePort" if "Port" in str(error) else "case")
+        return DecisionCaseResult(
+            report_year=request.report_year,
+            departure_port=request.departure_port,
+            arrival_port=request.arrival_port,
+            currency=request.currency,
+            baseline_scenario=None,
+            candidate_results=(),
+            scenarios=(),
+            recommendations=(),
+            issues=(*case_issues, issue, *candidate_issues),
+        )
+
+    results: list[CandidateResult] = []
+    case_issue_list = list(case_issues)
+    for candidate in request.candidates:
+        voyage_request = _voyage_input(request, candidate)
+        try:
+            voyage_result = calculate_voyage(voyage_request)
+        except ValueError as error:
+            if not _is_domain_error(error):
+                raise
+            results.append(
+                CandidateResult(
+                    candidate_id=candidate.candidate_id,
+                    calculation_status="BLOCKED",
+                    voyage_result=None,
+                    issues=(_candidate_issue(error, candidate),),
+                )
+            )
+            continue
+        if not voyage_result.scenarios or not _baseline_matches(voyage_result.scenarios[0], baseline):
+            case_issue_list.append(
+                Issue(
+                    code="INCONSISTENT_BASELINE",
+                    scope="CASE",
+                    field="baseline",
+                    blocking=True,
+                    message="Candidate B0 does not match the shared case baseline.",
+                    candidate_id=candidate.candidate_id,
+                    component=candidate.component.factor.path_id,
+                )
+            )
+        results.append(
+            CandidateResult(
+                candidate_id=candidate.candidate_id,
+                calculation_status=_candidate_status(voyage_request, voyage_result),
+                voyage_result=voyage_result,
+                issues=(),
+            )
+        )
+
+    projected_invalid = _invalid_candidate_results(candidate_issues)
+    if projected_invalid:
+        invalid_indexes = {
+            index for index in (_issue_index(issue) for issue in candidate_issues)
+            if index is not None
+        }
+        if invalid_indexes:
+            slots = iter(index for index in range(len(results) + len(projected_invalid)) if index not in invalid_indexes)
+            ordered: list[CandidateResult | None] = [None] * (len(results) + len(projected_invalid))
+            for item in projected_invalid:
+                index = _issue_index(item.issues[0])
+                if index is not None and index < len(ordered):
+                    ordered[index] = item
+            for item in results:
+                ordered[next(slots)] = item
+            results = [item for item in ordered if item is not None]
+        else:
+            results.extend(projected_invalid)
+    return DecisionCaseResult(
+        report_year=request.report_year,
+        departure_port=request.departure_port,
+        arrival_port=request.arrival_port,
+        currency=request.currency,
+        baseline_scenario=baseline,
+        candidate_results=tuple(results),
+        scenarios=(),
+        recommendations=(),
+        issues=(*case_issue_list, *candidate_issues),
+    )
+
+
+def calculate_parsed_decision_case(parsed: ParsedDecisionCase) -> DecisionCaseResult:
+    """Calculate a parsed case, retaining parser issues in the result."""
+    if parsed.request is None:
+        case_issue = next((issue for issue in parsed.issues if issue.scope == "CASE"), None)
+        return DecisionCaseResult(
+            report_year=0,
+            departure_port="",
+            arrival_port="",
+            currency="",
+            baseline_scenario=None,
+            candidate_results=_invalid_candidate_results(parsed.issues),
+            scenarios=(),
+            recommendations=(),
+            issues=parsed.issues if case_issue is not None else tuple(parsed.issues),
+        )
+    return calculate_decision_case(parsed.request, initial_issues=parsed.issues)

@@ -39,6 +39,11 @@ from .json_io import (
     parse_decision_case,
 )
 from .issues import issue_from_exception
+from .case_calculator import (
+    calculate_baseline_scenario,
+    calculate_decision_case,
+    calculate_parsed_decision_case,
+)
 from .constraints import calculate_constraints, calculate_minimum_target_ratio
 from .economics import (
     build_economics,
@@ -77,6 +82,9 @@ __all__ = [
     "calculate_voyage_json",
     "decision_case_result_to_dict",
     "issue_from_exception",
+    "calculate_baseline_scenario",
+    "calculate_decision_case",
+    "calculate_parsed_decision_case",
     "parse_component",
     "parse_decision_case",
     "calculate_constraints",

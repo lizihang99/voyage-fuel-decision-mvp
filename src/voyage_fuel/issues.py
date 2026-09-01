@@ -30,6 +30,8 @@ _KNOWN_CODES = frozenset({
     "INVALID_CANDIDATE_CONSTRAINT",
     "INVALID_CURRENCY",
     "INVALID_EUA_PRICE",
+    "PORT_NOT_FOUND",
+    "INCONSISTENT_BASELINE",
 })
 
 
@@ -44,6 +46,10 @@ def issue_from_exception(
     """Map a boundary exception to an explicit issue owned by the kernel."""
     message = str(error).strip() or "Invalid calculation input."
     code = message.partition(":")[0]
+    if message.startswith("Port not found"):
+        code = "PORT_NOT_FOUND"
+    elif message.startswith("Invalid UN/LOCODE"):
+        code = "INVALID_PORT_CODE"
     if code not in _KNOWN_CODES:
         code = "MISSING_REQUIRED_FACTOR"
     return Issue(
