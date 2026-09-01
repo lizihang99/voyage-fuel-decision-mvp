@@ -98,12 +98,12 @@ git diff --check
 | M09 | 案例级多候选编排和统一比较 | `VERIFIED` | `case_calculator.py`；`case_comparison.py`；`test_case_calculator.py`；`test_case_comparison.py` | 追溯和展示归M10、M13-M15 | 多候选、共享B0、可行可比全局排序和局部阻断回归测试通过 |
 | M10 | 结构化状态、错误、追溯和版本 | `VERIFIED` | `provenance.py`；`test_provenance.py`；任务5聚焦审查通过 | 报告和网页呈现归M13-M15 | 结果逐项满足计算规格第13、14、17节 |
 | M11 | 相对B0变化和条件式建议 | `VERIFIED` | `case_comparison.py`；`test_case_comparison.py` | 页面和报告呈现归M13-M15 | 原始Decimal差值、零基线、条件式结论和临界点关联测试通过 |
-| M12 | JSON/API输入输出契约 | `IN_PROGRESS` | `calculate_voyage_json()`支持一个候选 | 缺币种、Port of Call确认、候选数组和结构化错误响应 | 案例级JSON契约和API集成测试通过 |
+| M12 | JSON/API输入输出契约 | `VERIFIED` | `json_io.py`、`web.py`；`test_case_json_io.py`；`test_web_api.py` | 无；后续页面和报告仅消费同一结果契约 | 案例级JSON、结构化422错误和API集成测试通过 |
 | M13 | CSV完整报告 | `IN_PROGRESS` | 已有固定列、原始Decimal和摘要记录 | 缺案例、港口、单位、版本、完整来源、状态和相对变化 | 满足计算规格第14节并与统一结果逐字段一致 |
 | M14 | PDF完整报告和共享显示配置 | `IN_PROGRESS` | 已有可生成、可提取文本的摘要PDF | 缺完整指标、依据、条件式建议和可调显示精度 | PDF满足MVP设计第14节并通过渲染检查 |
 | M15 | 单用户网页工作流 | `NOT_STARTED` | 无网页或HTTP服务 | 完整输入、结果、证据、下载和会话级格式设置 | 用户可在浏览器完成一次完整案例 |
 | M16 | 完整测试矩阵和端到端验收 | `IN_PROGRESS` | 59项Python和29项Node测试通过 | 缺多候选、结构化错误、2029/2030、显示一致性和浏览器E2E | 计算规格第16节和网页主流程全部自动验证 |
-| M17 | 安装、运行和依赖声明 | `NOT_STARTED` | 无 `pyproject.toml` 和正式启动命令 | 缺可重复安装、服务启动和开发说明 | 干净环境按README命令可启动并通过健康检查 |
+| M17 | 安装、运行和依赖声明 | `IMPLEMENTED` | `pyproject.toml`；`voyage-fuel-web` | 仍缺Task 12干净环境安装和启动验收 | 干净环境按README命令可启动并通过健康检查 |
 
 总体判断：核心单候选计算能力已验证；完整网页MVP尚未完成。M09-M17是剩余交付路径，其中M09-M12先固定产品契约，M13-M14补齐导出，M15实现网页，M16-M17完成交付验收。
 
@@ -1149,6 +1149,7 @@ Use `superpowers:requesting-code-review` for a final review, address verified fi
 | 2026-09-01 | `d019970` | Task 5 fix-focused provenance/port/factor tests 18；compileall；`git diff --check`；independent fix re-review | Factor/port provenance, partial unavailable states and OMR rule trace verified |
 | 2026-09-01 | `86e86a0` | Task 3 focused orchestration/kernel tests 16 | Multi-candidate B0 orchestration, local blocking and price-status isolation verified |
 | 2026-09-01 | `52abd74` | Task 4 focused calculation/comparison unittest 25；Python unittest 88；`git diff --check` | Cross-candidate Decimal projections, eligible rankings and conditional result contracts verified |
+| 2026-09-01 | `8c062c3` | `pip install -e ".[dev]"`；API/JSON unittest 21；Python unittest 103；Node port tests 29；compileall；`git diff --check` | Stateless FastAPI calculation boundary, structured issues and Decimal response serialization verified |
 
 Future entries must record evidence after it has been run. Do not add expected pass counts as if they were observed results.
 
