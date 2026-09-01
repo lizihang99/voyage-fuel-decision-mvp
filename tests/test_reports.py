@@ -7,9 +7,26 @@ from voyage_fuel.calculator import calculate_voyage
 from voyage_fuel.factors import get_builtin_factor
 from voyage_fuel.models import FuelComponent, VoyageInput
 from voyage_fuel.reports import voyage_result_to_csv
+from voyage_fuel.reports import voyage_result_to_pdf
 
 
 class ReportTests(unittest.TestCase):
+    def test_pdf_contains_auditable_summary_text(self):
+        result = calculate_voyage(VoyageInput(
+            report_year=2026, departure_port="CNSHG", arrival_port="NLRTM",
+            baseline_component=FuelComponent(get_builtin_factor("MGO"), Decimal("600")),
+            baseline_mass_tonnes=Decimal("100"),
+            candidate_component=FuelComponent(get_builtin_factor("UCO_FAME"), Decimal("1000"), eligible_biomass_fraction=Decimal("1"), qualification_status="ASSUMED_ELIGIBLE"),
+            eua_price_per_tco2e=Decimal("80"), specified_blend_ratios=(Decimal("0.20"),),
+            max_blend_ratio=Decimal("0.30"), candidate_allows_pure_use=True,
+        ))
+        pdf = voyage_result_to_pdf(result)
+        self.assertTrue(pdf.startswith(b"%PDF"))
+        self.assertIn(b"Voyage Fuel Decision", pdf)
+        from pypdf import PdfReader
+        import io as _io
+        text = "\n".join(page.extract_text() or "" for page in PdfReader(_io.BytesIO(pdf)).pages)
+        self.assertIn("CNSHG", text)
     def test_csv_preserves_raw_decimal_values_and_summary_records(self):
         result = calculate_voyage(VoyageInput(
             report_year=2026,
@@ -35,6 +52,9 @@ class ReportTests(unittest.TestCase):
         self.assertTrue(any(row["record_type"] == "scenario" for row in rows))
         constraint = next(row for row in rows if row["record_type"] == "constraints")
         self.assertEqual(constraint["x_cap"], "0.098682690085509590940605500346660503813265541945921")
+        scenario = next(row for row in rows if row["record_type"] == "scenario")
+        self.assertEqual(scenario["baseline_factor_status"], "FIXED")
+        self.assertEqual(scenario["candidate_factor_status"], "ESTIMATED")
         economics = next(row for row in rows if row["record_type"] == "economics")
         self.assertEqual(economics["pc_break_even"], "630.76546135831381733021077283372365339578454332552")
         switch = next(row for row in rows if row["record_type"] == "switch_point")

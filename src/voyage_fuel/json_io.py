@@ -6,6 +6,7 @@ from decimal import Decimal
 from typing import Any, Mapping
 
 from .calculator import calculate_voyage
+from .custom_factors import resolve_custom_factor
 from .factors import resolve_factor
 from .models import FuelComponent, VoyageInput
 
@@ -16,14 +17,23 @@ def _component(payload: Mapping[str, Any]) -> FuelComponent:
     eu_value = payload.get("eu")
     cslip = payload.get("cslip")
     verified_wt = payload.get("verifiedWtT")
+    path_id = str(payload["pathId"])
+    custom = bool(payload.get("custom", False))
+    if not custom:
+        try:
+            factor = resolve_factor(
+                path_id, qualification_status=qualification,
+                e_value=None if e_value is None else Decimal(str(e_value)),
+                eu_value=None if eu_value is None else Decimal(str(eu_value)),
+                cslip_percent=None if cslip is None else Decimal(str(cslip)),
+                verified_wt_t=None if verified_wt is None else Decimal(str(verified_wt)),
+            )
+        except KeyError:
+            custom = True
+    if custom:
+        factor = resolve_custom_factor(payload)
     return FuelComponent(
-        factor=resolve_factor(
-            payload["pathId"], qualification_status=qualification,
-            e_value=None if e_value is None else Decimal(str(e_value)),
-            eu_value=None if eu_value is None else Decimal(str(eu_value)),
-            cslip_percent=None if cslip is None else Decimal(str(cslip)),
-            verified_wt_t=None if verified_wt is None else Decimal(str(verified_wt)),
-        ),
+        factor=factor,
         price_per_tonne=None if payload.get("pricePerTonne") is None else Decimal(str(payload["pricePerTonne"])),
         eligible_biomass_fraction=Decimal(str(payload.get("eligibleBiomassFraction", "0"))),
         qualification_status=str(payload.get("qualificationStatus", "NOT_DEMONSTRATED")),

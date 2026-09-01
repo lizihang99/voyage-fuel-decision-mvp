@@ -30,7 +30,8 @@ from .economics import (
     calculate_value_switch_points,
     compliance_improvement_tco2e,
 )
-from .reports import voyage_result_to_csv, write_voyage_csv
+from .reports import voyage_result_to_csv, write_voyage_csv, voyage_result_to_pdf, write_voyage_pdf
+from .custom_factors import resolve_custom_factor
 from .factors import builtin_path_ids, get_definition, get_builtin_factor, resolve_factor
 
 __all__ = [
@@ -57,6 +58,9 @@ __all__ = [
     "compliance_improvement_tco2e",
     "voyage_result_to_csv",
     "write_voyage_csv",
+    "voyage_result_to_pdf",
+    "write_voyage_pdf",
+    "resolve_custom_factor",
     "builtin_path_ids",
     "get_definition",
     "get_builtin_factor",

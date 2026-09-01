@@ -87,9 +87,16 @@ def calculate_voyage(request: VoyageInput) -> VoyageResult:
         comparison_value=request.compliance_improvement_value,
     )
     return VoyageResult(
+        report_year=request.report_year,
+        departure_port=request.departure_port,
+        arrival_port=request.arrival_port,
         baseline_energy_mj=baseline_energy,
         scope_rates=scope_rates,
         scenarios=enriched_scenarios,
         constraints=constraints,
         economics=economics,
+        baseline_factor=request.baseline_component.factor,
+        candidate_factor=request.candidate_component.factor,
+        baseline_qualification_status=request.baseline_component.qualification_status,
+        candidate_qualification_status=request.candidate_component.qualification_status,
     )

@@ -16,6 +16,17 @@ def as_decimal(value: Decimal | int | str) -> Decimal:
 
 
 @dataclass(frozen=True)
+class EvidenceRecord:
+    """One source assertion attached to an input factor field."""
+
+    field_name: str
+    source_id: str
+    source_type: str
+    unit: str
+    verification_status: str
+
+
+@dataclass(frozen=True)
 class FuelFactor:
     path_id: str
     lcv_mj_per_g: Decimal
@@ -32,6 +43,7 @@ class FuelFactor:
     csf_n2o_g_per_g: Decimal = ZERO
     na_fields: tuple[str, ...] = ()
     cslip_semantics: str = "NA"
+    source_evidence: tuple[EvidenceRecord, ...] = ()
 
     def __post_init__(self) -> None:
         for field_name in (
@@ -57,6 +69,7 @@ class FuelFactor:
         if self.cslip_percent is not None and not ZERO <= self.cslip_percent <= HUNDRED:
             raise ValueError("cslip_percent must be between 0 and 100")
         object.__setattr__(self, "na_fields", tuple(self.na_fields))
+        object.__setattr__(self, "source_evidence", tuple(self.source_evidence))
 
 
 @dataclass(frozen=True)
@@ -251,11 +264,18 @@ class ScenarioResult:
 
 @dataclass(frozen=True)
 class VoyageResult:
+    report_year: int
+    departure_port: str
+    arrival_port: str
     baseline_energy_mj: Decimal
     scope_rates: ScopeRates
     scenarios: tuple[ScenarioResult, ...]
     constraints: Optional["ConstraintResult"] = None
     economics: Optional["EconomicsResult"] = None
+    baseline_factor: Optional[FuelFactor] = None
+    candidate_factor: Optional[FuelFactor] = None
+    baseline_qualification_status: Optional[str] = None
+    candidate_qualification_status: Optional[str] = None
 
 
 @dataclass(frozen=True)

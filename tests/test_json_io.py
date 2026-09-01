@@ -6,6 +6,23 @@ from voyage_fuel.json_io import calculate_voyage_json
 
 
 class JsonIoTests(unittest.TestCase):
+    def test_json_accepts_custom_factor_only_with_field_evidence(self):
+        def ev(field, unit):
+            return [{"sourceId": f"SRC-{field}", "sourceType": "LAB_CERTIFICATE", "unit": unit, "verificationStatus": "VERIFIED"}]
+        payload = {
+            "reportYear": 2026, "departurePort": "CNSHG", "arrivalPort": "NLRTM",
+            "baseline": {"pathId": "CUSTOM_BASE", "custom": True, "massTonnes": "1", "pricePerTonne": "600",
+                "equipmentId": "ENGINE", "lcv": "0.04", "wtTMode": "STATIC", "wtT": "10", "cfCO2": "3", "cfCH4": "0", "cfN2O": "0", "cslip": "NA", "methaneSlipApplicable": False, "rwd": "1", "eligibleBiomassFraction": "0",
+                "sourceEvidence": {"lcv": ev("lcv", "MJ/gFuel"), "wtT": ev("wtT", "gCO2eq/MJ"), "cfCO2": ev("cfCO2", "gGHG/gFuel"), "cfCH4": ev("cfCH4", "gGHG/gFuel"), "cfN2O": ev("cfN2O", "gGHG/gFuel"), "cslip": ev("cslip", "%"), "methaneSlipApplicable": ev("methaneSlipApplicable", "boolean"), "rwd": ev("rwd", "ratio"), "eligibleBiomassFraction": ev("eligibleBiomassFraction", "fraction")}},
+            "candidate": {"pathId": "MDO", "massTonnes": "1", "pricePerTonne": "700"},
+            "euaPricePerTCO2e": "80",
+        }
+        result = json.loads(calculate_voyage_json(json.dumps(payload)))
+        self.assertEqual(result["scenarios"][0]["eu_ets"]["included_gases"], ["CO2", "CH4", "N2O"])
+        self.assertEqual(result["scenarios"][0]["fuel_eu"]["status"], "SURPLUS_ESTIMATE")
+        self.assertEqual(result["baseline_factor"]["factor_status"], "VERIFIED")
+        self.assertEqual(result["baseline_factor"]["source_evidence"][0]["source_id"], "SRC-lcv")
+
     def test_json_exposes_constraint_bounds_and_marks_infeasible_reference(self):
         payload = {
             "reportYear": 2026,
