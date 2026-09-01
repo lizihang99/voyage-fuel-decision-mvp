@@ -93,3 +93,35 @@ git diff --check
 
 Result: **22 focused tests passed**; compileall and diff check completed without
 errors. No full-suite regression was run per the review fix request.
+
+## P2 Fix Report: PDF Issue Deduplication
+
+The PDF issue deduplication identity now includes `issue.component`, matching the
+CSV projection and the displayed issue location columns. Added a regression test
+with two otherwise identical issues whose components differ; both component rows
+remain visible in extracted PDF text.
+
+### Post-fix PDF rendering
+
+Regenerated `output/pdf/mvp-multi-candidate.pdf` from the multi-candidate fixture and
+rendered it with:
+
+```powershell
+& pdftoppm -png -r 120 output/pdf/mvp-multi-candidate.pdf output/pdf/rendered/post-fix-page
+```
+
+Result: **13 rendered pages**, all 1404x993 and nonblank. Spot inspection of the
+first and final pages confirmed the port-identity boundary and methodology sections
+remain readable after the expanded change-metric tables; repeated table headers and
+wrapped long IDs are preserved.
+
+### P2 verification
+
+```powershell
+& "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m unittest tests.test_case_reports -v
+& "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m compileall -q src tests
+git diff --check
+```
+
+Result: **13 report tests passed**; compileall and diff check completed without
+errors. Per request, no full regression suite was run.
