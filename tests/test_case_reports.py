@@ -3,10 +3,11 @@ import io
 import json
 import unittest
 from decimal import Decimal
+from dataclasses import replace
 from pathlib import Path
 
 from voyage_fuel.case_calculator import calculate_decision_case
-from voyage_fuel.contracts import CandidateInput, DecisionCaseInput
+from voyage_fuel.contracts import CandidateInput, DecisionCaseInput, Issue
 from voyage_fuel.factors import get_builtin_factor
 from voyage_fuel.json_io import decision_case_result_to_dict, parse_decision_case
 from voyage_fuel.models import FuelComponent
@@ -86,6 +87,19 @@ class CaseReportTests(unittest.TestCase):
         self.assertEqual(issue["component"], "UNKNOWN_PATH")
         self.assertTrue(issue["issue_field"])
         self.assertIn("scenario_id", issue)
+
+    def test_pdf_issue_dedup_keeps_same_issue_fields_with_different_components(self):
+        result = self.make_result()
+        result = replace(result, issues=(
+            Issue(code="FACTOR_EVIDENCE_REQUIRED", scope="CANDIDATE", field="factor", blocking=True,
+                  message="evidence required", candidate_id="uco", scenario_id="uco@0.2", component="UCO_FAME"),
+            Issue(code="FACTOR_EVIDENCE_REQUIRED", scope="CANDIDATE", field="factor", blocking=True,
+                  message="evidence required", candidate_id="uco", scenario_id="uco@0.2", component="MGO"),
+        ))
+        from pypdf import PdfReader
+        text = "\n".join(page.extract_text() or "" for page in PdfReader(io.BytesIO(decision_case_to_pdf(result))).pages)
+        self.assertGreaterEqual(text.count("UCO_FAME"), 1)
+        self.assertGreaterEqual(text.count("MGO"), 1)
 
     def test_pdf_display_config_changes_rendered_precision_only(self):
         result = self.make_multi_candidate_result()

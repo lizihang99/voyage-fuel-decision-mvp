@@ -631,7 +631,7 @@ def decision_case_to_pdf(
     all_issues = result.issues + tuple(issue for candidate in result.candidate_results for issue in candidate.issues)
     seen: set[tuple[Any, ...]] = set()
     for issue in all_issues:
-        identity = (issue.code, issue.scope, issue.field, issue.candidate_id, issue.scenario_id, issue.blocking, issue.message)
+        identity = (issue.code, issue.scope, issue.field, issue.candidate_id, issue.scenario_id, issue.component, issue.blocking, issue.message)
         if identity in seen:
             continue
         seen.add(identity)
