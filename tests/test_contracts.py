@@ -20,6 +20,38 @@ class ContractTests(unittest.TestCase):
                 eua_price_per_tco2e=Decimal("80"), candidates=(),
             )
 
+    def test_case_rejects_report_year_outside_mvp_range(self):
+        common = dict(
+            departure_port="CNSHG", arrival_port="NLRTM",
+            adjacent_valid_port_of_call_confirmed=True, currency="EUR",
+            baseline_component=self.baseline, baseline_mass_tonnes=Decimal("100"),
+            eua_price_per_tco2e=Decimal("80"), candidates=(),
+        )
+        for report_year in (2023, 2031):
+            with self.subTest(report_year=report_year):
+                with self.assertRaisesRegex(ValueError, "INVALID_YEAR"):
+                    DecisionCaseInput(report_year=report_year, **common)
+
+    def test_case_rejects_non_integer_report_year(self):
+        with self.assertRaisesRegex(ValueError, "INVALID_YEAR"):
+            DecisionCaseInput(
+                report_year="2026", departure_port="CNSHG", arrival_port="NLRTM",
+                adjacent_valid_port_of_call_confirmed=True, currency="EUR",
+                baseline_component=self.baseline, baseline_mass_tonnes=Decimal("100"),
+                eua_price_per_tco2e=Decimal("80"), candidates=(),
+            )
+
+    def test_case_accepts_mvp_report_year_endpoints(self):
+        common = dict(
+            departure_port="CNSHG", arrival_port="NLRTM",
+            adjacent_valid_port_of_call_confirmed=True, currency="EUR",
+            baseline_component=self.baseline, baseline_mass_tonnes=Decimal("100"),
+            eua_price_per_tco2e=Decimal("80"), candidates=(),
+        )
+        for report_year in (2024, 2030):
+            with self.subTest(report_year=report_year):
+                self.assertEqual(DecisionCaseInput(report_year=report_year, **common).report_year, report_year)
+
     def test_candidate_and_scenario_ids_are_stable(self):
         candidate = CandidateInput(
             candidate_id="uco-quote-1", component=self.candidate,

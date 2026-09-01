@@ -86,6 +86,8 @@ class DecisionCaseInput:
     candidates: tuple[CandidateInput, ...]
 
     def __post_init__(self) -> None:
+        if type(self.report_year) is not int or not 2024 <= self.report_year <= 2030:
+            raise ValueError("INVALID_YEAR: report_year must be an integer from 2024 through 2030")
         object.__setattr__(self, "baseline_mass_tonnes", as_decimal(self.baseline_mass_tonnes))
         object.__setattr__(self, "candidates", tuple(self.candidates))
         if self.eua_price_per_tco2e is not None:

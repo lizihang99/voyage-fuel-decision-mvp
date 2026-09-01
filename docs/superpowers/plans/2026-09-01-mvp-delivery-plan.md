@@ -67,7 +67,7 @@
 验证结果：
 
 ```text
-Python unittest: 64 passed
+Python unittest: 67 passed
 Node port tests: 29 passed
 Python compileall: passed
 git diff --check: passed
