@@ -62,12 +62,12 @@
 
 基线分支：`python-calculation-kernel`。
 
-基线提交：`3ac7ebf feat: add evidence validation and pdf reports`。
+当前已验证提交：`a168b6b fix: pinpoint parsed input issue fields`。
 
 验证结果：
 
 ```text
-Python unittest: 67 passed
+Python unittest: 77 passed
 Node port tests: 29 passed
 Python compileall: passed
 git diff --check: passed
@@ -123,7 +123,7 @@ git diff --check
 - Consumes: existing `FuelComponent`, `VoyageResult`, `Decimal`.
 - Produces: `CandidateInput`, `DecisionCaseInput`, `ParsedDecisionCase`, `Issue`, `CandidateResult`, `CaseScenario`, `DecisionCaseResult`, `MetricDelta`, `ConditionalRecommendation`.
 
-- [ ] **Step 1: Write the failing contract tests**
+- [x] **Step 1: Write the failing contract tests**
 
 Add `tests/test_contracts.py` with these exact behaviors:
 
@@ -168,7 +168,7 @@ class ContractTests(unittest.TestCase):
         self.assertTrue(issue.blocking)
 ```
 
-- [ ] **Step 2: Run the contract tests and confirm they fail**
+- [x] **Step 2: Run the contract tests and confirm they fail**
 
 Run:
 
@@ -179,7 +179,7 @@ $env:PYTHONPATH='src'
 
 Expected: FAIL because `voyage_fuel.contracts` does not exist.
 
-- [ ] **Step 3: Implement immutable case-level contracts**
+- [x] **Step 3: Implement immutable case-level contracts**
 
 Create these public shapes in `contracts.py`:
 
@@ -287,7 +287,7 @@ class DecisionCaseResult:
 
 Export the new contracts from `voyage_fuel.__init__` without changing existing public functions.
 
-- [ ] **Step 4: Run contract and existing model tests**
+- [x] **Step 4: Run contract and existing model tests**
 
 Run:
 
@@ -298,7 +298,7 @@ $env:PYTHONPATH='src'
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit the contract foundation**
+- [x] **Step 5: Commit the contract foundation**
 
 ```powershell
 git add src/voyage_fuel/contracts.py src/voyage_fuel/models.py src/voyage_fuel/__init__.py tests/test_contracts.py docs/superpowers/plans/2026-09-01-mvp-delivery-plan.md
@@ -323,7 +323,7 @@ After the focused and full regression suites pass, update M09 from `NOT_STARTED`
 - Consumes: `DecisionCaseInput`, `CandidateInput`, `Issue`, existing `_component()` factor resolution behavior.
 - Produces: `parse_decision_case(payload: str | Mapping[str, Any]) -> ParsedDecisionCase`, `issue_from_exception(...) -> Issue`, `decision_case_result_to_dict(...) -> dict[str, Any]`.
 
-- [ ] **Step 1: Write failing tests for the complete input contract**
+- [x] **Step 1: Write failing tests for the complete input contract**
 
 Add tests that parse this minimum payload:
 
@@ -363,7 +363,7 @@ Assertions must cover:
 - an invalid second candidate can be represented as a candidate-level issue without discarding the first candidate;
 - `calculate_voyage_json()` remains available for legacy single-candidate regression tests until Task 8 removes the need for it.
 
-- [ ] **Step 2: Run the focused JSON tests and confirm failure**
+- [x] **Step 2: Run the focused JSON tests and confirm failure**
 
 ```powershell
 $env:PYTHONPATH='src'
@@ -372,13 +372,13 @@ $env:PYTHONPATH='src'
 
 Expected: FAIL because the case-level parser and issue mapper do not exist.
 
-- [ ] **Step 3: Implement parsing without binary floats**
+- [x] **Step 3: Implement parsing without binary floats**
 
 Move reusable component parsing into a public, typed helper. Every numeric input must pass through `Decimal(str(value))`; booleans must reject string values such as `"false"`. Map known exceptions to the minimum error-code set in calculation-spec section 13.2. Do not parse error messages in the webpage; return `Issue` fields explicitly.
 
 The parser returns `ParsedDecisionCase(request, issues)`. Candidate-level input failures are excluded from `request.candidates` and retained as candidate-scoped issues so Task 3 can continue with unaffected candidates. Case-level failures return `ParsedDecisionCase(request=None, issues=(...))`; the API later projects that into a `DecisionCaseResult` with `baseline_scenario=None` and no calculations.
 
-- [ ] **Step 4: Run JSON and factor resolution tests**
+- [x] **Step 4: Run JSON and factor resolution tests**
 
 ```powershell
 $env:PYTHONPATH='src'
@@ -387,7 +387,7 @@ $env:PYTHONPATH='src'
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit structured parsing**
+- [x] **Step 5: Commit structured parsing**
 
 ```powershell
 git add src/voyage_fuel/json_io.py src/voyage_fuel/issues.py src/voyage_fuel/__init__.py tests/test_case_json_io.py docs/superpowers/plans/2026-09-01-mvp-delivery-plan.md
@@ -1144,6 +1144,8 @@ Use `superpowers:requesting-code-review` for a final review, address verified fi
 | Date | Commit | Evidence | Result |
 | --- | --- | --- | --- |
 | 2026-09-01 | `3ac7ebf` | Python unittest 59；Node port tests 29；compileall；`git diff --check` | Current single-candidate kernel baseline verified |
+| 2026-09-01 | `1180092` | Task 1 focused contracts/models 10；Python unittest 67；compileall；`git diff --check` | Case contracts and report-year boundary verified |
+| 2026-09-01 | `a168b6b` | Task 2 focused JSON/factor tests 24；Python unittest 77；Node port tests 29；compileall；`git diff --check` | Structured case parsing, exact field issues and legacy JSON compatibility verified |
 
 Future entries must record evidence after it has been run. Do not add expected pass counts as if they were observed results.
 
