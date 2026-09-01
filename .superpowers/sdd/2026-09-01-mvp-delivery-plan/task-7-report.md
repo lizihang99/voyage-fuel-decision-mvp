@@ -49,3 +49,8 @@ Observed result: 6 tests passed; compileall and `git diff --check` completed wit
 - Expanded factor evidence rows with raw fixed-point values for LCV, WtT, emission factors, RWD, Cslip and correction factors.
 - Added EUR value currency to FuelEU penalty metrics and case-currency unit metadata to monetary recommendation switch values.
 - Regression command: `python -m unittest tests.test_case_reports tests.test_reports -v` -> 7 case-report tests and 2 legacy report tests passed; compileall and `git diff --check` passed.
+
+## Follow-up Fix
+
+- Added the `energy_gj` display-kind alias to `energy_decimals`, preserving the specification's default three decimal places after MJ-to-GJ conversion.
+- Added a focused regression assertion; the requested report tests now pass 9 tests total, with compileall and `git diff --check` clean.
