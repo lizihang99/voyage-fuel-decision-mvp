@@ -7,7 +7,7 @@ from decimal import Decimal
 from voyage_fuel.case_calculator import calculate_decision_case
 from voyage_fuel.contracts import CandidateInput, DecisionCaseInput
 from voyage_fuel.factors import get_builtin_factor
-from voyage_fuel.json_io import decision_case_result_to_dict
+from voyage_fuel.json_io import decision_case_result_to_dict, parse_decision_case
 from voyage_fuel.models import FuelComponent
 from voyage_fuel.formatting import DisplayConfig, format_for_display
 from voyage_fuel.reports import decision_case_to_csv, write_decision_case_csv
@@ -75,6 +75,34 @@ class CaseReportTests(unittest.TestCase):
             path = write_decision_case_csv(self.make_result(), f"{directory}/case.csv")
             self.assertTrue(path.exists())
             self.assertIn("record_type", path.read_text(encoding="utf-8"))
+
+    def test_csv_deduplicates_projected_candidate_issues(self):
+        payload = {
+            "reportYear": 2026, "departurePort": "CNSHG", "arrivalPort": "NLRTM",
+            "adjacentValidPortOfCallConfirmed": True, "currency": "USD",
+            "baseline": {"pathId": "MGO", "massTonnes": "100"},
+            "candidates": [{"candidateId": "bad", "pathId": "MGO", "maxBlendRatio": "invalid"}],
+        }
+        result = calculate_decision_case(parse_decision_case(payload).request, parse_decision_case(payload).issues)
+        rows = list(csv.DictReader(io.StringIO(decision_case_to_csv(result))))
+        issues = [row for row in rows if row["record_type"] == "issue" and row["issue_code"]]
+        self.assertEqual(len(issues), 1)
+        self.assertEqual(issues[0]["candidate_id"], "bad")
+
+    def test_factor_evidence_rows_include_numeric_factor_values(self):
+        rows = list(csv.DictReader(io.StringIO(decision_case_to_csv(self.make_result()))))
+        evidence = [row for row in rows if row["record_type"] == "factor_evidence"]
+        self.assertTrue(any(row["factor_field"] == "lcv_mj_per_g" and row["factor_value"] for row in evidence))
+        self.assertTrue(all("E-" not in row["factor_value"] for row in evidence))
+
+    def test_currency_columns_for_penalty_and_recommendation_values(self):
+        rows = list(csv.DictReader(io.StringIO(decision_case_to_csv(self.make_result()))))
+        penalties = [row for row in rows if row["record_type"] == "scenario" and row["metric_name"] == "fueleu_indicative_penalty_eur"]
+        self.assertTrue(penalties)
+        self.assertTrue(all(row["value_currency"] == "EUR" and row["penalty_currency"] == "EUR" for row in penalties))
+        priced_recommendations = [row for row in rows if row["record_type"] == "recommendation" and row["value_star"]]
+        self.assertTrue(priced_recommendations)
+        self.assertTrue(all(row["unit"] == "case_currency" and row["value_currency"] == "USD" for row in priced_recommendations))
 
 
 if __name__ == "__main__":

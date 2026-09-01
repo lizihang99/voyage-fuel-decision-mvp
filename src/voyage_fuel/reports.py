@@ -256,7 +256,10 @@ def _case_metric_rows(result: DecisionCaseResult) -> list[dict[str, str]]:
                 "percent_delta": _text(delta.percent_delta),
                 "reason_code": _text(delta.reason_code),
                 "unit": metric_units.get(metric_name, ""),
-                "value_currency": result.currency if metric_units.get(metric_name) == "case_currency" else "",
+                "value_currency": (
+                    "EUR" if metric_name == "fueleu_indicative_penalty_eur"
+                    else result.currency if metric_units.get(metric_name) == "case_currency" else ""
+                ),
             })
             rows.append(row)
     return rows
@@ -310,6 +313,9 @@ def decision_case_to_csv(result: DecisionCaseResult, display_config: DisplayConf
             "from_candidate_id": _text(recommendation.from_candidate_id), "to_candidate_id": _text(recommendation.to_candidate_id),
             "value_star": _text(recommendation.value_star),
         })
+        if recommendation.value_star is not None:
+            row["unit"] = "case_currency"
+            row["value_currency"] = result.currency
         rows.append(row)
     for candidate in result.candidate_results:
         if candidate.voyage_result is None or candidate.voyage_result.economics is None:
@@ -323,18 +329,35 @@ def decision_case_to_csv(result: DecisionCaseResult, display_config: DisplayConf
         evidence = getattr(factor, "source_evidence", ()) or ()
         if not evidence:
             evidence = (None,)
+        numeric_fields = (
+            ("lcv_mj_per_g", "MJ/g"), ("wt_t_g_per_mj", "g/MJ"),
+            ("cf_co2_g_per_g", "g/g"), ("cf_ch4_g_per_g", "g/g"),
+            ("cf_n2o_g_per_g", "g/g"), ("rwd", "fraction"),
+            ("cslip_percent", "%"), ("csf_co2_g_per_g", "g/g"),
+            ("csf_ch4_g_per_g", "g/g"), ("csf_n2o_g_per_g", "g/g"),
+        )
         for item in evidence:
-            row = _case_base(result, "factor_evidence")
-            row.update({
-                "requested_path_id": _text(trace.requested_path_id), "resolved_path_id": _text(trace.resolved_path_id),
-                "resolution_reason": _text(trace.resolution_reason), "qualification_status": _text(trace.qualification_status),
-                "factor_status": _text(trace.factor_status), "factor_source_id": _text(getattr(item, "source_id", "")),
-                "factor_field": _text(getattr(item, "field_name", "")), "factor_value": "",
-                "unit": _text(getattr(item, "unit", "")),
-                "verification_status": _text(getattr(item, "verification_status", "")),
-            })
-            rows.append(row)
-    for issue in result.issues + tuple(issue for candidate in result.candidate_results for issue in candidate.issues):
+            for field_name, field_unit in numeric_fields:
+                value = getattr(factor, field_name, None)
+                if value is None:
+                    continue
+                row = _case_base(result, "factor_evidence")
+                row.update({
+                    "requested_path_id": _text(trace.requested_path_id), "resolved_path_id": _text(trace.resolved_path_id),
+                    "resolution_reason": _text(trace.resolution_reason), "qualification_status": _text(trace.qualification_status),
+                    "factor_status": _text(trace.factor_status), "factor_source_id": _text(getattr(item, "source_id", "")),
+                    "factor_field": field_name, "factor_value": _text(value),
+                    "unit": field_unit,
+                    "verification_status": _text(getattr(item, "verification_status", "")),
+                })
+                rows.append(row)
+    all_issues = result.issues + tuple(issue for candidate in result.candidate_results for issue in candidate.issues)
+    seen_issues = set()
+    for issue in all_issues:
+        identity = (issue.code, issue.scope, issue.field, issue.candidate_id, issue.scenario_id, issue.component, issue.blocking, issue.message)
+        if identity in seen_issues:
+            continue
+        seen_issues.add(identity)
         row = _case_base(result, "issue")
         row.update({"candidate_id": _text(issue.candidate_id), "issue_code": issue.code, "issue_scope": issue.scope, "issue_field": issue.field, "issue_blocking": str(issue.blocking).lower(), "issue_message": issue.message})
         rows.append(row)
