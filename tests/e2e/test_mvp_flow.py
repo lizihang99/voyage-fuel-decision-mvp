@@ -7,7 +7,6 @@ import time
 import unittest
 from pathlib import Path
 
-from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
 
 
@@ -120,6 +119,23 @@ class BrowserAppMixin:
         page.locator("#result-run-status").filter(has_text="已完成").wait_for()
         return response.json()
 
+    @staticmethod
+    def scenario_rows(page):
+        return page.locator("#scenario-comparison-table tbody tr").evaluate_all(
+            "rows => rows.map(row => [...row.cells].map(cell => cell.innerText.trim()))"
+        )
+
+    def assert_cost_ranking(self, page, raw_result):
+        rows = self.scenario_rows(page)
+        ranked = [(int(row[7]), row[0], float(row[4].replace(",", ""))) for row in rows if row[7].isdigit()]
+        self.assertGreaterEqual(len(ranked), 3)
+        self.assertEqual([rank for rank, _, _ in sorted(ranked)], list(range(1, len(ranked) + 1)))
+        expected = sorted(
+            ((float(item["result"]["model_cost"]), item["scenario_id"]) for item in raw_result["scenarios"] if item.get("current_model_cost_rank") is not None),
+            key=lambda item: (item[0], item[1]),
+        )
+        self.assertEqual([scenario_id for _, scenario_id in expected], [scenario_id for _, scenario_id, _ in sorted(ranked)])
+
 class MVPFlowTests(BrowserAppMixin, unittest.TestCase):
     def test_complete_desktop_and_mobile_flow(self):
         context, page = self.new_page()
@@ -134,7 +150,11 @@ class MVPFlowTests(BrowserAppMixin, unittest.TestCase):
             self.assertIn("lng-quote-1@0.1", body)
             self.assertIn("EXECUTION_CONDITIONS_PENDING", body)
             self.assertIn("TARGET_REACHABLE", page.locator("#thresholds-panel").inner_text())
-            self.assertIn("1", page.locator("#scenario-comparison-table").inner_text())
+            self.assertRegex(page.locator("#thresholds-panel").inner_text(), r"目标最低成本比例")
+            self.assertRegex(page.locator("#thresholds-panel").inner_text(), r"2\.2131%")
+            scenario_rows_before_precision = self.scenario_rows(page)
+            self.assertEqual(scenario_rows_before_precision[0][0], "B0")
+            self.assert_cost_ranking(page, raw_before)
 
             page.get_by_role("tab", name="Evidence").click()
             evidence = page.locator("#evidence-panel").inner_text()
@@ -161,6 +181,12 @@ class MVPFlowTests(BrowserAppMixin, unittest.TestCase):
             page.locator("#precision-price").fill("0")
             page.locator("#precision-ratio").fill("1")
             page.wait_for_timeout(100)
+            scenario_rows_after_precision = self.scenario_rows(page)
+            self.assertEqual(
+                [(row[0], row[7]) for row in scenario_rows_before_precision],
+                [(row[0], row[7]) for row in scenario_rows_after_precision],
+            )
+            self.assert_cost_ranking(page, raw_before)
             api_after = page.request.post(self.base_url + "/api/calculate", data=page.evaluate("""() => ({
               reportYear: 2026, departurePort: 'CNSHG', arrivalPort: 'NLRTM', adjacentValidPortOfCallConfirmed: true,
               currency: 'EUR', baseline: {pathId: 'MDO', massTonnes: '100', pricePerTonne: '700'}, euaPricePerTCO2e: '80',
@@ -181,14 +207,22 @@ class MVPFlowTests(BrowserAppMixin, unittest.TestCase):
             self.fill_case(page, include_rfnbo=False)
             self.calculate(page)
             page.screenshot(path=str(ARTIFACTS / "mobile-results.png"), full_page=True)
+            page.get_by_role("tab", name="Scenarios").click()
+            page.locator("#scenarios-panel").wait_for()
+            comparison_scroll = page.locator("#scenarios-panel .table-scroll").evaluate(
+                "el => ({scrollWidth: el.scrollWidth, clientWidth: el.clientWidth})"
+            )
+            page.get_by_role("tab", name="Thresholds").click()
+            threshold_scroll = page.locator("#thresholds-panel .table-scroll").evaluate(
+                "el => ({scrollWidth: el.scrollWidth, clientWidth: el.clientWidth})"
+            )
+            self.assertGreater(comparison_scroll["scrollWidth"], comparison_scroll["clientWidth"])
+            self.assertGreater(threshold_scroll["scrollWidth"], threshold_scroll["clientWidth"])
             overflow = page.evaluate("""() => {
               const root = document.documentElement;
-              const intentional = [...document.querySelectorAll('.tabs, .table-scroll')]
-                .some(el => el.scrollWidth > el.clientWidth);
-              return { page: root.scrollWidth - root.clientWidth, intentional };
+              return root.scrollWidth - root.clientWidth;
             }""")
-            self.assertTrue(overflow["intentional"])
-            self.assertLessEqual(overflow["page"], 100, f"unexpected page overflow: {overflow['page']}px")
+            self.assertEqual(overflow, 0, f"unexpected page overflow: {overflow}px")
             page.locator("#calculate-command").scroll_into_view_if_needed()
             box = page.locator("#calculate-command").bounding_box()
             self.assertIsNotNone(box)
@@ -201,8 +235,15 @@ class MVPFlowTests(BrowserAppMixin, unittest.TestCase):
     def test_blocked_custom_candidate_does_not_hide_builtin_result(self):
         context, page = self.new_page()
         try:
+            page.locator("#report-year").fill("2026")
+            page.locator("#adjacent-port-confirmation").check()
+            page.locator("#case-currency").select_option("EUR")
             self.choose_port(page, "#departure-port-search", "CNSHG")
             self.choose_port(page, "#arrival-port-search", "NLRTM")
+            page.locator("#baseline-fuel").select_option("MDO")
+            page.locator("#baseline-mass").fill("100")
+            page.locator("#baseline-price").fill("700")
+            page.locator("#eua-price").fill("80")
             self.fill_candidate(page, 0, candidate_id="custom-blocked", path_id="MDO", price="900", ratio="0.2")
             page.locator("#add-candidate").click()
             self.fill_candidate(page, 1, candidate_id="uco-ok", path_id="UCO_FAME", price="1000", ratio="0.2")
