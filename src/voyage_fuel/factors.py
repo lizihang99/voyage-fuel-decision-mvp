@@ -4,7 +4,8 @@ from decimal import Decimal
 from dataclasses import replace
 from typing import Optional
 
-from .models import FuelDefinition, FuelFactor
+from .models import EvidenceRecord, FuelDefinition, FuelFactor
+from .provenance import FactorResolutionTrace
 
 
 def _definition(path_id: str, equipment_id: str, level: str, mode: str, lcv: str,
@@ -145,6 +146,13 @@ def _factor_from_definition(definition: FuelDefinition, status: str, wt_t: Decim
         csf_ch4_g_per_g=Decimal("1") if definition.methane_slip_applicable else Decimal("0"),
         na_fields=na_fields,
         cslip_semantics=cslip_semantics,
+        source_evidence=(EvidenceRecord(
+            field_name="catalog",
+            source_id=f"FACTOR-CATALOG:{definition.path_id}",
+            source_type="BUILTIN_CATALOG",
+            unit="factor",
+            verification_status="VERIFIED",
+        ),),
     )
 
 
@@ -165,7 +173,7 @@ def _validated_cslip(definition: FuelDefinition, cslip_percent: Optional[Decimal
     return replace(definition, cslip_percent=cslip)
 
 
-def resolve_factor(path_id: str, qualification_status: str = "NOT_DEMONSTRATED",
+def _resolve_factor(path_id: str, qualification_status: str = "NOT_DEMONSTRATED",
                    e_value: Optional[Decimal] = None, eu_value: Optional[Decimal] = None,
                    cslip_percent: Optional[Decimal] = None, verified_wt_t: Optional[Decimal] = None) -> FuelFactor:
     definition = get_definition(path_id)
@@ -174,7 +182,7 @@ def resolve_factor(path_id: str, qualification_status: str = "NOT_DEMONSTRATED",
         raise ValueError(f"BLOCKED: unsupported qualification status {qualification_status}")
     if definition.wt_t_mode == "RFNBO_E":
         if status in {"NOT_DEMONSTRATED", "INELIGIBLE"}:
-            return resolve_factor(definition.fallback_path_id or "", "NOT_DEMONSTRATED")
+            return _resolve_factor(definition.fallback_path_id or "", "NOT_DEMONSTRATED")
         if status == "VERIFIED_ELIGIBLE" and (e_value is None or eu_value is None):
             raise ValueError(f"BLOCKED: verified RFNBO requires E and eu for {definition.path_id}")
         e = Decimal(str(e_value)) if e_value is not None else definition.default_e_g_per_mj
@@ -252,3 +260,64 @@ def resolve_factor(path_id: str, qualification_status: str = "NOT_DEMONSTRATED",
     if wt_t is None:
         raise ValueError(f"BLOCKED: WtT required for {definition.path_id}")
     return _factor_from_definition(resolved, status_out, wt_t, use_defaults=not verified)
+
+
+def resolve_factor(path_id: str, qualification_status: str = "NOT_DEMONSTRATED",
+                   e_value: Optional[Decimal] = None, eu_value: Optional[Decimal] = None,
+                   cslip_percent: Optional[Decimal] = None,
+                   verified_wt_t: Optional[Decimal] = None) -> FuelFactor:
+    """Compatibility resolver returning only the resolved factor."""
+    requested = _key(path_id)
+    qualification = str(qualification_status).upper()
+    factor = _resolve_factor(
+        path_id,
+        qualification_status=qualification,
+        e_value=e_value,
+        eu_value=eu_value,
+        cslip_percent=cslip_percent,
+        verified_wt_t=verified_wt_t,
+    )
+    reason = (
+        "RFNBO_QUALIFICATION_NOT_DEMONSTRATED"
+        if factor.path_id != requested and qualification in {"NOT_DEMONSTRATED", "INELIGIBLE"}
+        else "FALLBACK_PATH" if factor.path_id != requested else "DIRECT_RESOLUTION"
+    )
+    return replace(
+        factor,
+        requested_path_id=requested,
+        resolution_reason=reason,
+        qualification_status=qualification,
+    )
+
+
+def resolve_factor_trace(path_id: str, qualification_status: str = "NOT_DEMONSTRATED",
+                        e_value: Optional[Decimal] = None, eu_value: Optional[Decimal] = None,
+                        cslip_percent: Optional[Decimal] = None,
+                        verified_wt_t: Optional[Decimal] = None) -> FactorResolutionTrace:
+    """Resolve a factor while retaining the requested-to-resolved path decision."""
+    factor = resolve_factor(
+        path_id,
+        qualification_status=qualification_status,
+        e_value=e_value,
+        eu_value=eu_value,
+        cslip_percent=cslip_percent,
+        verified_wt_t=verified_wt_t,
+    )
+    requested = factor.requested_path_id or _key(path_id)
+    qualification = factor.qualification_status or str(qualification_status).upper()
+    resolved = factor.path_id
+    reason = factor.resolution_reason or "DIRECT_RESOLUTION"
+    source_ids = tuple(dict.fromkeys(e.source_id for e in factor.source_evidence))
+    return FactorResolutionTrace(
+        requested_path_id=requested,
+        resolved_path_id=resolved,
+        resolution_reason=reason,
+        qualification_status=qualification,
+        factor_status=factor.factor_status,
+        factor=factor,
+        source_ids=source_ids,
+    )
+
+
+# Explicit long-form alias for callers discovering the trace API by name.
+resolve_factor_with_trace = resolve_factor_trace

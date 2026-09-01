@@ -17,6 +17,9 @@ from .contracts import (
 from .issues import issue_from_exception
 from .models import ScenarioResult, VoyageInput
 from .case_comparison import build_case_scenarios, build_recommendations
+from .factors import resolve_factor_trace
+from .ports import calculate_scope_rates
+from .provenance import FactorResolutionTrace, ResultProvenance, deduplicate_source_ids
 
 
 _DOMAIN_PREFIXES = (
@@ -137,6 +140,26 @@ def _candidate_status(voyage: VoyageInput, result) -> str:
     return "CALCULABLE"
 
 
+def _component_trace(component) -> FactorResolutionTrace:
+    """Capture trace for built-in and custom factors at the component boundary."""
+    factor = component.factor
+    try:
+        return resolve_factor_trace(
+            factor.requested_path_id or factor.path_id,
+            qualification_status=component.qualification_status,
+        )
+    except (KeyError, ValueError):
+        return FactorResolutionTrace(
+            requested_path_id=factor.requested_path_id or factor.path_id,
+            resolved_path_id=factor.path_id,
+            resolution_reason=factor.resolution_reason or "DIRECT_RESOLUTION",
+            qualification_status=component.qualification_status.upper(),
+            factor_status=factor.factor_status,
+            factor=factor,
+            source_ids=tuple(dict.fromkeys(e.source_id for e in factor.source_evidence)),
+        )
+
+
 def _invalid_candidate_results(initial_issues: tuple[Issue, ...]) -> tuple[CandidateResult, ...]:
     """Project parser-rejected candidates back into stable candidate rows."""
     indexed: list[tuple[int, Issue]] = []
@@ -255,6 +278,28 @@ def calculate_decision_case(
     candidate_results = tuple(results)
     scenarios = build_case_scenarios(baseline, candidate_results)
     recommendations = build_recommendations(scenarios, candidate_results)
+    scope = calculate_scope_rates(request.report_year, request.departure_port, request.arrival_port)
+    factor_traces = []
+    factor_traces.append(_component_trace(request.baseline_component))
+    for candidate in request.candidates:
+        factor_traces.append(_component_trace(candidate.component))
+    source_ids = []
+    for port in (scope.departure_port, scope.arrival_port):
+        if port is not None:
+            source_ids.extend(port.rule_source_id.split(";"))
+    for trace in factor_traces:
+        source_ids.extend(trace.source_ids)
+    provenance = ResultProvenance(
+        departure=scope.departure_port,
+        arrival=scope.arrival_port,
+        eu_ets_reason=scope.eu_ets_reason or "",
+        fuel_eu_reason=scope.fuel_eu_reason or "",
+        eu_ets_geographic_rate=scope.eu_ets_scope_rate,
+        eu_ets_surrender_rate=scope.eu_ets_surrender_rate,
+        fuel_eu_rate=scope.fuel_eu_scope_rate,
+        factor_resolutions=tuple(factor_traces),
+        source_ids=deduplicate_source_ids(source_ids),
+    )
     return DecisionCaseResult(
         report_year=request.report_year,
         departure_port=request.departure_port,
@@ -265,6 +310,7 @@ def calculate_decision_case(
         scenarios=scenarios,
         recommendations=recommendations,
         issues=(*case_issue_list, *candidate_issues),
+        provenance=provenance,
     )
 
 

@@ -44,6 +44,9 @@ class FuelFactor:
     na_fields: tuple[str, ...] = ()
     cslip_semantics: str = "NA"
     source_evidence: tuple[EvidenceRecord, ...] = ()
+    requested_path_id: Optional[str] = None
+    resolution_reason: Optional[str] = None
+    qualification_status: Optional[str] = None
 
     def __post_init__(self) -> None:
         for field_name in (
@@ -159,6 +162,22 @@ class ScopeRates:
     eu_ets_effective_rate: Decimal
     fuel_eu_scope_rate: Optional[Decimal]
     fuel_eu_applicable: bool
+    departure_port: object | None = None
+    arrival_port: object | None = None
+    eu_ets_reason: str | None = None
+    fuel_eu_reason: str | None = None
+
+    @property
+    def departure(self) -> object | None:
+        return self.departure_port
+
+    @property
+    def arrival(self) -> object | None:
+        return self.arrival_port
+
+    @property
+    def port_decisions(self) -> tuple[object | None, object | None]:
+        return (self.departure_port, self.arrival_port)
 
     def __post_init__(self) -> None:
         for field_name in (

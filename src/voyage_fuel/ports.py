@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Mapping, Optional
 
 from .models import ScopeRates
+from .provenance import PortDecision
 
 
 PORT_COLUMNS = (
@@ -103,19 +104,41 @@ def calculate_scope_rates(
     except KeyError as exc:
         raise ValueError(f"Port not found in formal table: {exc.args[0]}") from exc
 
-    ets_scope, _ = _matrix_rate((departure["euEtsStatus"], arrival["euEtsStatus"]))
+    ets_scope, ets_reason = _matrix_rate((departure["euEtsStatus"], arrival["euEtsStatus"]))
     surrender = Decimal("0.4") if year == 2024 else Decimal("0.7") if year == 2025 else Decimal("1")
     fuel_eu_scope = None
     fuel_eu_applicable = year >= 2025
+    fuel_eu_reason = None
     if fuel_eu_applicable:
         if "OMR" in (departure["fuelEuStatus"], arrival["fuelEuStatus"]):
             fuel_eu_scope = Decimal("0.5")
+            fuel_eu_reason = "ONE_IN_SCOPE"
         else:
-            fuel_eu_scope, _ = _matrix_rate((departure["fuelEuStatus"], arrival["fuelEuStatus"]))
+            fuel_eu_scope, fuel_eu_reason = _matrix_rate((departure["fuelEuStatus"], arrival["fuelEuStatus"]))
+    departure_decision = PortDecision(
+        unlocode=departure["unlocode"],
+        port_name=departure["portName"],
+        eu_ets_identity=departure["euEtsStatus"],
+        fuel_eu_identity=departure["fuelEuStatus"],
+        rule_source_id=departure["ruleSourceId"],
+        source_version=departure["sourceVersion"],
+    )
+    arrival_decision = PortDecision(
+        unlocode=arrival["unlocode"],
+        port_name=arrival["portName"],
+        eu_ets_identity=arrival["euEtsStatus"],
+        fuel_eu_identity=arrival["fuelEuStatus"],
+        rule_source_id=arrival["ruleSourceId"],
+        source_version=arrival["sourceVersion"],
+    )
     return ScopeRates(
         eu_ets_scope_rate=ets_scope,
         eu_ets_surrender_rate=surrender,
         eu_ets_effective_rate=ets_scope * surrender,
         fuel_eu_scope_rate=fuel_eu_scope,
         fuel_eu_applicable=fuel_eu_applicable,
+        departure_port=departure_decision,
+        arrival_port=arrival_decision,
+        eu_ets_reason=ets_reason,
+        fuel_eu_reason=fuel_eu_reason,
     )

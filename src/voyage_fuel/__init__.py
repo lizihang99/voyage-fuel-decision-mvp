@@ -56,6 +56,15 @@ from .economics import (
 from .reports import voyage_result_to_csv, write_voyage_csv, voyage_result_to_pdf, write_voyage_pdf
 from .custom_factors import resolve_custom_factor
 from .factors import builtin_path_ids, get_definition, get_builtin_factor, resolve_factor
+from .factors import resolve_factor_trace, resolve_factor_with_trace
+from .provenance import (
+    CALCULATION_SPEC_VERSION,
+    FUEL_FACTOR_VERSION,
+    PORT_RULE_VERSION,
+    FactorResolutionTrace,
+    PortDecision,
+    ResultProvenance,
+)
 
 __all__ = [
     "EtsResult",
@@ -107,4 +116,12 @@ __all__ = [
     "get_definition",
     "get_builtin_factor",
     "resolve_factor",
+    "resolve_factor_trace",
+    "resolve_factor_with_trace",
+    "PortDecision",
+    "FactorResolutionTrace",
+    "ResultProvenance",
+    "CALCULATION_SPEC_VERSION",
+    "FUEL_FACTOR_VERSION",
+    "PORT_RULE_VERSION",
 ]
