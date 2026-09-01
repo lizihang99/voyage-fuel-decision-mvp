@@ -53,7 +53,11 @@ from .economics import (
     calculate_value_switch_points,
     compliance_improvement_tco2e,
 )
-from .reports import voyage_result_to_csv, write_voyage_csv, voyage_result_to_pdf, write_voyage_pdf
+from .reports import (
+    voyage_result_to_csv, write_voyage_csv, voyage_result_to_pdf, write_voyage_pdf,
+    decision_case_to_csv, write_decision_case_csv,
+)
+from .formatting import DisplayConfig, format_for_display
 from .custom_factors import resolve_custom_factor
 from .factors import builtin_path_ids, get_definition, get_builtin_factor, resolve_factor
 from .factors import resolve_factor_trace, resolve_factor_with_trace
@@ -112,6 +116,10 @@ __all__ = [
     "write_voyage_csv",
     "voyage_result_to_pdf",
     "write_voyage_pdf",
+    "decision_case_to_csv",
+    "write_decision_case_csv",
+    "DisplayConfig",
+    "format_for_display",
     "resolve_custom_factor",
     "builtin_path_ids",
     "get_definition",

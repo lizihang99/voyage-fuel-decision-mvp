@@ -99,7 +99,7 @@ git diff --check
 | M10 | 结构化状态、错误、追溯和版本 | `VERIFIED` | `provenance.py`；`test_provenance.py`；任务5聚焦审查通过 | 报告和网页呈现归M13-M15 | 结果逐项满足计算规格第13、14、17节 |
 | M11 | 相对B0变化和条件式建议 | `VERIFIED` | `case_comparison.py`；`test_case_comparison.py` | 页面和报告呈现归M13-M15 | 原始Decimal差值、零基线、条件式结论和临界点关联测试通过 |
 | M12 | JSON/API输入输出契约 | `VERIFIED` | `json_io.py`、`web.py`；`test_case_json_io.py`；`test_web_api.py` | 无；后续页面和报告仅消费同一结果契约 | 案例级JSON、结构化422错误和API集成测试通过 |
-| M13 | CSV完整报告 | `IN_PROGRESS` | 已有固定列、原始Decimal和摘要记录 | 缺案例、港口、单位、版本、完整来源、状态和相对变化 | 满足计算规格第14节并与统一结果逐字段一致 |
+| M13 | CSV完整报告 | `VERIFIED` | `formatting.py`；`reports.py`；`test_case_reports.py` | - | Case、港口、场景、建议、临界点、因子依据和问题记录均固定导出；原始Decimal、单位、币种、版本和来源保持可审计 |
 | M14 | PDF完整报告和共享显示配置 | `IN_PROGRESS` | 已有可生成、可提取文本的摘要PDF | 缺完整指标、依据、条件式建议和可调显示精度 | PDF满足MVP设计第14节并通过渲染检查 |
 | M15 | 单用户网页工作流 | `NOT_STARTED` | 无网页或HTTP服务 | 完整输入、结果、证据、下载和会话级格式设置 | 用户可在浏览器完成一次完整案例 |
 | M16 | 完整测试矩阵和端到端验收 | `IN_PROGRESS` | 59项Python和29项Node测试通过 | 缺多候选、结构化错误、2029/2030、显示一致性和浏览器E2E | 计算规格第16节和网页主流程全部自动验证 |
@@ -728,7 +728,7 @@ git commit -m "feat: expose decision case API"
 - Consumes: `DecisionCaseResult`, `ResultProvenance`, `MetricDelta`.
 - Produces: `DisplayConfig`, `format_for_display()`, `decision_case_to_csv()` and `write_decision_case_csv()`.
 
-- [ ] **Step 1: Write failing display and CSV tests**
+- [x] **Step 1: Write failing display and CSV tests**
 
 Assert that `DisplayConfig` defaults match calculation-spec section 14.2:
 
@@ -747,7 +747,7 @@ CSV tests must assert fixed record types for case, ports, scenarios, recommendat
 
 Change two display configurations and assert serialized raw results, scenario IDs, statuses, rankings, recommendations and CSV bytes remain identical.
 
-- [ ] **Step 2: Run case-report tests and confirm failure**
+- [x] **Step 2: Run case-report tests and confirm failure**
 
 ```powershell
 $env:PYTHONPATH='src'
@@ -756,13 +756,13 @@ $env:PYTHONPATH='src'
 
 Expected: FAIL because case-level exports and shared display configuration do not exist.
 
-- [ ] **Step 3: Implement formatting as a presentation-only dependency**
+- [x] **Step 3: Implement formatting as a presentation-only dependency**
 
 `DisplayConfig` must never enter calculation, constraints, sorting or search functions. Keep existing `voyage_result_to_csv()` for regression compatibility while adding case-level export functions. The CSV must consume a completed `DecisionCaseResult`; it must not call any calculator.
 
 Use a stable column order and explicit `record_type`. Include absolute, delta, percent delta and reason-code columns for every required comparison metric. Include FuelEU penalty currency as `EUR` separately from the case currency used by fuel, EUA and model costs.
 
-- [ ] **Step 4: Run old and new report tests**
+- [x] **Step 4: Run old and new report tests**
 
 ```powershell
 $env:PYTHONPATH='src'
@@ -771,7 +771,7 @@ $env:PYTHONPATH='src'
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit complete CSV and formatting**
+- [x] **Step 5: Commit complete CSV and formatting**
 
 ```powershell
 git add src/voyage_fuel/formatting.py src/voyage_fuel/reports.py tests/test_case_reports.py docs/superpowers/plans/2026-09-01-mvp-delivery-plan.md
