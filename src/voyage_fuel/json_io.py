@@ -13,23 +13,40 @@ from .issues import issue_from_exception
 from .models import FuelComponent, VoyageInput
 
 
+class _InputError(ValueError):
+    """Expected JSON-boundary validation failure with its exact input path."""
+
+    def __init__(self, code: str, field: str, message: str) -> None:
+        super().__init__(f"{code}: {message}")
+        self.field = field
+
+
 def _strict_bool(value: Any, *, field: str) -> bool:
     if type(value) is not bool:
-        raise ValueError(f"MISSING_REQUIRED_FACTOR: {field} must be a boolean")
+        raise _InputError("MISSING_REQUIRED_FACTOR", field, f"{field} must be a boolean")
     return value
 
 
 def parse_component(payload: Mapping[str, Any]) -> FuelComponent:
     """Parse a fuel component using decimal-safe factor resolution."""
+    return _parse_component(payload, field_prefix="")
+
+
+def _parse_component(payload: Mapping[str, Any], *, field_prefix: str) -> FuelComponent:
+    def field(name: str) -> str:
+        return f"{field_prefix}.{name}" if field_prefix else name
+
     if not isinstance(payload, Mapping):
-        raise ValueError("MISSING_REQUIRED_FACTOR: component must be an object")
+        raise _InputError("MISSING_REQUIRED_FACTOR", field_prefix or "component", "component must be an object")
     qualification = str(payload.get("qualificationStatus", "NOT_DEMONSTRATED"))
     e_value = payload.get("e")
     eu_value = payload.get("eu")
     cslip = payload.get("cslip")
     verified_wt = payload.get("verifiedWtT")
+    if "pathId" not in payload:
+        raise _InputError("MISSING_REQUIRED_FACTOR", field("pathId"), "pathId is required")
     path_id = str(payload["pathId"])
-    custom = _strict_bool(payload.get("custom", False), field="custom")
+    custom = _strict_bool(payload.get("custom", False), field=field("custom"))
     if not custom:
         try:
             factor = resolve_factor(
@@ -41,14 +58,29 @@ def parse_component(payload: Mapping[str, Any]) -> FuelComponent:
             )
         except KeyError:
             custom = True
+        except (InvalidOperation, TypeError, ValueError) as error:
+            raise _InputError("MISSING_REQUIRED_FACTOR", field("pathId"), str(error)) from error
     if custom:
-        factor = resolve_custom_factor(payload)
-    return FuelComponent(
-        factor=factor,
-        price_per_tonne=None if payload.get("pricePerTonne") is None else Decimal(str(payload["pricePerTonne"])),
-        eligible_biomass_fraction=Decimal(str(payload.get("eligibleBiomassFraction", "0"))),
-        qualification_status=str(payload.get("qualificationStatus", "NOT_DEMONSTRATED")),
-    )
+        try:
+            factor = resolve_custom_factor(payload)
+        except (InvalidOperation, KeyError, TypeError, ValueError) as error:
+            raise _InputError("MISSING_REQUIRED_FACTOR", field("pathId"), str(error)) from error
+    try:
+        return FuelComponent(
+            factor=factor,
+            price_per_tonne=(
+                None if payload.get("pricePerTonne") is None
+                else _decimal(payload["pricePerTonne"], field=field("pricePerTonne"))
+            ),
+            eligible_biomass_fraction=_decimal(
+                payload.get("eligibleBiomassFraction", "0"), field=field("eligibleBiomassFraction")
+            ),
+            qualification_status=str(payload.get("qualificationStatus", "NOT_DEMONSTRATED")),
+        )
+    except (InvalidOperation, TypeError, ValueError) as error:
+        if isinstance(error, _InputError):
+            raise
+        raise _InputError("MISSING_REQUIRED_FACTOR", field("pathId"), str(error)) from error
 
 
 # Kept private alias for compatibility with callers that imported this module internals.
@@ -91,51 +123,84 @@ def _request(payload: Mapping[str, Any]) -> VoyageInput:
 
 def _decimal(value: Any, *, field: str) -> Decimal:
     if isinstance(value, bool):
-        raise ValueError(f"MISSING_REQUIRED_FACTOR: {field} must be numeric")
+        raise _InputError("MISSING_REQUIRED_FACTOR", field, f"{field} must be numeric")
     try:
         return Decimal(str(value))
     except Exception as error:
-        raise ValueError(f"MISSING_REQUIRED_FACTOR: {field} must be numeric") from error
+        raise _InputError("MISSING_REQUIRED_FACTOR", field, f"{field} must be numeric") from error
 
 
 def _decimal_sequence(value: Any, *, field: str) -> tuple[Decimal, ...]:
     if isinstance(value, (str, bytes)) or not isinstance(value, (list, tuple)):
-        raise ValueError(f"INVALID_BLEND_RATIO: {field} must be an array")
+        raise _InputError("INVALID_BLEND_RATIO", field, f"{field} must be an array")
     return tuple(_decimal(item, field=f"{field}[{index}]") for index, item in enumerate(value))
 
 
-def _parse_candidate(payload: Mapping[str, Any]) -> CandidateInput:
+def _parse_candidate(payload: Mapping[str, Any], *, field_prefix: str) -> CandidateInput:
     candidate_id = payload.get("candidateId")
     if not isinstance(candidate_id, str):
-        raise ValueError("INVALID_CANDIDATE_ID: candidateId is required")
+        raise _InputError("INVALID_CANDIDATE_ID", f"{field_prefix}.candidateId", "candidateId is required")
+    specified_ratios = _decimal_sequence(
+        payload.get("specifiedBlendRatios", ()), field=f"{field_prefix}.specifiedBlendRatios"
+    )
+    max_blend_ratio = _decimal(
+        payload.get("maxBlendRatio", "1"), field=f"{field_prefix}.maxBlendRatio"
+    )
+    if not Decimal("0") <= max_blend_ratio <= Decimal("1"):
+        raise _InputError(
+            "INVALID_BLEND_RATIO", f"{field_prefix}.maxBlendRatio", "maxBlendRatio must be between zero and one"
+        )
+    for index, ratio in enumerate(specified_ratios):
+        if not Decimal("0") <= ratio <= max_blend_ratio:
+            raise _InputError(
+                "INVALID_BLEND_RATIO",
+                f"{field_prefix}.specifiedBlendRatios[{index}]",
+                "specifiedBlendRatios must be within maxBlendRatio",
+            )
+    supply_tonnes = (
+        None if payload.get("candidateSupplyTonnes") is None
+        else _decimal(payload["candidateSupplyTonnes"], field=f"{field_prefix}.candidateSupplyTonnes")
+    )
+    incremental_budget = (
+        None if payload.get("incrementalBudget") is None
+        else _decimal(payload["incrementalBudget"], field=f"{field_prefix}.incrementalBudget")
+    )
+    compliance_improvement_value = (
+        None if payload.get("complianceImprovementValue") is None
+        else _decimal(
+            payload["complianceImprovementValue"], field=f"{field_prefix}.complianceImprovementValue"
+        )
+    )
+    for name, value in (
+        ("candidateSupplyTonnes", supply_tonnes),
+        ("incrementalBudget", incremental_budget),
+        ("complianceImprovementValue", compliance_improvement_value),
+    ):
+        if value is not None and value < Decimal("0"):
+            raise _InputError(
+                "INVALID_CANDIDATE_CONSTRAINT", f"{field_prefix}.{name}", f"{name} must be non-negative"
+            )
     return CandidateInput(
         candidate_id=candidate_id,
-        component=parse_component(payload),
-        specified_blend_ratios=_decimal_sequence(
-            payload.get("specifiedBlendRatios", ()), field="specifiedBlendRatios"
-        ),
-        max_blend_ratio=_decimal(payload.get("maxBlendRatio", "1"), field="maxBlendRatio"),
+        component=_parse_component(payload, field_prefix=field_prefix),
+        specified_blend_ratios=specified_ratios,
+        max_blend_ratio=max_blend_ratio,
         allows_pure_use=_strict_bool(
             payload.get("candidateAllowsPureUse", payload.get("allowsPureUse", False)),
-            field="candidateAllowsPureUse",
+            field=f"{field_prefix}.candidateAllowsPureUse",
         ),
-        supply_tonnes=(
-            None if payload.get("candidateSupplyTonnes") is None
-            else _decimal(payload["candidateSupplyTonnes"], field="candidateSupplyTonnes")
-        ),
-        incremental_budget=(
-            None if payload.get("incrementalBudget") is None
-            else _decimal(payload["incrementalBudget"], field="incrementalBudget")
-        ),
-        compliance_improvement_value=(
-            None if payload.get("complianceImprovementValue") is None
-            else _decimal(payload["complianceImprovementValue"], field="complianceImprovementValue")
-        ),
+        supply_tonnes=supply_tonnes,
+        incremental_budget=incremental_budget,
+        compliance_improvement_value=compliance_improvement_value,
     )
 
 
 def _case_issue(error: Exception, field: str) -> ParsedDecisionCase:
     return ParsedDecisionCase(request=None, issues=(issue_from_exception(error, scope="CASE", field=field),))
+
+
+def _error_field(error: Exception, fallback: str) -> str:
+    return error.field if isinstance(error, _InputError) else fallback
 
 
 def parse_decision_case(payload: str | Mapping[str, Any]) -> ParsedDecisionCase:
@@ -150,37 +215,53 @@ def parse_decision_case(payload: str | Mapping[str, Any]) -> ParsedDecisionCase:
     try:
         confirmation_value = decoded.get("adjacentValidPortOfCallConfirmed", False)
         if type(confirmation_value) is not bool:
-            raise ValueError(
-                "PORT_OF_CALL_CONFIRMATION_REQUIRED: adjacent Port of Call confirmation must be a boolean"
+            raise _InputError(
+                "PORT_OF_CALL_CONFIRMATION_REQUIRED",
+                "adjacentValidPortOfCallConfirmed",
+                "adjacent Port of Call confirmation must be a boolean",
             )
         confirmation = confirmation_value
         if not confirmation:
-            raise ValueError(
-                "PORT_OF_CALL_CONFIRMATION_REQUIRED: adjacent Port of Call confirmation is required"
+            raise _InputError(
+                "PORT_OF_CALL_CONFIRMATION_REQUIRED",
+                "adjacentValidPortOfCallConfirmed",
+                "adjacent Port of Call confirmation is required",
             )
+        if "reportYear" not in decoded or type(decoded["reportYear"]) is not int:
+            raise _InputError("INVALID_YEAR", "reportYear", "reportYear must be an integer")
         report_year = decoded["reportYear"]
-        if type(report_year) is not int:
-            raise ValueError("INVALID_YEAR: reportYear must be an integer")
+        if not 2024 <= report_year <= 2030:
+            raise _InputError("INVALID_YEAR", "reportYear", "reportYear must be from 2024 through 2030")
         baseline = decoded.get("baseline")
         if not isinstance(baseline, Mapping):
-            raise ValueError("MISSING_REQUIRED_FACTOR: baseline must be an object")
+            raise _InputError("MISSING_REQUIRED_FACTOR", "baseline", "baseline must be an object")
         candidates_payload = decoded.get("candidates")
         if not isinstance(candidates_payload, (list, tuple)):
-            raise ValueError("MISSING_REQUIRED_FACTOR: candidates must be an array")
+            raise _InputError("MISSING_REQUIRED_FACTOR", "candidates", "candidates must be an array")
         candidate_ids = [
             item.get("candidateId")
             for item in candidates_payload
             if isinstance(item, Mapping) and isinstance(item.get("candidateId"), str)
         ]
         if len(candidate_ids) != len(set(candidate_ids)):
-            raise ValueError("DUPLICATE_CANDIDATE_ID: candidateId values must be unique")
-        baseline_component = parse_component(baseline)
+            raise _InputError("DUPLICATE_CANDIDATE_ID", "candidates", "candidateId values must be unique")
+        baseline_component = _parse_component(baseline, field_prefix="baseline")
+        if "massTonnes" not in baseline:
+            raise _InputError("INVALID_BASELINE_MASS", "baseline.massTonnes", "massTonnes is required")
         baseline_mass = _decimal(baseline["massTonnes"], field="baseline.massTonnes")
+        if baseline_mass <= Decimal("0"):
+            raise _InputError("INVALID_BASELINE_MASS", "baseline.massTonnes", "massTonnes must be positive")
         eua_price = decoded.get("euaPricePerTCO2e")
         eua_price_decimal = None if eua_price is None else _decimal(eua_price, field="euaPricePerTCO2e")
+        if eua_price_decimal is not None and eua_price_decimal < Decimal("0"):
+            raise _InputError("INVALID_EUA_PRICE", "euaPricePerTCO2e", "eua price must be non-negative")
+        if not isinstance(decoded.get("currency"), str) or not decoded["currency"].strip():
+            raise _InputError("INVALID_CURRENCY", "currency", "currency is required")
+        for field in ("departurePort", "arrivalPort"):
+            if not isinstance(decoded.get(field), str) or not decoded[field].strip():
+                raise _InputError("INVALID_PORT_CODE", field, f"{field} is required")
     except (InvalidOperation, KeyError, TypeError, ValueError) as error:
-        field = "baseline" if "baseline" in str(error).lower() else "case"
-        return _case_issue(error, field)
+        return _case_issue(error, _error_field(error, "baseline"))
 
     candidates = []
     issues = []
@@ -192,14 +273,14 @@ def parse_decision_case(payload: str | Mapping[str, Any]) -> ParsedDecisionCase:
         )
         try:
             if not isinstance(candidate_payload, Mapping):
-                raise ValueError("INVALID_CANDIDATE_ID: candidate must be an object")
-            candidates.append(_parse_candidate(candidate_payload))
+                raise _InputError("INVALID_CANDIDATE_ID", f"candidates[{index}]", "candidate must be an object")
+            candidates.append(_parse_candidate(candidate_payload, field_prefix=f"candidates[{index}]"))
         except (InvalidOperation, KeyError, TypeError, ValueError) as error:
             issues.append(
                 issue_from_exception(
                     error,
                     scope="CANDIDATE",
-                    field=f"candidates[{index}]",
+                    field=_error_field(error, f"candidates[{index}]"),
                     candidate_id=candidate_id,
                     component=(
                         str(candidate_payload.get("pathId"))
@@ -222,7 +303,7 @@ def parse_decision_case(payload: str | Mapping[str, Any]) -> ParsedDecisionCase:
             candidates=tuple(candidates),
         )
     except (InvalidOperation, KeyError, TypeError, ValueError) as error:
-        return _case_issue(error, "case")
+        return _case_issue(error, _error_field(error, "currency"))
     return ParsedDecisionCase(request=request, issues=tuple(issues))
 
 

@@ -1,4 +1,3 @@
-from copy import deepcopy
 from decimal import Decimal
 import unittest
 
@@ -87,6 +86,42 @@ class CaseJsonIoTests(unittest.TestCase):
         self.assertEqual(parsed.issues[0].code, "INVALID_BLEND_RATIO")
         self.assertEqual(parsed.issues[0].scope, "CANDIDATE")
         self.assertEqual(parsed.issues[0].candidate_id, "lng-quote-1")
+        self.assertEqual(parsed.issues[0].field, "candidates[1].specifiedBlendRatios[0]")
+
+    def test_candidate_constraint_and_component_failures_keep_exact_fields(self):
+        payload = minimum_payload()
+        payload["candidates"][1]["candidateSupplyTonnes"] = "-1"
+
+        parsed = parse_decision_case(payload)
+
+        self.assertEqual(parsed.issues[0].field, "candidates[1].candidateSupplyTonnes")
+
+        payload = minimum_payload()
+        payload["candidates"][1]["pathId"] = "UNKNOWN_PATH"
+        parsed = parse_decision_case(payload)
+
+        self.assertEqual(parsed.issues[0].field, "candidates[1].pathId")
+
+    def test_case_failures_keep_exact_fields(self):
+        cases = (
+            ("reportYear", 2031, "reportYear"),
+            ("currency", "", "currency"),
+        )
+        for key, value, expected_field in cases:
+            with self.subTest(key=key):
+                payload = minimum_payload()
+                payload[key] = value
+
+                parsed = parse_decision_case(payload)
+
+                self.assertIsNone(parsed.request)
+                self.assertEqual(parsed.issues[0].field, expected_field)
+
+        payload = minimum_payload()
+        payload["baseline"]["massTonnes"] = "0"
+        parsed = parse_decision_case(payload)
+        self.assertIsNone(parsed.request)
+        self.assertEqual(parsed.issues[0].field, "baseline.massTonnes")
 
     def test_case_parser_rejects_string_boolean_without_truthiness_conversion(self):
         payload = minimum_payload()
