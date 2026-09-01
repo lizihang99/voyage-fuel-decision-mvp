@@ -57,6 +57,7 @@ from .reports import voyage_result_to_csv, write_voyage_csv, voyage_result_to_pd
 from .custom_factors import resolve_custom_factor
 from .factors import builtin_path_ids, get_definition, get_builtin_factor, resolve_factor
 from .factors import resolve_factor_trace, resolve_factor_with_trace
+from .web import app, main
 from .provenance import (
     CALCULATION_SPEC_VERSION,
     FUEL_FACTOR_VERSION,
@@ -118,6 +119,8 @@ __all__ = [
     "resolve_factor",
     "resolve_factor_trace",
     "resolve_factor_with_trace",
+    "app",
+    "main",
     "PortDecision",
     "FactorResolutionTrace",
     "ResultProvenance",
