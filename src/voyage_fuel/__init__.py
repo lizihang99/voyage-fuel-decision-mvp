@@ -32,7 +32,13 @@ from .contracts import (
     MetricDelta,
     ParsedDecisionCase,
 )
-from .json_io import calculate_voyage_json
+from .json_io import (
+    calculate_voyage_json,
+    decision_case_result_to_dict,
+    parse_component,
+    parse_decision_case,
+)
+from .issues import issue_from_exception
 from .constraints import calculate_constraints, calculate_minimum_target_ratio
 from .economics import (
     build_economics,
@@ -69,6 +75,10 @@ __all__ = [
     "MetricDelta",
     "ParsedDecisionCase",
     "calculate_voyage_json",
+    "decision_case_result_to_dict",
+    "issue_from_exception",
+    "parse_component",
+    "parse_decision_case",
     "calculate_constraints",
     "calculate_minimum_target_ratio",
     "build_economics",
