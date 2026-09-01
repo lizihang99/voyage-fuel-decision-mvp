@@ -44,3 +44,14 @@ P0-P1/
 项目的模块状态、已验证证据、剩余任务、执行顺序和最终验收条件统一维护在[MVP交付计划与进度](./docs/superpowers/plans/2026-09-01-mvp-delivery-plan.md)。其他计划文件作为历史记录保留，不作为当前完成度依据。
 
 当前已经验证单候选Python计算内核，完整网页MVP仍需完成多候选案例编排、结构化结果与追溯、完整报告、网页工作流和端到端验收。FuelEU结果仍是航次比例估算，不代表正式年度合规余额、真实罚款或独立物理生命周期WtW减排。
+
+## 浏览器验收
+
+网页端到端测试位于 `tests/e2e/`，使用 Python Playwright 启动隔离的本地 `voyage-fuel-web` 服务，并覆盖桌面 `1440x900`、移动 `390x844`、多候选比较、RFNBO 回退证据、阻断候选隔离、显示精度和 CSV/PDF 导出。运行前请安装 Playwright 浏览器；也可以通过 `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` 指向已有 Chrome：
+
+```powershell
+& "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m playwright install chromium
+& "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m unittest discover -s tests/e2e -v
+```
+
+测试截图和导出证据写入 `tests/e2e/artifacts/`，服务状态和计算结果保持浏览器内存与本地临时进程范围内，不创建案例会话文件。

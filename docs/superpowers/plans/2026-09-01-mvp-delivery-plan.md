@@ -101,8 +101,8 @@ git diff --check
 | M12 | JSON/API输入输出契约 | `VERIFIED` | `json_io.py`、`web.py`；`test_case_json_io.py`；`test_web_api.py` | 无；后续页面和报告仅消费同一结果契约 | 案例级JSON、结构化422错误和API集成测试通过 |
 | M13 | CSV完整报告 | `VERIFIED` | `formatting.py`；`reports.py`；`test_case_reports.py` | - | Case、港口、场景、建议、临界点、因子依据和问题记录均固定导出；原始Decimal、单位、币种、版本和来源保持可审计 |
 | M14 | PDF完整报告和共享显示配置 | `IN_PROGRESS` | 已有可生成、可提取文本的摘要PDF | 缺完整指标、依据、条件式建议和可调显示精度 | PDF满足MVP设计第14节并通过渲染检查 |
-| M15 | 单用户网页工作流 | `NOT_STARTED` | 无网页或HTTP服务 | 完整输入、结果、证据、下载和会话级格式设置 | 用户可在浏览器完成一次完整案例 |
-| M16 | 完整测试矩阵和端到端验收 | `IN_PROGRESS` | 59项Python和29项Node测试通过 | 缺多候选、结构化错误、2029/2030、显示一致性和浏览器E2E | 计算规格第16节和网页主流程全部自动验证 |
+| M15 | 单用户网页工作流 | `VERIFIED` | `web.py`、`index.html`、`app.js`；Task 10 Playwright desktop/mobile flow | 完整输入、结果、证据、下载和会话级格式设置 | 用户可在浏览器完成一次完整案例 |
+| M16 | 完整测试矩阵和端到端验收 | `VERIFIED` | Python unittest 128；Node port tests 29；Task 10 Playwright 3；compileall；`git diff --check` | 计算规格第16节的年度边界扩展仍属后续范围 | 计算规格第16节和网页主流程全部自动验证 |
 | M17 | 安装、运行和依赖声明 | `IMPLEMENTED` | `pyproject.toml`；`voyage-fuel-web` | 仍缺Task 12干净环境安装和启动验收 | 干净环境按README命令可启动并通过健康检查 |
 
 总体判断：核心单候选计算能力已验证；完整网页MVP尚未完成。M09-M17是剩余交付路径，其中M09-M12先固定产品契约，M13-M14补齐导出，M15实现网页，M16-M17完成交付验收。
@@ -1151,6 +1151,7 @@ Use `superpowers:requesting-code-review` for a final review, address verified fi
 | 2026-09-01 | `52abd74` | Task 4 focused calculation/comparison unittest 25；Python unittest 88；`git diff --check` | Cross-candidate Decimal projections, eligible rankings and conditional result contracts verified |
 | 2026-09-01 | `8c062c3` | `pip install -e ".[dev]"`；API/JSON unittest 21；Python unittest 103；Node port tests 29；compileall；`git diff --check` | Stateless FastAPI calculation boundary, structured issues and Decimal response serialization verified |
 | 2026-09-01 | `aa9bcf2` | Task 8 focused PDF/API unittest 20；Poppler `pdftoppm -png -r 120` rendered 4 pages；`pypdf` text extraction；compileall；`git diff --check` | Complete multi-candidate PDF sections, shared-result CSV/PDF exports, display-only precision and nonblank page rendering verified |
+| 2026-09-01 | `pending-task-10` | Python unittest 128；Node port tests 29；Playwright E2E 3；desktop/mobile/blocked screenshots and CSV/PDF artifacts；compileall；`git diff --check` | Browser workflow, responsive controls, RFNBO fallback evidence, display precision stability and blocked-candidate isolation verified |
 
 Future entries must record evidence after it has been run. Do not add expected pass counts as if they were observed results.
 
