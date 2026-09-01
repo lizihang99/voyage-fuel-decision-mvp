@@ -3,6 +3,7 @@ import io
 import json
 import unittest
 from decimal import Decimal
+from pathlib import Path
 
 from voyage_fuel.case_calculator import calculate_decision_case
 from voyage_fuel.contracts import CandidateInput, DecisionCaseInput
@@ -11,6 +12,7 @@ from voyage_fuel.json_io import decision_case_result_to_dict, parse_decision_cas
 from voyage_fuel.models import FuelComponent
 from voyage_fuel.formatting import DisplayConfig, format_for_display
 from voyage_fuel.reports import decision_case_to_csv, write_decision_case_csv
+from voyage_fuel.reports import decision_case_to_pdf, write_decision_case_pdf
 
 
 class CaseReportTests(unittest.TestCase):
@@ -33,6 +35,44 @@ class CaseReportTests(unittest.TestCase):
             ),),
         )
         return calculate_decision_case(request)
+
+    def make_multi_candidate_result(self):
+        fixture = Path(__file__).parent / "fixtures" / "multi_candidate_case.json"
+        return calculate_decision_case(parse_decision_case(json.loads(fixture.read_text(encoding="utf-8"))).request)
+
+    def test_complete_pdf_contains_all_auditable_sections_and_scenarios(self):
+        result = self.make_multi_candidate_result()
+        pdf = decision_case_to_pdf(result)
+        self.assertTrue(pdf.startswith(b"%PDF"))
+        from pypdf import PdfReader
+        text = "\n".join(page.extract_text() or "" for page in PdfReader(io.BytesIO(pdf)).pages)
+        expected = (
+            "2026", "CNSHG", "NLRTM", "EUR", "voyage-level", "EU ETS", "FuelEU", "ONE_IN_SCOPE",
+            "B0", "uco-quote-1@0.2", "lng-quote-1@0.1", "Fuel mass", "Energy", "Fuel cost",
+            "CO2", "CH4", "N2O", "EUAs", "EUA cost", "Model cost", "WtT", "TtW", "GHGI",
+            "Target", "Balance", "Indicative penalty", "annual", "relative-to-B0", "factor status",
+            "Qualification", "Requested path", "Resolved path", "Evidence", "BLOCKED", "FEASIBLE",
+            "Conditional", "switch", "2026-08-07", "2026-08-31-audit", "2026-07-23",
+        )
+        for fragment in expected:
+            self.assertIn(fragment.casefold(), text.casefold(), fragment)
+
+    def test_pdf_display_config_changes_rendered_precision_only(self):
+        result = self.make_multi_candidate_result()
+        before = json.dumps(decision_case_result_to_dict(result), sort_keys=True)
+        csv_before = decision_case_to_csv(result, DisplayConfig(ratio_decimals=1))
+        pdf_default = decision_case_to_pdf(result, DisplayConfig(ratio_decimals=1, gas_decimals=2))
+        pdf_precise = decision_case_to_pdf(result, DisplayConfig(ratio_decimals=6, gas_decimals=8))
+        self.assertNotEqual(pdf_default, pdf_precise)
+        self.assertEqual(csv_before, decision_case_to_csv(result, DisplayConfig(ratio_decimals=6, gas_decimals=8)))
+        self.assertEqual(before, json.dumps(decision_case_result_to_dict(result), sort_keys=True))
+
+    def test_write_case_pdf(self):
+        from tempfile import TemporaryDirectory
+        with TemporaryDirectory() as directory:
+            path = write_decision_case_pdf(self.make_multi_candidate_result(), f"{directory}/case.pdf")
+            self.assertTrue(path.exists())
+            self.assertTrue(path.read_bytes().startswith(b"%PDF"))
 
     def test_display_defaults_and_presentation_format(self):
         config = DisplayConfig()

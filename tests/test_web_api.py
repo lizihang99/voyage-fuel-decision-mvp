@@ -118,6 +118,33 @@ class WebApiTests(unittest.TestCase):
             self.assertEqual(list(Path(temporary_directory).iterdir()), [])
             self.assertNotIn("set-cookie", response.headers)
 
+    def test_export_csv_calculates_server_result_and_returns_auditable_csv(self):
+        payload = minimum_payload()
+        payload["calculatedResult"] = {"model_cost": "client forged value"}
+        response = self.client.post("/api/export/csv", json=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/csv", response.headers["content-type"])
+        self.assertIn("attachment", response.headers.get("content-disposition", ""))
+        self.assertIn("record_type", response.text)
+        self.assertIn("scenario", response.text)
+        self.assertNotIn("client forged value", response.text)
+
+    def test_export_pdf_returns_complete_nonempty_pdf(self):
+        response = self.client.post("/api/export/pdf", json=minimum_payload())
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["content-type"], "application/pdf")
+        self.assertIn("attachment", response.headers.get("content-disposition", ""))
+        self.assertTrue(response.content.startswith(b"%PDF"))
+        self.assertGreater(len(response.content), 1000)
+
+    def test_export_endpoints_preserve_structured_case_errors(self):
+        payload = minimum_payload()
+        payload["adjacentValidPortOfCallConfirmed"] = False
+        for path in ("/api/export/csv", "/api/export/pdf"):
+            response = self.client.post(path, json=payload)
+            self.assertEqual(response.status_code, 422)
+            self.assertEqual(response.json()["issues"][0]["code"], "PORT_OF_CALL_CONFIRMATION_REQUIRED")
+
 
 if __name__ == "__main__":
     unittest.main()

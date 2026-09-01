@@ -1,0 +1,35 @@
+{
+  "reportYear": 2026,
+  "departurePort": "CNSHG",
+  "arrivalPort": "NLRTM",
+  "adjacentValidPortOfCallConfirmed": true,
+  "currency": "EUR",
+  "baseline": {
+    "pathId": "MDO",
+    "massTonnes": "100",
+    "pricePerTonne": "700"
+  },
+  "euaPricePerTCO2e": "80",
+  "candidates": [
+    {
+      "candidateId": "uco-quote-1",
+      "pathId": "UCO_FAME",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": ["0.2", "0.5"],
+      "maxBlendRatio": "0.6",
+      "candidateAllowsPureUse": true,
+      "candidateSupplyTonnes": "60",
+      "incrementalBudget": "30000"
+    },
+    {
+      "candidateId": "lng-quote-1",
+      "pathId": "LNG_OTTO_MEDIUM_SPEED",
+      "pricePerTonne": "850",
+      "specifiedBlendRatios": ["0.1", "0.3"],
+      "maxBlendRatio": "0.5",
+      "candidateAllowsPureUse": false,
+      "candidateSupplyTonnes": "50",
+      "incrementalBudget": "20000"
+    }
+  ]
+}

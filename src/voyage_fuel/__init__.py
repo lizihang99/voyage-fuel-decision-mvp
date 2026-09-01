@@ -55,7 +55,7 @@ from .economics import (
 )
 from .reports import (
     voyage_result_to_csv, write_voyage_csv, voyage_result_to_pdf, write_voyage_pdf,
-    decision_case_to_csv, write_decision_case_csv,
+    decision_case_to_csv, write_decision_case_csv, decision_case_to_pdf, write_decision_case_pdf,
 )
 from .formatting import DisplayConfig, format_for_display
 from .custom_factors import resolve_custom_factor
@@ -118,6 +118,8 @@ __all__ = [
     "write_voyage_pdf",
     "decision_case_to_csv",
     "write_decision_case_csv",
+    "decision_case_to_pdf",
+    "write_decision_case_pdf",
     "DisplayConfig",
     "format_for_display",
     "resolve_custom_factor",

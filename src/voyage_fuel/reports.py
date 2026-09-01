@@ -2,12 +2,13 @@
 
 import csv
 import io
+from html import escape
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
 from .contracts import DecisionCaseResult
-from .formatting import DisplayConfig
+from .formatting import DisplayConfig, format_for_display
 from .models import ScenarioResult, VoyageResult
 
 
@@ -377,6 +378,257 @@ def decision_case_to_csv(result: DecisionCaseResult, display_config: DisplayConf
 def write_decision_case_csv(result: DecisionCaseResult, path: str | Path, display_config: DisplayConfig | None = None) -> Path:
     target = Path(path)
     target.write_text(decision_case_to_csv(result, display_config), encoding="utf-8", newline="")
+    return target
+
+
+def decision_case_to_pdf(
+    result: DecisionCaseResult,
+    display_config: DisplayConfig | None = None,
+) -> bytes:
+    """Render an auditable multi-section decision case report.
+
+    The report is a projection only: it never invokes the calculation kernel and
+    never mutates ``result``.  ``display_config`` controls presentation precision
+    while the CSV serializer continues to expose lossless Decimal strings.
+    """
+    if not isinstance(result, DecisionCaseResult):
+        raise TypeError("result must be a DecisionCaseResult")
+    try:
+        from reportlab.lib import colors
+        from reportlab.lib.enums import TA_LEFT
+        from reportlab.lib.pagesizes import A4, landscape
+        from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+        from reportlab.lib.units import mm
+        from reportlab.platypus import (
+            KeepTogether, LongTable, PageBreak, Paragraph, SimpleDocTemplate,
+            Spacer, Table, TableStyle,
+        )
+    except ImportError as exc:
+        raise RuntimeError("reportlab is required for PDF export") from exc
+
+    config = display_config or DisplayConfig()
+
+    def value(item: Any, kind: str = "generic") -> str:
+        rendered = format_for_display(item, kind, config)
+        return rendered if rendered != "" else "-"
+
+    def text(item: Any) -> str:
+        rendered = "-" if item is None or item == "" else str(item)
+        return escape(rendered).replace("\n", "<br/>")
+
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(
+        name="ReportTitle", parent=styles["Title"], fontName="Helvetica-Bold",
+        fontSize=17, leading=21, spaceAfter=5 * mm,
+    ))
+    styles.add(ParagraphStyle(
+        name="ReportHeading", parent=styles["Heading2"], fontName="Helvetica-Bold",
+        fontSize=11, leading=14, spaceBefore=4 * mm, spaceAfter=2 * mm,
+    ))
+    styles.add(ParagraphStyle(
+        name="ReportBody", parent=styles["BodyText"], fontName="Helvetica",
+        fontSize=8.5, leading=11, alignment=TA_LEFT,
+    ))
+    styles.add(ParagraphStyle(
+        name="ReportCell", parent=styles["BodyText"], fontName="Helvetica",
+        fontSize=6.8, leading=8.2, wordWrap="CJK",
+    ))
+    styles.add(ParagraphStyle(
+        name="ReportCellSmall", parent=styles["BodyText"], fontName="Helvetica",
+        fontSize=6.1, leading=7.2, wordWrap="CJK",
+    ))
+
+    def cell(item: Any, small: bool = False) -> Paragraph:
+        return Paragraph(text(item), styles["ReportCellSmall" if small else "ReportCell"])
+
+    def make_table(rows: list[list[Any]], widths: list[float], *, header: bool = True, small: bool = False) -> Table:
+        converted = [[cell(item, small=small) if not isinstance(item, Paragraph) else item for item in row] for row in rows]
+        table = LongTable(converted, colWidths=widths, repeatRows=1 if header else 0, hAlign="LEFT")
+        commands = [
+            ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#AAB7C4")),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 3),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 3),
+            ("TOPPADDING", (0, 0), (-1, -1), 2),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+        ]
+        if header:
+            commands.extend([
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1F4E79")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ])
+        table.setStyle(TableStyle(commands))
+        return table
+
+    story: list[Any] = [Paragraph("Voyage Fuel Decision Report", styles["ReportTitle"])]
+    story.append(Paragraph(
+        f"Report year: {text(result.report_year)} | Departure: {text(result.departure_port)} | "
+        f"Arrival: {text(result.arrival_port)} | Case currency: {text(result.currency)}",
+        styles["ReportBody"],
+    ))
+    story.append(Paragraph(
+        "Boundary: voyage-level regulatory estimate for this submitted voyage. "
+        "FuelEU indicative penalty equivalent is not a formal annual penalty or annual-limit settlement; "
+        "execution conditions remain pending and this report is not a procurement recommendation.",
+        styles["ReportBody"],
+    ))
+
+    provenance = result.provenance
+    story.append(Paragraph("Case boundary and scope", styles["ReportHeading"]))
+    boundary_rows = [["Field", "Value"],
+        ["EU ETS identity", text(getattr(provenance, "eu_ets_reason", None))],
+        ["EU ETS geographic scope rate", value(getattr(provenance, "eu_ets_geographic_rate", None), "scope_rate")],
+        ["EU ETS surrender rate", value(getattr(provenance, "eu_ets_surrender_rate", None), "scope_rate")],
+        ["FuelEU identity / reason", text(getattr(provenance, "fuel_eu_reason", None))],
+        ["FuelEU scope rate", value(getattr(provenance, "fuel_eu_rate", None), "scope_rate")],
+        ["Source IDs", text("; ".join(getattr(provenance, "source_ids", ()) or ()))],
+    ]
+    story.append(make_table(boundary_rows, [57 * mm, 113 * mm], small=True))
+
+    story.append(Paragraph("Conclusions and conditional recommendations", styles["ReportHeading"]))
+    recommendation_rows = [["ID", "Condition", "Status", "Scenario", "Reason / assumptions"]]
+    for recommendation in result.recommendations:
+        recommendation_rows.append([
+            recommendation.recommendation_id, recommendation.condition, recommendation.status,
+            recommendation.scenario_id or "-",
+            f"{recommendation.reason}; " + "; ".join(recommendation.assumptions),
+        ])
+    if len(recommendation_rows) == 1:
+        recommendation_rows.append(["-", "-", "-", "-", "No recommendation available"])
+    story.append(make_table(recommendation_rows, [38 * mm, 38 * mm, 22 * mm, 32 * mm, 40 * mm], small=True))
+
+    story.append(Paragraph("Scenario comparison (fuel mass and energy)", styles["ReportHeading"]))
+    scenario_rows = [[
+        "Scenario", "Candidate", "Ratio", "Baseline mass (t)", "Candidate mass (t)", "Energy (GJ)", "Fuel cost", "Model cost",
+        "CO2 (t)", "CH4 (t)", "N2O (t)", "EUAs", "EUA cost", "Calc / constraint / execution",
+    ]]
+    for scenario in result.scenarios:
+        item = scenario.result
+        scenario_rows.append([
+            scenario.scenario_id, scenario.candidate_id or "B0", value(item.ratio, "ratio"),
+            value(item.baseline_mass_tonnes, "fuel_mass"), value(item.candidate_mass_tonnes, "fuel_mass"),
+            value(item.physical_energy_mj, "energy"), value(item.fuel_cost, "price"), value(item.model_cost, "price"),
+            value(item.eu_ets.raw_co2_t, "gas"), value(item.eu_ets.raw_ch4_t, "gas"), value(item.eu_ets.raw_n2o_t, "gas"),
+            value(item.eu_ets.euas_required, "gas"), value(item.eu_ets.eua_cost, "price"),
+            f"{scenario.calculation_status} / {item.constraint_status} / {item.execution_status}",
+        ])
+    if len(scenario_rows) == 1:
+        scenario_rows.append(["-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-"])
+    story.append(make_table(scenario_rows, [22*mm, 18*mm, 14*mm, 20*mm, 20*mm, 19*mm, 19*mm, 19*mm, 16*mm, 16*mm, 16*mm, 16*mm, 19*mm, 31*mm], small=True))
+
+    story.append(Paragraph("Absolute and relative-to-B0 changes", styles["ReportHeading"]))
+    change_rows = [["Scenario", "Metric", "Absolute", "Change", "Relative-to-B0 (%)"]]
+    for scenario in result.scenarios:
+        for metric_name, kind in (("fuel_cost", "price"), ("model_cost", "price"), ("euas_required", "gas"), ("eua_cost", "price")):
+            delta = scenario.deltas.get(metric_name)
+            if delta is not None:
+                change_rows.append([scenario.scenario_id, metric_name, value(delta.absolute, kind), value(delta.delta, kind), value(delta.percent_delta, "generic") + ("%" if delta.percent_delta is not None else "")])
+    if len(change_rows) == 1:
+        change_rows.append(["-", "-", "-", "-", "-"])
+    story.append(make_table(change_rows, [40*mm, 35*mm, 38*mm, 38*mm, 46*mm], small=True))
+
+    story.append(Paragraph("Concrete switch points", styles["ReportHeading"]))
+    switch_rows = [["Candidate", "From scenario", "To scenario", "Value star (case currency)"]]
+    for recommendation in result.recommendations:
+        if recommendation.from_scenario_id and recommendation.to_scenario_id:
+            switch_rows.append([recommendation.from_candidate_id or recommendation.to_candidate_id or "-", recommendation.from_scenario_id, recommendation.to_scenario_id, value(recommendation.value_star, "price")])
+    if len(switch_rows) == 1:
+        switch_rows.append(["-", "-", "-", "-"])
+    story.append(make_table(switch_rows, [40*mm, 50*mm, 50*mm, 52*mm], small=True))
+
+    story.append(Paragraph("FuelEU metrics and changes relative to B0", styles["ReportHeading"]))
+    fueleu_rows = [["Scenario", "WtT (g/MJ)", "TtW (g/MJ)", "GHGI (g/MJ)", "Target (g/MJ)", "Balance (tCO2e)", "Indicative penalty equivalent (EUR)", "Absolute / relative-to-B0"]]
+    for scenario in result.scenarios:
+        item = scenario.result.fuel_eu
+        ghgi_delta = scenario.deltas.get("fueleu_ghgi_actual_g_per_mj")
+        fueleu_rows.append([
+            scenario.scenario_id, value(item.wt_t_intensity_g_per_mj, "intensity"),
+            value(item.tt_w_intensity_g_per_mj, "intensity"), value(item.ghgi_actual_g_per_mj, "intensity"),
+            value(item.target_g_per_mj, "intensity"), value(item.compliance_balance_t, "gas"),
+            value(item.indicative_penalty_eur, "price"),
+            f"GHGI abs {value(ghgi_delta.delta if ghgi_delta else None, 'intensity')}; "
+            f"rel {value(ghgi_delta.percent_delta if ghgi_delta else None, 'generic')}%",
+        ])
+    story.append(make_table(fueleu_rows, [22*mm, 20*mm, 20*mm, 20*mm, 20*mm, 24*mm, 31*mm, 43*mm], small=True))
+
+    story.append(Paragraph("Constraints and thresholds", styles["ReportHeading"]))
+    constraints_rows = [["Candidate", "Max blend", "Supply (t)", "Budget", "xBudget", "xSupply", "xCap", "Target status", "Target min", "Target min cost", "Max improvement", "Cost min"]]
+    for candidate in result.candidate_results:
+        voyage = candidate.voyage_result
+        c = voyage.constraints if voyage else None
+        if c is None:
+            constraints_rows.append([candidate.candidate_id, "-", "-", "-", "-", "-", "-", "BLOCKED", "-", "-", "-", "-"])
+            continue
+        constraints_rows.append([
+            candidate.candidate_id, value(c.max_blend_ratio, "ratio"), value(c.candidate_supply_tonnes, "fuel_mass"),
+            value(c.incremental_budget, "price"), value(c.x_budget, "ratio"), value(c.x_supply, "ratio"),
+            value(c.x_cap, "ratio"), c.target_status, value(c.x_target_min, "ratio"),
+            value(c.x_target_min_cost, "ratio"), value(c.x_max_improvement, "ratio"), value(c.x_cost_min, "ratio"),
+        ])
+    story.append(make_table(constraints_rows, [24*mm, 17*mm, 19*mm, 19*mm, 15*mm, 15*mm, 15*mm, 24*mm, 19*mm, 23*mm, 22*mm, 18*mm], small=True))
+
+    story.append(Paragraph("Factor evidence and resolution", styles["ReportHeading"]))
+    factor_rows = [["Requested path", "Resolved path", "Fallback reason", "Qualification", "Factor status", "Evidence", "Values"]]
+    for trace in getattr(provenance, "factor_resolutions", ()) or ():
+        factor = trace.factor
+        values = "; ".join(
+            f"{name}={value(getattr(factor, name, None), 'factor')}"
+            for name in ("lcv_mj_per_g", "wt_t_g_per_mj", "cf_co2_g_per_g", "cf_ch4_g_per_g", "cf_n2o_g_per_g", "rwd", "cslip_percent")
+            if getattr(factor, name, None) is not None
+        )
+        evidence = "; ".join(getattr(item, "source_id", "") for item in getattr(factor, "source_evidence", ()) or ())
+        factor_rows.append([trace.requested_path_id, trace.resolved_path_id, trace.resolution_reason, trace.qualification_status, trace.factor_status, evidence or "-", values or "-"])
+    if len(factor_rows) == 1:
+        factor_rows.append(["-", "-", "-", "-", "-", "-", "-"])
+    story.append(make_table(factor_rows, [25*mm, 25*mm, 34*mm, 24*mm, 22*mm, 35*mm, 35*mm], small=True))
+
+    story.append(Paragraph("Port evidence", styles["ReportHeading"]))
+    port_rows = [["Role", "Port", "UN/LOCODE", "EU ETS identity", "FuelEU identity", "Rule source ID", "Source version"]]
+    for role, port in (("Departure", getattr(provenance, "departure", None)), ("Arrival", getattr(provenance, "arrival", None))):
+        if port is not None:
+            port_rows.append([role, port.port_name, port.unlocode, port.eu_ets_identity, port.fuel_eu_identity, port.rule_source_id, port.source_version])
+    if len(port_rows) == 1:
+        port_rows.append(["-", "-", "-", "-", "-", "-", "-"])
+    story.append(make_table(port_rows, [18*mm, 30*mm, 24*mm, 28*mm, 28*mm, 35*mm, 27*mm], small=True))
+
+    story.append(Paragraph("Issues", styles["ReportHeading"]))
+    issue_rows = [["Scope", "Candidate", "Code", "Field", "Blocking", "Message"]]
+    all_issues = result.issues + tuple(issue for candidate in result.candidate_results for issue in candidate.issues)
+    seen: set[tuple[Any, ...]] = set()
+    for issue in all_issues:
+        identity = (issue.code, issue.scope, issue.field, issue.candidate_id, issue.scenario_id, issue.blocking, issue.message)
+        if identity in seen:
+            continue
+        seen.add(identity)
+        issue_rows.append([issue.scope, issue.candidate_id or "-", issue.code, issue.field, str(issue.blocking).lower(), issue.message])
+    if len(issue_rows) == 1:
+        issue_rows.append(["-", "-", "-", "-", "-", "No issues recorded"])
+    story.append(make_table(issue_rows, [20*mm, 27*mm, 30*mm, 34*mm, 18*mm, 41*mm], small=True))
+
+    story.append(Paragraph("Methodology and versions", styles["ReportHeading"]))
+    versions = [["Calculation specification version", text(getattr(provenance, "calculation_spec_version", None))],
+        ["Fuel factor version", text(getattr(provenance, "fuel_factor_version", None))],
+        ["Port rule version", text(getattr(provenance, "port_rule_version", None))],
+        ["Calculation status vocabulary", "BLOCKED, CALCULABLE, COMPARABLE"],
+        ["Execution status", "EXECUTION_CONDITIONS_PENDING"],
+        ["FuelEU limitation", "Voyage-level proportional estimate; indicative EUR equivalent is not an annual legal penalty or annual-limit result."],
+    ]
+    story.append(make_table([["Method", "Value"], *versions], [57*mm, 113*mm], small=True))
+
+    output = io.BytesIO()
+    document = SimpleDocTemplate(
+        output, pagesize=landscape(A4), rightMargin=14 * mm, leftMargin=14 * mm,
+        topMargin=13 * mm, bottomMargin=13 * mm, title="Voyage Fuel Decision Report",
+        author="voyage-fuel-decision-mvp",
+    )
+    document.build(story)
+    return output.getvalue()
+
+
+def write_decision_case_pdf(result: DecisionCaseResult, path: str | Path, display_config: DisplayConfig | None = None) -> Path:
+    target = Path(path)
+    target.write_bytes(decision_case_to_pdf(result, display_config))
     return target
 
 
