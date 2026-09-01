@@ -5,8 +5,11 @@ from __future__ import annotations
 import argparse
 from typing import Any
 
-from fastapi import Body, FastAPI, Query
-from fastapi.responses import JSONResponse, Response
+from fastapi import Body, FastAPI, Query, Request
+from fastapi.responses import HTMLResponse, JSONResponse, Response
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from pathlib import Path
 
 from .case_calculator import calculate_parsed_decision_case
 from .factors import builtin_path_ids
@@ -17,6 +20,15 @@ from .reports import decision_case_to_csv, decision_case_to_pdf
 
 
 app = FastAPI(title="Voyage Fuel Decision API", version="0.1.0")
+_PACKAGE_DIR = Path(__file__).resolve().parent
+_templates = Jinja2Templates(directory=str(_PACKAGE_DIR / "templates"))
+app.mount("/static", StaticFiles(directory=str(_PACKAGE_DIR / "static")), name="static")
+
+
+@app.get("/", response_class=HTMLResponse)
+def index(request: Request) -> HTMLResponse:
+    """Serve the stateless operational calculator shell."""
+    return _templates.TemplateResponse(request=request, name="index.html", context={})
 
 
 @app.get("/health")

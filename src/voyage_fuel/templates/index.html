@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>航次燃料决策计算器</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">航运合规分析</p>
+      <h1>航次燃料决策计算器</h1>
+    </div>
+    <div class="topbar-actions">
+      <span id="calculation-boundary-status" class="status-chip">航次级估算 · 不含年度罚款结算</span>
+      <button id="export-csv" class="button secondary" type="button">下载 CSV</button>
+      <button id="export-pdf" class="button secondary" type="button">下载 PDF</button>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="workspace input-workspace" aria-labelledby="input-heading">
+      <div class="section-heading"><div><p class="eyebrow">输入工作区</p><h2 id="input-heading">航次与燃料假设</h2></div><span class="required-note">带 * 为必填</span></div>
+      <form id="case-form" novalidate>
+        <fieldset>
+          <legend>航次边界</legend>
+          <div class="field-grid three">
+            <label for="report-year">报告年份 *<input id="report-year" name="reportYear" type="number" min="2024" max="2030" step="1" value="2026" required></label>
+            <label for="case-currency">案例货币 *<select id="case-currency" name="currency"><option>EUR</option><option>USD</option><option>GBP</option></select></label>
+            <label class="check-field" for="adjacent-port-confirmation"><input id="adjacent-port-confirmation" name="adjacentValidPortOfCallConfirmed" type="checkbox" checked> 已确认相邻有效 Port of Call</label>
+          </div>
+          <div class="field-grid two port-fields">
+            <label for="departure-port-search">出发港 *<input id="departure-port-search" name="departurePort" type="search" placeholder="输入 UN/LOCODE 或港口名" autocomplete="off" required><span id="departure-port-options" class="lookup-options" role="listbox"></span><span id="departure-port-error" class="field-error" aria-live="polite"></span></label>
+            <label for="arrival-port-search">到达港 *<input id="arrival-port-search" name="arrivalPort" type="search" placeholder="输入 UN/LOCODE 或港口名" autocomplete="off" required><span id="arrival-port-options" class="lookup-options" role="listbox"></span><span id="arrival-port-error" class="field-error" aria-live="polite"></span></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>基准燃料</legend>
+          <div class="field-grid four">
+            <label for="baseline-fuel">燃料路径 *<select id="baseline-fuel" name="baseline.pathId" required><option value="MDO">加载燃料目录…</option></select></label>
+            <label for="baseline-mass">质量 (t) *<input id="baseline-mass" name="baseline.massTonnes" type="number" min="0.000001" step="any" value="100" required></label>
+            <label for="baseline-price">价格 / t<input id="baseline-price" name="baseline.pricePerTonne" type="number" min="0" step="any" value="700"></label>
+            <label for="eua-price">EUA 价格 / tCO2e<input id="eua-price" name="euaPricePerTCO2e" type="number" min="0" step="any" value="80"></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <div class="section-heading compact"><legend>候选燃料报价</legend><button id="add-candidate" class="button secondary" type="button">添加候选燃料</button></div>
+          <div id="candidate-collection" class="candidate-collection" aria-live="polite"></div>
+        </fieldset>
+        <div id="case-errors" class="issue-list" aria-live="polite"></div>
+        <button id="calculate-command" class="button primary" type="submit">计算航次结果</button>
+      </form>
+    </section>
+
+    <section class="workspace results-workspace" aria-labelledby="results-heading">
+      <div class="section-heading"><div><p class="eyebrow">结果工作区</p><h2 id="results-heading">比较与依据</h2></div><span id="result-run-status" class="status-chip muted">尚未计算</span></div>
+      <div id="result-boundary-summary" class="boundary-summary" role="status">提交输入后，这里会显示航次级 FuelEU / EU ETS 计算边界。</div>
+      <div class="tabs" role="tablist" aria-label="结果视图">
+        <button class="tab active" role="tab" aria-selected="true" aria-controls="overview-panel" data-tab="overview-panel">Overview</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="scenarios-panel" data-tab="scenarios-panel">Scenarios</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="thresholds-panel" data-tab="thresholds-panel">Thresholds</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="evidence-panel" data-tab="evidence-panel">Evidence</button>
+      </div>
+      <div id="overview-panel" class="tab-panel active" role="tabpanel">
+        <div id="overview-metrics" class="metric-grid"><p class="empty-state">暂无结果。</p></div>
+        <div id="conditional-recommendations" class="recommendations"><h3>条件式建议</h3><p class="empty-state">暂无建议。</p></div>
+      </div>
+      <div id="scenarios-panel" class="tab-panel" role="tabpanel" hidden>
+        <div class="table-scroll"><table id="scenario-comparison-table"><caption>场景比较（数值保留原始精度，显示设置仅影响展示）</caption><thead><tr><th>场景</th><th>候选燃料</th><th>状态</th><th>混合比例</th><th>模型成本</th><th>FuelEU GHGI</th><th>合规余额 (t)</th><th>排序</th></tr></thead><tbody><tr><td colspan="8" class="empty-state">暂无场景。</td></tr></tbody></table></div>
+      </div>
+      <div id="thresholds-panel" class="tab-panel" role="tabpanel" hidden>
+        <div id="thresholds-content" class="table-scroll"><p class="empty-state">暂无约束阈值。</p></div>
+      </div>
+      <div id="evidence-panel" class="tab-panel" role="tabpanel" hidden>
+        <div id="calculation-basis" class="evidence-grid"><p class="empty-state">暂无计算依据。</p></div>
+      </div>
+      <div id="result-issues" class="issue-list" aria-live="polite"></div>
+    </section>
+
+    <section id="display-precision" class="settings-strip" aria-labelledby="display-heading">
+      <div><p class="eyebrow">展示设置</p><h2 id="display-heading">显示精度</h2></div>
+      <label>质量小数位<input id="precision-mass" type="number" min="0" max="9" value="3"></label>
+      <label>能量小数位<input id="precision-energy" type="number" min="0" max="9" value="3"></label>
+      <label>比例小数位<input id="precision-ratio" type="number" min="0" max="9" value="4"></label>
+      <label>价格小数位<input id="precision-price" type="number" min="0" max="9" value="2"></label>
+      <p class="settings-note">仅改变页面和 PDF 的显示，不改变原始计算、排序或 CSV 数据。</p>
+    </section>
+  </main>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>
