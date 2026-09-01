@@ -1,6 +1,9 @@
 from decimal import Decimal
+from dataclasses import replace
 import unittest
+from unittest.mock import patch
 
+from voyage_fuel.calculator import calculate_voyage as calculate_single_voyage
 from voyage_fuel.case_calculator import (
     calculate_decision_case,
     calculate_parsed_decision_case,
@@ -151,6 +154,42 @@ class CaseCalculatorTests(unittest.TestCase):
         self.assertEqual(result.candidate_results[1].calculation_status, "BLOCKED")
         self.assertIsNone(result.candidate_results[1].voyage_result)
         self.assertEqual(result.candidate_results[1].issues[0].scope, "CANDIDATE")
+
+    def test_inconsistent_candidate_b0_blocks_the_entire_case(self):
+        request = _case(CandidateInput("uco-1", _component("UCO_FAME", "1000")))
+
+        def inconsistent_candidate_b0(voyage_request):
+            result = calculate_single_voyage(voyage_request)
+            if voyage_request.candidate_component.factor.path_id != "UCO_FAME":
+                return result
+            mismatched_b0 = replace(
+                result.scenarios[0],
+                physical_energy_mj=result.scenarios[0].physical_energy_mj + Decimal("1"),
+            )
+            return replace(result, scenarios=(mismatched_b0, *result.scenarios[1:]))
+
+        parse_issue = Issue(
+            code="INVALID_BLEND_RATIO",
+            scope="CANDIDATE",
+            field="candidates[1].specifiedBlendRatios[0]",
+            blocking=True,
+            message="ratio must be within the blend cap",
+            candidate_id="bad-lng",
+        )
+        with patch(
+            "voyage_fuel.case_calculator.calculate_voyage",
+            side_effect=inconsistent_candidate_b0,
+        ):
+            result = calculate_decision_case(request, initial_issues=(parse_issue,))
+
+        self.assertIsNone(result.baseline_scenario)
+        self.assertEqual(result.candidate_results, ())
+        self.assertEqual(result.scenarios, ())
+        self.assertEqual(result.recommendations, ())
+        self.assertEqual(len(result.issues), 2)
+        self.assertEqual(result.issues[0].code, "INCONSISTENT_BASELINE")
+        self.assertTrue(result.issues[0].blocking)
+        self.assertEqual(result.issues[1], parse_issue)
 
 
 if __name__ == "__main__":

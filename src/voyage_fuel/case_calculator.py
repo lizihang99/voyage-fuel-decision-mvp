@@ -108,15 +108,19 @@ def calculate_baseline_scenario(request: DecisionCaseInput) -> ScenarioResult:
 
 
 def _baseline_matches(left: ScenarioResult, right: ScenarioResult) -> bool:
+    """Compare B0 quantities that must be common before case-level deduplication.
+
+    Candidate price availability can make a single-voyage B0 fuel-cost field
+    unknown even at ratio zero. That remains a candidate economic-status
+    concern, while the shared physical and compliance baseline is valid.
+    """
     return (
         left.ratio == right.ratio
         and left.baseline_mass_tonnes == right.baseline_mass_tonnes
         and left.candidate_mass_tonnes == right.candidate_mass_tonnes
         and left.physical_energy_mj == right.physical_energy_mj
-        and left.fuel_cost == right.fuel_cost
         and left.eu_ets == right.eu_ets
         and left.fuel_eu == right.fuel_eu
-        and left.model_cost == right.model_cost
     )
 
 
@@ -200,16 +204,25 @@ def calculate_decision_case(
             )
             continue
         if not voyage_result.scenarios or not _baseline_matches(voyage_result.scenarios[0], baseline):
-            case_issue_list.append(
-                Issue(
-                    code="INCONSISTENT_BASELINE",
-                    scope="CASE",
-                    field="baseline",
-                    blocking=True,
-                    message="Candidate B0 does not match the shared case baseline.",
-                    candidate_id=candidate.candidate_id,
-                    component=candidate.component.factor.path_id,
-                )
+            issue = Issue(
+                code="INCONSISTENT_BASELINE",
+                scope="CASE",
+                field="baseline",
+                blocking=True,
+                message="Candidate B0 does not match the shared case baseline.",
+                candidate_id=candidate.candidate_id,
+                component=candidate.component.factor.path_id,
+            )
+            return DecisionCaseResult(
+                report_year=request.report_year,
+                departure_port=request.departure_port,
+                arrival_port=request.arrival_port,
+                currency=request.currency,
+                baseline_scenario=None,
+                candidate_results=(),
+                scenarios=(),
+                recommendations=(),
+                issues=(*case_issue_list, issue, *candidate_issues),
             )
         results.append(
             CandidateResult(
