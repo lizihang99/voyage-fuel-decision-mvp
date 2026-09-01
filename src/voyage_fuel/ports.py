@@ -112,7 +112,7 @@ def calculate_scope_rates(
     if fuel_eu_applicable:
         if "OMR" in (departure["fuelEuStatus"], arrival["fuelEuStatus"]):
             fuel_eu_scope = Decimal("0.5")
-            fuel_eu_reason = "ONE_IN_SCOPE"
+            fuel_eu_reason = "OMR_SPECIAL_RULE"
         else:
             fuel_eu_scope, fuel_eu_reason = _matrix_rate((departure["fuelEuStatus"], arrival["fuelEuStatus"]))
     departure_decision = PortDecision(

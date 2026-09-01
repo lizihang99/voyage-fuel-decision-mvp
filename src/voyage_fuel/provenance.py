@@ -47,15 +47,16 @@ class FactorResolutionTrace:
 class ResultProvenance:
     """Provenance carried by each decision-case result."""
 
-    departure: PortDecision
-    arrival: PortDecision
-    eu_ets_reason: str
-    fuel_eu_reason: str
-    eu_ets_geographic_rate: Decimal
-    eu_ets_surrender_rate: Decimal
+    departure: PortDecision | None
+    arrival: PortDecision | None
+    eu_ets_reason: str | None
+    fuel_eu_reason: str | None
+    eu_ets_geographic_rate: Decimal | None
+    eu_ets_surrender_rate: Decimal | None
     fuel_eu_rate: Decimal | None
     factor_resolutions: tuple[FactorResolutionTrace, ...]
     source_ids: tuple[str, ...]
+    status: str = "AVAILABLE"
     calculation_spec_version: str = CALCULATION_SPEC_VERSION
     fuel_factor_version: str = FUEL_FACTOR_VERSION
     port_rule_version: str = PORT_RULE_VERSION
@@ -63,13 +64,15 @@ class ResultProvenance:
     def __post_init__(self) -> None:
         object.__setattr__(self, "factor_resolutions", tuple(self.factor_resolutions))
         object.__setattr__(self, "source_ids", tuple(dict.fromkeys(str(item) for item in self.source_ids if item)))
-        object.__setattr__(self, "eu_ets_geographic_rate", Decimal(str(self.eu_ets_geographic_rate)))
-        object.__setattr__(self, "eu_ets_surrender_rate", Decimal(str(self.eu_ets_surrender_rate)))
+        if self.eu_ets_geographic_rate is not None:
+            object.__setattr__(self, "eu_ets_geographic_rate", Decimal(str(self.eu_ets_geographic_rate)))
+        if self.eu_ets_surrender_rate is not None:
+            object.__setattr__(self, "eu_ets_surrender_rate", Decimal(str(self.eu_ets_surrender_rate)))
         if self.fuel_eu_rate is not None:
             object.__setattr__(self, "fuel_eu_rate", Decimal(str(self.fuel_eu_rate)))
 
     @property
-    def port_decisions(self) -> tuple[PortDecision, PortDecision]:
+    def port_decisions(self) -> tuple[PortDecision | None, PortDecision | None]:
         return (self.departure, self.arrival)
 
     @property
