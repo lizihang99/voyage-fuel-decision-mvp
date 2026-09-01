@@ -57,6 +57,36 @@ class CaseReportTests(unittest.TestCase):
         for fragment in expected:
             self.assertIn(fragment.casefold(), text.casefold(), fragment)
 
+    def test_pdf_uses_port_identities_and_lists_full_change_metric_set(self):
+        result = self.make_multi_candidate_result()
+        from pypdf import PdfReader
+        text = "\n".join(page.extract_text() or "" for page in PdfReader(io.BytesIO(decision_case_to_pdf(result))).pages)
+        for fragment in (
+            "Departure EU ETS identity", "Arrival EU ETS identity", "Departure FuelEU identity",
+            "Arrival FuelEU identity", "EU ETS reason", "FuelEU reason", "THIRD_COUNTRY", "IN_SCOPE",
+            "Baseline fuel mass", "Candidate fuel mass", "Physical energy", "CO2", "CH4", "N2O",
+            "WtT", "TtW", "GHGI", "Target", "Compliance balance", "Indicative penalty equivalent",
+            "Reference-adjusted cost", "Delta", "Relative-to-B0",
+        ):
+            self.assertIn(fragment.casefold(), text.casefold(), fragment)
+
+    def test_csv_issue_rows_preserve_scenario_and_component_location(self):
+        payload = {
+            "reportYear": 2026, "departurePort": "CNSHG", "arrivalPort": "NLRTM",
+            "adjacentValidPortOfCallConfirmed": True, "currency": "EUR",
+            "baseline": {"pathId": "MGO", "massTonnes": "100"},
+            "candidates": [{"candidateId": "bad", "pathId": "UNKNOWN_PATH", "maxBlendRatio": "invalid"}],
+        }
+        parsed = parse_decision_case(payload)
+        result = calculate_decision_case(parsed.request, parsed.issues)
+        rows = list(csv.DictReader(io.StringIO(decision_case_to_csv(result))))
+        issue = next(row for row in rows if row["record_type"] == "issue" and row["issue_code"])
+        self.assertEqual(issue["candidate_id"], "bad")
+        self.assertEqual(issue["issue_component"], "UNKNOWN_PATH")
+        self.assertEqual(issue["component"], "UNKNOWN_PATH")
+        self.assertTrue(issue["issue_field"])
+        self.assertIn("scenario_id", issue)
+
     def test_pdf_display_config_changes_rendered_precision_only(self):
         result = self.make_multi_candidate_result()
         before = json.dumps(decision_case_result_to_dict(result), sort_keys=True)

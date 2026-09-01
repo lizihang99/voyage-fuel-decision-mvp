@@ -205,7 +205,7 @@ CASE_CSV_COLUMNS = (
     "eu_ets_identity", "fuel_eu_identity", "port_rule_source_id", "requested_path_id",
     "resolved_path_id", "resolution_reason", "qualification_status", "factor_status",
     "factor_source_id", "factor_field", "factor_value", "verification_status", "issue_code", "issue_scope",
-    "issue_field", "issue_blocking", "issue_message", "value_star", "eu_ets_reason", "fuel_eu_reason",
+    "issue_field", "component", "issue_component", "issue_blocking", "issue_message", "value_star", "eu_ets_reason", "fuel_eu_reason",
     "eu_ets_scope_rate", "eu_ets_surrender_rate", "fuel_eu_scope_rate",
 )
 
@@ -360,7 +360,13 @@ def decision_case_to_csv(result: DecisionCaseResult, display_config: DisplayConf
             continue
         seen_issues.add(identity)
         row = _case_base(result, "issue")
-        row.update({"candidate_id": _text(issue.candidate_id), "issue_code": issue.code, "issue_scope": issue.scope, "issue_field": issue.field, "issue_blocking": str(issue.blocking).lower(), "issue_message": issue.message})
+        row.update({
+            "candidate_id": _text(issue.candidate_id), "scenario_id": _text(issue.scenario_id),
+            "issue_code": issue.code, "issue_scope": issue.scope, "issue_field": issue.field,
+            "component": _text(issue.component), "issue_component": _text(issue.component),
+            "issue_blocking": str(issue.blocking).lower(),
+            "issue_message": issue.message,
+        })
         rows.append(row)
     # Keep the record-type vocabulary stable for consumers even when an
     # optional section has no entries in a particular case.
@@ -476,11 +482,17 @@ def decision_case_to_pdf(
 
     provenance = result.provenance
     story.append(Paragraph("Case boundary and scope", styles["ReportHeading"]))
+    departure = getattr(provenance, "departure", None)
+    arrival = getattr(provenance, "arrival", None)
     boundary_rows = [["Field", "Value"],
-        ["EU ETS identity", text(getattr(provenance, "eu_ets_reason", None))],
+        ["Departure EU ETS identity", text(getattr(departure, "eu_ets_identity", None))],
+        ["Arrival EU ETS identity", text(getattr(arrival, "eu_ets_identity", None))],
+        ["Departure FuelEU identity", text(getattr(departure, "fuel_eu_identity", None))],
+        ["Arrival FuelEU identity", text(getattr(arrival, "fuel_eu_identity", None))],
+        ["EU ETS reason", text(getattr(provenance, "eu_ets_reason", None))],
         ["EU ETS geographic scope rate", value(getattr(provenance, "eu_ets_geographic_rate", None), "scope_rate")],
         ["EU ETS surrender rate", value(getattr(provenance, "eu_ets_surrender_rate", None), "scope_rate")],
-        ["FuelEU identity / reason", text(getattr(provenance, "fuel_eu_reason", None))],
+        ["FuelEU reason", text(getattr(provenance, "fuel_eu_reason", None))],
         ["FuelEU scope rate", value(getattr(provenance, "fuel_eu_rate", None), "scope_rate")],
         ["Source IDs", text("; ".join(getattr(provenance, "source_ids", ()) or ()))],
     ]
@@ -518,12 +530,34 @@ def decision_case_to_pdf(
     story.append(make_table(scenario_rows, [22*mm, 18*mm, 14*mm, 20*mm, 20*mm, 19*mm, 19*mm, 19*mm, 16*mm, 16*mm, 16*mm, 16*mm, 19*mm, 31*mm], small=True))
 
     story.append(Paragraph("Absolute and relative-to-B0 changes", styles["ReportHeading"]))
-    change_rows = [["Scenario", "Metric", "Absolute", "Change", "Relative-to-B0 (%)"]]
+    change_rows = [["Scenario", "Metric", "Absolute", "Delta", "Relative-to-B0 (%)"]]
+    change_metrics = (
+        ("baseline_mass_tonnes", "Baseline fuel mass", "fuel_mass"),
+        ("candidate_mass_tonnes", "Candidate fuel mass", "fuel_mass"),
+        ("physical_energy_mj", "Physical energy", "energy"),
+        ("fuel_cost", "Fuel cost", "price"),
+        ("ets_raw_co2_t", "CO2", "gas"), ("ets_raw_ch4_t", "CH4", "gas"),
+        ("ets_raw_n2o_t", "N2O", "gas"), ("ets_mrv_raw_co2e_t", "MRV raw CO2e", "gas"),
+        ("ets_co2e_pre_scope_t", "EU ETS CO2e before scope", "gas"),
+        ("euas_required", "EUAs required", "gas"), ("eua_cost", "EUA cost", "price"),
+        ("model_cost", "Model cost", "price"),
+        ("fueleu_scoped_energy_mj", "FuelEU scoped energy", "energy"),
+        ("fueleu_denominator_rwd_mj", "FuelEU RWD denominator", "energy"),
+        ("fueleu_wtt_intensity_g_per_mj", "WtT", "intensity"),
+        ("fueleu_ttw_intensity_g_per_mj", "TtW", "intensity"),
+        ("fueleu_ghgi_actual_g_per_mj", "GHGI", "intensity"),
+        ("fueleu_target_g_per_mj", "Target", "intensity"),
+        ("fueleu_compliance_balance_g", "Compliance balance (g)", "gas"),
+        ("fueleu_compliance_balance_t", "Compliance balance", "gas"),
+        ("fueleu_indicative_penalty_eur", "Indicative penalty equivalent", "price"),
+        ("compliance_improvement_tco2e", "Compliance improvement", "gas"),
+        ("reference_adjusted_cost", "Reference-adjusted cost", "price"),
+    )
     for scenario in result.scenarios:
-        for metric_name, kind in (("fuel_cost", "price"), ("model_cost", "price"), ("euas_required", "gas"), ("eua_cost", "price")):
+        for metric_name, label, kind in change_metrics:
             delta = scenario.deltas.get(metric_name)
             if delta is not None:
-                change_rows.append([scenario.scenario_id, metric_name, value(delta.absolute, kind), value(delta.delta, kind), value(delta.percent_delta, "generic") + ("%" if delta.percent_delta is not None else "")])
+                change_rows.append([scenario.scenario_id, label, value(delta.absolute, kind), value(delta.delta, kind), value(delta.percent_delta, "generic") + ("%" if delta.percent_delta is not None else "")])
     if len(change_rows) == 1:
         change_rows.append(["-", "-", "-", "-", "-"])
     story.append(make_table(change_rows, [40*mm, 35*mm, 38*mm, 38*mm, 46*mm], small=True))
@@ -593,7 +627,7 @@ def decision_case_to_pdf(
     story.append(make_table(port_rows, [18*mm, 30*mm, 24*mm, 28*mm, 28*mm, 35*mm, 27*mm], small=True))
 
     story.append(Paragraph("Issues", styles["ReportHeading"]))
-    issue_rows = [["Scope", "Candidate", "Code", "Field", "Blocking", "Message"]]
+    issue_rows = [["Scope", "Candidate", "Scenario", "Component", "Code", "Field", "Blocking", "Message"]]
     all_issues = result.issues + tuple(issue for candidate in result.candidate_results for issue in candidate.issues)
     seen: set[tuple[Any, ...]] = set()
     for issue in all_issues:
@@ -601,10 +635,10 @@ def decision_case_to_pdf(
         if identity in seen:
             continue
         seen.add(identity)
-        issue_rows.append([issue.scope, issue.candidate_id or "-", issue.code, issue.field, str(issue.blocking).lower(), issue.message])
+        issue_rows.append([issue.scope, issue.candidate_id or "-", issue.scenario_id or "-", issue.component or "-", issue.code, issue.field, str(issue.blocking).lower(), issue.message])
     if len(issue_rows) == 1:
-        issue_rows.append(["-", "-", "-", "-", "-", "No issues recorded"])
-    story.append(make_table(issue_rows, [20*mm, 27*mm, 30*mm, 34*mm, 18*mm, 41*mm], small=True))
+        issue_rows.append(["-", "-", "-", "-", "-", "-", "-", "No issues recorded"])
+    story.append(make_table(issue_rows, [17*mm, 25*mm, 31*mm, 25*mm, 27*mm, 31*mm, 18*mm, 35*mm], small=True))
 
     story.append(Paragraph("Methodology and versions", styles["ReportHeading"]))
     versions = [["Calculation specification version", text(getattr(provenance, "calculation_spec_version", None))],
