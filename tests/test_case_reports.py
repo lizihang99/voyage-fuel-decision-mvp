@@ -45,6 +45,7 @@ class CaseReportTests(unittest.TestCase):
         self.assertEqual(config.price_decimals, 2)
         self.assertEqual(config.factor_decimals, 9)
         self.assertEqual(format_for_display(Decimal("12.34567"), "fuel_mass", config), "12.346")
+        self.assertEqual(format_for_display(Decimal("12345.6789"), "energy_gj", config), "12.346")
         self.assertEqual(format_for_display(Decimal("0.123456"), "ratio", config), "12.3456")
         self.assertEqual(format_for_display(Decimal("1.2300000000"), "factor", config), "1.23")
 

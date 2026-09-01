@@ -57,7 +57,7 @@ class DisplayConfig:
 
 _ALIASES = {
     "mass": "fuel_mass_decimals", "fuel_mass": "fuel_mass_decimals",
-    "energy": "energy_decimals", "ratio": "ratio_decimals",
+    "energy": "energy_decimals", "energy_gj": "energy_decimals", "ratio": "ratio_decimals",
     "scope_rate": "scope_rate_decimals", "scope": "scope_rate_decimals",
     "ghgi": "intensity_decimals", "wt_t": "intensity_decimals",
     "ttw": "intensity_decimals", "tt_w": "intensity_decimals",
