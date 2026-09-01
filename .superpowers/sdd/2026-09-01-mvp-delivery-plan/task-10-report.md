@@ -63,3 +63,18 @@ git diff --check
 All commands completed successfully after the review fixes.
 
 Review fix commit: `8d1d6f5cf38a7c17131b60bfad2070a113bb4b36`.
+
+## Review Fix Round 2
+
+The precision-only browser flow now independently captures visible scenario rows before and after changing price/ratio decimals, asserts unchanged scenario IDs and ranks, and verifies the visible order against raw API model-cost ordering.
+
+Focused verification command:
+
+```text
+python -m unittest discover -s tests/e2e -v
+Ran 3 tests ... OK
+python -m compileall -q src tests
+git diff --check
+```
+
+All commands completed successfully after the second review fix.
