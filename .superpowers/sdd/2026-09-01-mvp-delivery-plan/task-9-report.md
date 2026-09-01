@@ -62,3 +62,32 @@ Both commands completed successfully.
 
 Task 9 component and API tests are implemented and passing. Browser-level visual and interaction
 verification remains Task 10 work; this report does not claim that browser verification is complete.
+
+## Review follow-up
+
+Addressed the Task 9 review findings in the page layer:
+
+- Failed calculation requests now clear `state.result` and all rendered result sections before
+  showing structured issues, preventing stale results from being exported or mistaken as current.
+- Candidate runtime issues are matched to their affected row by indexed fields or structured
+  `candidate_id`, and the combined case/candidate issue list is deduplicated by structured identity.
+- Candidate add/remove actions synchronize the DOM rows back into `state.candidates` before mutation
+  and rerendering.
+- The candidate `legend` is the direct first child of its `fieldset` for native fieldset semantics.
+- CSV/PDF export failures now have a user-visible structured fallback and network-error catch path.
+
+Focused verification from this worktree:
+
+```powershell
+& "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m unittest tests.test_web_page tests.test_web_api -v
+```
+
+Result: 15 tests passed.
+
+```powershell
+node --check src/voyage_fuel/static/app.js
+& "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m compileall -q src tests
+git diff --check
+```
+
+All commands completed successfully. Browser-level visual verification remains Task 10 work.
