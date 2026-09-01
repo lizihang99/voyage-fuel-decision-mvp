@@ -538,7 +538,7 @@ $env:PYTHONPATH='src'
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit unified comparisons**
+- [x] **Step 5: Commit unified comparisons**
 
 ```powershell
 git add src/voyage_fuel/case_comparison.py src/voyage_fuel/contracts.py src/voyage_fuel/case_calculator.py tests/test_case_comparison.py docs/superpowers/plans/2026-09-01-mvp-delivery-plan.md
@@ -1147,6 +1147,7 @@ Use `superpowers:requesting-code-review` for a final review, address verified fi
 | 2026-09-01 | `1180092` | Task 1 focused contracts/models 10；Python unittest 67；compileall；`git diff --check` | Case contracts and report-year boundary verified |
 | 2026-09-01 | `a168b6b` | Task 2 focused JSON/factor tests 24；Python unittest 77；Node port tests 29；compileall；`git diff --check` | Structured case parsing, exact field issues and legacy JSON compatibility verified |
 | 2026-09-01 | `86e86a0` | Task 3 focused orchestration/kernel tests 16 | Multi-candidate B0 orchestration, local blocking and price-status isolation verified |
+| 2026-09-01 | `52abd74` | Task 4 focused calculation/comparison unittest 25；Python unittest 88；`git diff --check` | Cross-candidate Decimal projections, eligible rankings and conditional result contracts verified |
 
 Future entries must record evidence after it has been run. Do not add expected pass counts as if they were observed results.
 
