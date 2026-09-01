@@ -1,6 +1,7 @@
 """Port identity loading and the first-release scope-rate rules."""
 
 import csv
+from importlib import resources
 import re
 from pathlib import Path
 from typing import Mapping, Optional
@@ -30,12 +31,10 @@ EXPECTED_STATUSES = {
     "FAROE_ISLANDS": ("THIRD_COUNTRY", "THIRD_COUNTRY"),
     "THIRD_COUNTRY": ("THIRD_COUNTRY", "THIRD_COUNTRY"),
 }
-DEFAULT_PORT_TABLE_PATH = (
-    Path(__file__).resolve().parents[2]
-    / "官方参考资料"
-    / "港口基础数据"
-    / "UNLOCODE_2025-1_港口制度身份清单.csv"
-)
+_PORT_TABLE_RESOURCE = "UNLOCODE_2025-1_港口制度身份清单.csv"
+# Retain the historical symbol for callers that inspect the default location.
+# Runtime loading uses importlib.resources so zipped and wheel installs work.
+DEFAULT_PORT_TABLE_PATH = Path(__file__).resolve().parent / "data" / _PORT_TABLE_RESOURCE
 
 
 def _normalize_unlocode(value: str) -> str:
@@ -46,8 +45,10 @@ def _normalize_unlocode(value: str) -> str:
 
 
 def load_port_table(path: Optional[str | Path] = None) -> dict[str, dict[str, str]]:
-    resolved = Path(path) if path is not None else DEFAULT_PORT_TABLE_PATH
-    with resolved.open("r", encoding="utf-8-sig", newline="") as handle:
+    source = Path(path) if path is not None else resources.files("voyage_fuel").joinpath(
+        "data", _PORT_TABLE_RESOURCE
+    )
+    with source.open("r", encoding="utf-8-sig", newline="") as handle:
         reader = csv.DictReader(handle)
         if tuple(reader.fieldnames or ()) != PORT_COLUMNS:
             raise ValueError(f"Unexpected port table columns: {reader.fieldnames}")

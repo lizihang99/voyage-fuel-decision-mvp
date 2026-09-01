@@ -1,10 +1,19 @@
 from decimal import Decimal
+from importlib import resources
 import unittest
 
 from voyage_fuel.ports import calculate_scope_rates, load_port_table
 
 
 class PortScopeTests(unittest.TestCase):
+    def test_default_port_table_is_resolved_from_packaged_resource(self):
+        resource = resources.files("voyage_fuel").joinpath(
+            "data", "UNLOCODE_2025-1_港口制度身份清单.csv"
+        )
+
+        self.assertTrue(resource.is_file())
+        self.assertEqual(load_port_table()["NLRTM"]["portName"], "Rotterdam")
+
     def test_formal_table_and_eu_third_country_rates(self):
         table = load_port_table()
         self.assertEqual(len(table), 17519)
