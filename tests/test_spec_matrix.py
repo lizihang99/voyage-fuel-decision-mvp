@@ -1,12 +1,11 @@
 import csv
-import io
 import json
 import unittest
 from decimal import Decimal
 
 from voyage_fuel.case_calculator import calculate_decision_case
 from voyage_fuel.case_comparison import metric_delta
-from voyage_fuel.contracts import CandidateInput, DecisionCaseInput, Issue
+from voyage_fuel.contracts import CandidateInput, DecisionCaseInput
 from voyage_fuel.emissions import calculate_eu_ets, calculate_fueleu
 from voyage_fuel.factors import get_builtin_factor, resolve_factor
 from voyage_fuel.json_io import calculate_voyage_json, decision_case_result_to_dict, parse_decision_case
@@ -136,19 +135,40 @@ class SpecificationMatrixTests(unittest.TestCase):
     def test_budget_supply_blend_limits_are_individually_and_jointly_binding(self):
         baseline = _component("MGO", "600")
         candidate = FuelComponent(get_builtin_factor("UCO_FAME"), Decimal("1000"), eligible_biomass_fraction=Decimal("1"), qualification_status="ASSUMED_ELIGIBLE")
-        common = dict(
-            report_year=2026, baseline_mass_tonnes=Decimal("100"), baseline=baseline, candidate=candidate,
-            scope=_scope("0.5", "1", "0.5"), max_blend_ratio=Decimal("0.8"), baseline_energy_mj=Decimal("4270000"),
-            eua_price_per_tco2e=Decimal("80"),
-        )
         budget_only = calculate_voyage(VoyageInput(2026, "CNSHG", "NLRTM", baseline, Decimal("100"), candidate, Decimal("80"), incremental_budget=Decimal("5000")))
         self.assertLess(budget_only.constraints.x_budget, Decimal("1"))
         self.assertEqual(budget_only.constraints.x_cap, budget_only.constraints.x_budget)
         supply_only = calculate_voyage(VoyageInput(2026, "CNSHG", "NLRTM", baseline, Decimal("100"), candidate, Decimal("80"), candidate_supply_tonnes=Decimal("10")))
         self.assertLess(supply_only.constraints.x_supply, Decimal("1"))
         self.assertEqual(supply_only.constraints.x_cap, supply_only.constraints.x_supply)
-        joint = calculate_voyage(VoyageInput(2026, "CNSHG", "NLRTM", baseline, Decimal("100"), candidate, Decimal("80"), candidate_supply_tonnes=Decimal("10"), incremental_budget=Decimal("5000"), max_blend_ratio=Decimal("0.30")))
+
+        blend_only = calculate_voyage(VoyageInput(
+            2026, "CNSHG", "NLRTM", baseline, Decimal("100"), candidate, Decimal("80"),
+            candidate_supply_tonnes=Decimal("1000"), incremental_budget=Decimal("100000"),
+            max_blend_ratio=Decimal("0.05"), candidate_allows_pure_use=True,
+        ))
+        self.assertEqual(blend_only.constraints.x_budget, Decimal("1"))
+        self.assertEqual(blend_only.constraints.x_supply, Decimal("1"))
+        self.assertEqual(blend_only.constraints.x_cap, Decimal("0.05"))
+        blend_cap_row = next(row for row in blend_only.scenarios if row.ratio == Decimal("0.05"))
+        self.assertEqual(blend_cap_row.constraint_status, "FEASIBLE")
+        b100_row = next(row for row in blend_only.scenarios if row.ratio == Decimal("1"))
+        self.assertEqual(b100_row.constraint_status, "CONSTRAINT_INFEASIBLE")
+
+        joint = calculate_voyage(VoyageInput(
+            2026, "CNSHG", "NLRTM", baseline, Decimal("100"), candidate, Decimal("80"),
+            candidate_supply_tonnes=Decimal("100"), incremental_budget=Decimal("12000"),
+            max_blend_ratio=Decimal("0.30"), candidate_allows_pure_use=True,
+        ))
+        self.assertGreater(joint.constraints.x_budget, Decimal("0.30"))
+        self.assertGreater(joint.constraints.x_supply, Decimal("0.30"))
         self.assertEqual(joint.constraints.x_cap, min(joint.constraints.x_budget, joint.constraints.x_supply, Decimal("0.30")))
+        joint_cap_row = next(row for row in joint.scenarios if row.ratio == Decimal("0.30"))
+        self.assertEqual(joint_cap_row.constraint_status, "FEASIBLE")
+        budget_row = next(row for row in joint.scenarios if row.ratio == joint.constraints.x_budget)
+        supply_row = next(row for row in joint.scenarios if row.ratio == joint.constraints.x_supply)
+        self.assertEqual(budget_row.constraint_status, "CONSTRAINT_INFEASIBLE")
+        self.assertEqual(supply_row.constraint_status, "CONSTRAINT_INFEASIBLE")
 
     def test_b100_is_retained_as_infeasible_reference_when_pure_use_allowed(self):
         baseline = _component("MDO", "700")
@@ -214,22 +234,27 @@ class SpecificationMatrixTests(unittest.TestCase):
         self.assertEqual(resolve_factor("LPG_PROPANE").cslip_semantics, "SA")
         with self.assertRaisesRegex(ValueError, "recognized Cslip required"):
             resolve_factor("LPG_PROPANE", qualification_status="VERIFIED_ELIGIBLE")
-        blocked_request = DecisionCaseInput(
-            report_year=2026, departure_port="CNSHG", arrival_port="NLRTM",
-            adjacent_valid_port_of_call_confirmed=True, currency="EUR",
-            baseline_component=_component("MDO", "700"), baseline_mass_tonnes=Decimal("1"),
-            eua_price_per_tco2e=None,
-            candidates=(CandidateInput("ok", _component("UCO_FAME", None, eligible_biomass_fraction=Decimal("1"), qualification_status="ASSUMED_ELIGIBLE")),),
-        )
-        synthetic_issue = Issue(
-            code="INVALID_BLEND_RATIO",
-            scope="CANDIDATE",
-            field="candidates[1].specifiedBlendRatios[0]",
-            blocking=True,
-            message="ratio must be within the blend cap",
-            candidate_id="bad",
-        )
-        blocked_result = calculate_decision_case(blocked_request, (synthetic_issue,))
+        blocked_payload = {
+            "reportYear": 2026, "departurePort": "CNSHG", "arrivalPort": "NLRTM",
+            "adjacentValidPortOfCallConfirmed": True, "currency": "EUR",
+            "baseline": {"pathId": "MDO", "massTonnes": "100", "pricePerTonne": "700"},
+            "euaPricePerTCO2e": "80",
+            "candidates": [
+                {"candidateId": "ok", "pathId": "UCO_FAME", "pricePerTonne": "1000"},
+                {"candidateId": "bad", "pathId": "LNG_OTTO_MEDIUM_SPEED", "specifiedBlendRatios": ["1.2"]},
+            ],
+        }
+        blocked_parsed = parse_decision_case(blocked_payload)
+        self.assertIsNotNone(blocked_parsed.request)
+        self.assertEqual(blocked_parsed.issues[0].candidate_id, "bad")
+        self.assertEqual(blocked_parsed.issues[0].field, "candidates[1].specifiedBlendRatios[0]")
+        blocked_result = calculate_decision_case(blocked_parsed.request, blocked_parsed.issues)
+        blocked_json = decision_case_result_to_dict(blocked_result)
+        self.assertEqual([row["candidate_id"] for row in blocked_json["candidate_results"]], ["ok", "bad"])
+        self.assertEqual(blocked_json["candidate_results"][1]["calculation_status"], "BLOCKED")
+        self.assertIsNone(blocked_json["candidate_results"][1]["voyage_result"])
+        self.assertEqual(blocked_json["scenarios"][0]["scenario_id"], "B0")
+        self.assertTrue(any(row["candidate_id"] == "ok" for row in blocked_json["scenarios"]))
         blocked_csv = decision_case_to_csv(blocked_result)
         self.assertIn("BLOCKED", blocked_csv)
         self.assertIn("INVALID_BLEND_RATIO", blocked_csv)
