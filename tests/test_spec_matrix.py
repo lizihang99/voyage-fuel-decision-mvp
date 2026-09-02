@@ -1,0 +1,273 @@
+import csv
+import io
+import json
+import unittest
+from decimal import Decimal
+
+from voyage_fuel.case_calculator import calculate_decision_case
+from voyage_fuel.case_comparison import metric_delta
+from voyage_fuel.contracts import CandidateInput, DecisionCaseInput, Issue
+from voyage_fuel.emissions import calculate_eu_ets, calculate_fueleu
+from voyage_fuel.factors import get_builtin_factor, resolve_factor
+from voyage_fuel.json_io import calculate_voyage_json, decision_case_result_to_dict, parse_decision_case
+from voyage_fuel.models import FuelAmount, FuelComponent, FuelFactor, ScopeRates, VoyageInput
+from voyage_fuel.ports import calculate_scope_rates
+from voyage_fuel.reports import decision_case_to_csv
+from voyage_fuel.formatting import DisplayConfig
+from voyage_fuel.calculator import calculate_voyage
+
+
+def _component(path_id: str, price: str | None = "600", **kwargs) -> FuelComponent:
+    return FuelComponent(
+        get_builtin_factor(path_id),
+        None if price is None else Decimal(price),
+        **kwargs,
+    )
+
+
+def _scope(ets: str = "1", surrender: str = "1", fuel_eu: str | None = "1") -> ScopeRates:
+    geo = Decimal(ets)
+    surrender_decimal = Decimal(surrender)
+    return ScopeRates(
+        eu_ets_scope_rate=geo,
+        eu_ets_surrender_rate=surrender_decimal,
+        eu_ets_effective_rate=geo * surrender_decimal,
+        fuel_eu_scope_rate=None if fuel_eu is None else Decimal(fuel_eu),
+        fuel_eu_applicable=fuel_eu is not None,
+    )
+
+
+def _synthetic_factor(path_id: str, *, wt_t: str, co2: str = "0", ch4: str = "0", n2o: str = "0", rwd: str = "1") -> FuelFactor:
+    return FuelFactor(
+        path_id=path_id,
+        lcv_mj_per_g=Decimal("0.04"),
+        wt_t_g_per_mj=Decimal(wt_t),
+        cf_co2_g_per_g=Decimal(co2),
+        cf_ch4_g_per_g=Decimal(ch4),
+        cf_n2o_g_per_g=Decimal(n2o),
+        rwd=Decimal(rwd),
+        cslip_percent=None,
+        methane_slip_applicable=False,
+        factor_status="FIXED",
+    )
+
+
+class SpecificationMatrixTests(unittest.TestCase):
+    def test_ets_year_gas_and_surrender_matrix(self):
+        factor = _synthetic_factor("GWP_MATRIX", wt_t="0", co2="1", ch4="0.000001", n2o="0.000001")
+        amount = [FuelAmount(FuelComponent(factor, Decimal("80")), Decimal("1"))]
+        expected_all_gases = Decimal("1.000293")
+        for year, included, surrender in (
+            (2024, ("CO2",), Decimal("0.4")),
+            (2025, ("CO2",), Decimal("0.7")),
+            (2026, ("CO2", "CH4", "N2O"), Decimal("1")),
+            (2029, ("CO2", "CH4", "N2O"), Decimal("1")),
+            (2030, ("CO2", "CH4", "N2O"), Decimal("1")),
+        ):
+            result = calculate_eu_ets(year, amount, _scope("1", str(surrender)), Decimal("80"))
+            self.assertEqual(result.included_gases, included)
+            expected_pre_scope = Decimal("1") if year < 2026 else expected_all_gases
+            self.assertEqual(result.ets_co2e_pre_scope_t, expected_pre_scope)
+            self.assertEqual(result.euas_required, expected_pre_scope * surrender)
+
+    def test_ets_and_fueleu_gwp_constants_are_isolated(self):
+        factor = _synthetic_factor("GWP_ISOLATION", wt_t="0", co2="0", ch4="0.000001", n2o="0.000001")
+        amounts = [FuelAmount(FuelComponent(factor, Decimal("1")), Decimal("1"))]
+        ets = calculate_eu_ets(2026, amounts, _scope(), None)
+        fueleu = calculate_fueleu(2025, amounts, Decimal("1"))
+        self.assertEqual(ets.ets_co2e_pre_scope_t, Decimal("0.000293"))
+        self.assertEqual(fueleu.tt_w_intensity_g_per_mj, Decimal("0.008075"))
+        self.assertNotEqual(Decimal("28"), Decimal("25"))
+        self.assertNotEqual(Decimal("265"), Decimal("298"))
+
+    def test_port_ranges_and_surrender_rates_are_independent(self):
+        cases = (
+            ("CNSHG", "USNYC", Decimal("0")),
+            ("CNSHG", "NLRTM", Decimal("0.5")),
+            ("NLRTM", "SEGOT", Decimal("1")),
+        )
+        for departure, arrival, geo in cases:
+            rates = calculate_scope_rates(2025, departure, arrival)
+            self.assertEqual(rates.eu_ets_scope_rate, geo)
+            self.assertEqual(rates.eu_ets_surrender_rate, Decimal("0.7"))
+            self.assertEqual(rates.eu_ets_effective_rate, geo * Decimal("0.7"))
+            self.assertEqual(rates.fuel_eu_scope_rate, geo)
+        self.assertEqual(calculate_scope_rates(2024, "CNSHG", "NLRTM").fuel_eu_scope_rate, None)
+        self.assertEqual(calculate_scope_rates(2026, "CNSHG", "NLRTM").eu_ets_surrender_rate, Decimal("1"))
+
+    def test_fueleu_targets_and_boundary_statuses(self):
+        amounts = [FuelAmount(FuelComponent(get_builtin_factor("HFO"), Decimal("600")), Decimal("1"))]
+        for year in (2025, 2026, 2029):
+            result = calculate_fueleu(year, amounts, Decimal("1"))
+            self.assertEqual(result.target_g_per_mj, Decimal("89.3368"))
+        self.assertEqual(calculate_fueleu(2030, amounts, Decimal("1")).target_g_per_mj, Decimal("85.6904"))
+        not_yet = calculate_fueleu(2024, amounts, None)
+        self.assertEqual(not_yet.status, "NOT_YET_APPLICABLE")
+        self.assertIsNone(not_yet.target_g_per_mj)
+        out_of_scope = calculate_fueleu(2025, amounts, Decimal("0"))
+        self.assertEqual(out_of_scope.status, "OUT_OF_SCOPE")
+        self.assertEqual(out_of_scope.scoped_energy_mj, Decimal("0"))
+        self.assertIsNone(out_of_scope.compliance_balance_g)
+
+    def test_constraint_target_exact_no_solution_and_unreachable(self):
+        exact = FuelComponent(_synthetic_factor("EXACT", wt_t="89.3368"), Decimal("1"))
+        candidate = FuelComponent(_synthetic_factor("LOW", wt_t="0"), Decimal("1"))
+        exact_result = calculate_voyage(VoyageInput(
+            2025, "CNSHG", "NLRTM", exact, Decimal("1"), candidate, None,
+        ))
+        self.assertEqual(exact_result.constraints.target_status, "TARGET_REACHABLE")
+        self.assertEqual(exact_result.constraints.x_target_min, Decimal("0"))
+
+        high = FuelComponent(_synthetic_factor("HIGH", wt_t="100"), Decimal("1"))
+        no_solution = calculate_voyage(VoyageInput(
+            2025, "CNSHG", "NLRTM", high, Decimal("1"), high, None,
+        ))
+        self.assertEqual(no_solution.constraints.target_status, "TARGET_NO_SOLUTION")
+        self.assertIsNone(no_solution.constraints.x_target_min_unconstrained)
+
+        unreachable = calculate_voyage(VoyageInput(
+            2025, "CNSHG", "NLRTM", high, Decimal("1"), candidate, None,
+            max_blend_ratio=Decimal("0.1"),
+        ))
+        self.assertEqual(unreachable.constraints.target_status, "TARGET_UNREACHABLE_UNDER_CONSTRAINTS")
+        self.assertGreater(unreachable.constraints.x_target_min_unconstrained, unreachable.constraints.x_cap)
+        self.assertIsNone(unreachable.constraints.x_target_min)
+
+    def test_budget_supply_blend_limits_are_individually_and_jointly_binding(self):
+        baseline = _component("MGO", "600")
+        candidate = FuelComponent(get_builtin_factor("UCO_FAME"), Decimal("1000"), eligible_biomass_fraction=Decimal("1"), qualification_status="ASSUMED_ELIGIBLE")
+        common = dict(
+            report_year=2026, baseline_mass_tonnes=Decimal("100"), baseline=baseline, candidate=candidate,
+            scope=_scope("0.5", "1", "0.5"), max_blend_ratio=Decimal("0.8"), baseline_energy_mj=Decimal("4270000"),
+            eua_price_per_tco2e=Decimal("80"),
+        )
+        budget_only = calculate_voyage(VoyageInput(2026, "CNSHG", "NLRTM", baseline, Decimal("100"), candidate, Decimal("80"), incremental_budget=Decimal("5000")))
+        self.assertLess(budget_only.constraints.x_budget, Decimal("1"))
+        self.assertEqual(budget_only.constraints.x_cap, budget_only.constraints.x_budget)
+        supply_only = calculate_voyage(VoyageInput(2026, "CNSHG", "NLRTM", baseline, Decimal("100"), candidate, Decimal("80"), candidate_supply_tonnes=Decimal("10")))
+        self.assertLess(supply_only.constraints.x_supply, Decimal("1"))
+        self.assertEqual(supply_only.constraints.x_cap, supply_only.constraints.x_supply)
+        joint = calculate_voyage(VoyageInput(2026, "CNSHG", "NLRTM", baseline, Decimal("100"), candidate, Decimal("80"), candidate_supply_tonnes=Decimal("10"), incremental_budget=Decimal("5000"), max_blend_ratio=Decimal("0.30")))
+        self.assertEqual(joint.constraints.x_cap, min(joint.constraints.x_budget, joint.constraints.x_supply, Decimal("0.30")))
+
+    def test_b100_is_retained_as_infeasible_reference_when_pure_use_allowed(self):
+        baseline = _component("MDO", "700")
+        candidate = FuelComponent(get_builtin_factor("UCO_FAME"), Decimal("1000"), eligible_biomass_fraction=Decimal("1"), qualification_status="ASSUMED_ELIGIBLE")
+        result = calculate_voyage(VoyageInput(
+            2026, "CNSHG", "NLRTM", baseline, Decimal("100"), candidate, Decimal("80"),
+            candidate_allows_pure_use=True, candidate_supply_tonnes=Decimal("1"), max_blend_ratio=Decimal("0.2"),
+        ))
+        b100 = next(row for row in result.scenarios if row.ratio == Decimal("1"))
+        self.assertEqual(b100.constraint_status, "CONSTRAINT_INFEASIBLE")
+        self.assertIsNotNone(b100.fuel_eu)
+
+    def test_zero_baseline_percent_change_returns_reason_without_division(self):
+        delta = metric_delta(Decimal("12"), Decimal("0"))
+        self.assertEqual(delta.delta, Decimal("12"))
+        self.assertIsNone(delta.percent_delta)
+        self.assertEqual(delta.reason_code, "ZERO_BASELINE")
+
+    def test_invalid_candidate_does_not_block_b0_or_other_candidates(self):
+        payload = {
+            "reportYear": 2026, "departurePort": "CNSHG", "arrivalPort": "NLRTM",
+            "adjacentValidPortOfCallConfirmed": True, "currency": "EUR",
+            "baseline": {"pathId": "MDO", "massTonnes": "100", "pricePerTonne": "700"},
+            "euaPricePerTCO2e": "80",
+            "candidates": [
+                {"candidateId": "ok", "pathId": "UCO_FAME", "pricePerTonne": "1000"},
+                {"candidateId": "bad", "pathId": "LNG_OTTO_MEDIUM_SPEED", "specifiedBlendRatios": ["1.2"]},
+            ],
+        }
+        parsed = parse_decision_case(payload)
+        result = calculate_decision_case(parsed.request, parsed.issues)
+        self.assertEqual(result.candidate_results[0].calculation_status, "COMPARABLE")
+        self.assertEqual(result.candidate_results[1].calculation_status, "BLOCKED")
+        self.assertEqual(result.scenarios[0].scenario_id, "B0")
+        self.assertTrue(any(row.candidate_id == "ok" for row in result.scenarios))
+
+    def test_json_distinguishes_null_zero_na_rc_and_blocking_values(self):
+        def custom_payload(cslip: str, *, cslip_verification: str = "VERIFIED"):
+            evidence = {
+                key: [{"sourceId": f"SRC-{key}", "sourceType": "TEST", "unit": {
+                    "lcv": "MJ/gFuel", "wtT": "gCO2eq/MJ", "cfCO2": "gGHG/gFuel",
+                    "cfCH4": "gGHG/gFuel", "cfN2O": "gGHG/gFuel", "cslip": "%",
+                    "methaneSlipApplicable": "boolean", "rwd": "ratio",
+                    "eligibleBiomassFraction": "fraction",
+                }[key], "verificationStatus": cslip_verification if key == "cslip" else "VERIFIED"}]
+                for key in ("lcv", "wtT", "cfCO2", "cfCH4", "cfN2O", "cslip", "methaneSlipApplicable", "rwd", "eligibleBiomassFraction")
+            }
+            return {
+                "reportYear": 2026, "departurePort": "CNSHG", "arrivalPort": "NLRTM",
+                "adjacentValidPortOfCallConfirmed": True, "currency": "EUR",
+                "baseline": {"pathId": "CUSTOM", "custom": True, "massTonnes": "1", "equipmentId": "ENGINE", "lcv": "0.04", "wtTMode": "STATIC", "wtT": "10", "cfCO2": "3", "cfCH4": "0", "cfN2O": "0", "cslip": cslip, "methaneSlipApplicable": False, "rwd": "1", "eligibleBiomassFraction": "0", "sourceEvidence": evidence},
+                "candidate": {"pathId": "MDO", "massTonnes": "1"}, "euaPricePerTCO2e": None,
+            }
+        null_result = json.loads(calculate_voyage_json(custom_payload("NA")))
+        self.assertIsNone(null_result["scenarios"][0]["eu_ets"]["eua_cost"])
+        self.assertIsNone(null_result["baseline_factor"]["cslip_percent"])
+        self.assertEqual(null_result["baseline_factor"]["cslip_semantics"], "NA")
+        zero_result = json.loads(calculate_voyage_json(custom_payload("0")))
+        self.assertEqual(zero_result["baseline_factor"]["cslip_percent"], "0")
+        rc_result = json.loads(calculate_voyage_json(custom_payload("0", cslip_verification="RC")))
+        rc_evidence = next(item for item in rc_result["baseline_factor"]["source_evidence"] if item["field_name"] == "cslip")
+        self.assertEqual(rc_evidence["verification_status"], "RC")
+        self.assertEqual(resolve_factor("LPG_PROPANE").cslip_semantics, "SA")
+        with self.assertRaisesRegex(ValueError, "recognized Cslip required"):
+            resolve_factor("LPG_PROPANE", qualification_status="VERIFIED_ELIGIBLE")
+        blocked_request = DecisionCaseInput(
+            report_year=2026, departure_port="CNSHG", arrival_port="NLRTM",
+            adjacent_valid_port_of_call_confirmed=True, currency="EUR",
+            baseline_component=_component("MDO", "700"), baseline_mass_tonnes=Decimal("1"),
+            eua_price_per_tco2e=None,
+            candidates=(CandidateInput("ok", _component("UCO_FAME", None, eligible_biomass_fraction=Decimal("1"), qualification_status="ASSUMED_ELIGIBLE")),),
+        )
+        synthetic_issue = Issue(
+            code="INVALID_BLEND_RATIO",
+            scope="CANDIDATE",
+            field="candidates[1].specifiedBlendRatios[0]",
+            blocking=True,
+            message="ratio must be within the blend cap",
+            candidate_id="bad",
+        )
+        blocked_result = calculate_decision_case(blocked_request, (synthetic_issue,))
+        blocked_csv = decision_case_to_csv(blocked_result)
+        self.assertIn("BLOCKED", blocked_csv)
+        self.assertIn("INVALID_BLEND_RATIO", blocked_csv)
+
+    def test_every_case_result_has_versions_and_source_ids(self):
+        request = DecisionCaseInput(
+            report_year=2026, departure_port="CNSHG", arrival_port="NLRTM",
+            adjacent_valid_port_of_call_confirmed=True, currency="EUR",
+            baseline_component=_component("MDO", "700"), baseline_mass_tonnes=Decimal("100"),
+            eua_price_per_tco2e=Decimal("80"), candidates=(CandidateInput(
+                "uco", FuelComponent(get_builtin_factor("UCO_FAME"), Decimal("1000"), eligible_biomass_fraction=Decimal("1"), qualification_status="ASSUMED_ELIGIBLE"),
+            ),),
+        )
+        result = calculate_decision_case(request)
+        provenance = result.provenance
+        self.assertTrue(provenance.calculation_spec_version)
+        self.assertTrue(provenance.fuel_factor_version)
+        self.assertTrue(provenance.port_rule_version)
+        self.assertTrue(provenance.source_ids)
+        self.assertEqual(len(provenance.source_ids), len(set(provenance.source_ids)))
+
+    def test_display_config_cannot_change_raw_json_or_csv(self):
+        payload = {
+            "reportYear": 2026, "departurePort": "CNSHG", "arrivalPort": "NLRTM",
+            "adjacentValidPortOfCallConfirmed": True, "currency": "EUR",
+            "baseline": {"pathId": "MDO", "massTonnes": "100", "pricePerTonne": "700"},
+            "euaPricePerTCO2e": "80",
+            "candidates": [{"candidateId": "uco", "pathId": "UCO_FAME", "pricePerTonne": "1000", "specifiedBlendRatios": ["0.2"]}],
+        }
+        parsed = parse_decision_case(payload)
+        result = calculate_decision_case(parsed.request, parsed.issues)
+        raw_before = json.dumps(decision_case_result_to_dict(result), sort_keys=True)
+        csv_before = decision_case_to_csv(result, DisplayConfig(ratio_decimals=1))
+        raw_after = json.dumps(decision_case_result_to_dict(result), sort_keys=True)
+        csv_after = decision_case_to_csv(result, DisplayConfig(ratio_decimals=8, gas_decimals=8))
+        self.assertEqual(raw_before, raw_after)
+        self.assertEqual(csv_before, csv_after)
+
+
+if __name__ == "__main__":
+    unittest.main()
