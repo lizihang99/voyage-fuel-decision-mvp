@@ -19,6 +19,7 @@ from .models import ScenarioResult
 HUNDRED = Decimal("100")
 ZERO = Decimal("0")
 ONE = Decimal("1")
+INTERSECTION_TOLERANCE = Decimal("1e-30")
 
 
 def metric_delta(value: Decimal | None, baseline: Decimal | None) -> MetricDelta:
@@ -152,7 +153,12 @@ def calculate_case_value_switch_points(
     if not intersections:
         return ()
 
-    ordered = sorted(intersections)
+    ordered_raw = sorted(intersections)
+    ordered: list[Decimal] = []
+    for value in ordered_raw:
+        if ordered and abs(value - ordered[-1]) <= INTERSECTION_TOLERANCE:
+            continue
+        ordered.append(value)
     transitions: list[CaseValueSwitchPoint] = []
 
     def winner(value: Decimal) -> CaseScenario:
