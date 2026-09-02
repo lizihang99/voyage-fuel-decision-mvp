@@ -207,6 +207,17 @@ CASE_CSV_COLUMNS = (
     "factor_source_id", "factor_field", "factor_value", "verification_status", "issue_code", "issue_scope",
     "issue_field", "component", "issue_component", "issue_blocking", "issue_message", "value_star", "eu_ets_reason", "fuel_eu_reason",
     "eu_ets_scope_rate", "eu_ets_surrender_rate", "fuel_eu_scope_rate",
+    "ets_effective_rate", "ets_included_gases", "ets_excluded_gases", "zero_rating_status",
+    "ets_scope_by_gas", "mrv_raw_by_gas", "s_ets_geo", "s_ets_surrender", "s_ets_effective",
+    "equipment_id", "wt_t_mode", "factor_level",
+    "comparison_status",
+    "cost_min_scenario_id", "target_min_cost_scenario_id", "max_improvement_scenario_id",
+    "pc_break_even", "pe_break_even", "pe_break_even_status", "comparison_value",
+    "cost_min_ratio", "cost_sorted_ratios",
+    "max_blend_ratio", "candidate_supply_tonnes", "incremental_budget", "x_budget", "x_supply",
+    "x_cap", "target_status", "x_target_min_unconstrained", "x_target_min", "x_target_min_cost",
+    "x_max_improvement", "x_cost_min",
+    "warning_codes",
 )
 
 
@@ -261,6 +272,27 @@ def _case_metric_rows(result: DecisionCaseResult) -> list[dict[str, str]]:
                     "EUR" if metric_name == "fueleu_indicative_penalty_eur"
                     else result.currency if metric_units.get(metric_name) == "case_currency" else ""
                 ),
+                "ets_effective_rate": _text(scenario.result.eu_ets.s_ets_effective),
+                "ets_included_gases": ";".join(scenario.result.eu_ets.included_gases),
+                "ets_excluded_gases": ";".join(
+                    gas for gas, excluded in (scenario.result.eu_ets.excluded_from_ets_surrender or {}).items()
+                    if excluded
+                ) or "-",
+                "zero_rating_status": ";".join(
+                    f"{path}:{status}" for path, status in
+                    (scenario.result.eu_ets.zero_rating_status_by_fuel_component or {}).items()
+                ),
+                "ets_scope_by_gas": ";".join(
+                    f"{gas}:{_text(rate)}" for gas, rate in
+                    (scenario.result.eu_ets.ets_scope_by_gas or {}).items()
+                ),
+                "mrv_raw_by_gas": ";".join(
+                    f"{gas}:{_text(value)}" for gas, value in
+                    (scenario.result.eu_ets.mrv_raw_by_gas or {}).items()
+                ),
+                "s_ets_geo": _text(scenario.result.eu_ets.s_ets_geo),
+                "s_ets_surrender": _text(scenario.result.eu_ets.s_ets_surrender),
+                "s_ets_effective": _text(scenario.result.eu_ets.s_ets_effective),
             })
             rows.append(row)
     return rows
@@ -284,6 +316,7 @@ def decision_case_to_csv(result: DecisionCaseResult, display_config: DisplayConf
         "eu_ets_scope_rate": _text(getattr(provenance, "eu_ets_geographic_rate", None)),
         "eu_ets_surrender_rate": _text(getattr(provenance, "eu_ets_surrender_rate", None)),
         "fuel_eu_scope_rate": _text(getattr(provenance, "fuel_eu_rate", None)),
+        "ets_effective_rate": _text(getattr(provenance, "eu_ets_effective_rate", None)),
         "unit": "scope_rate",
     })
     rows.append(case)
@@ -304,6 +337,50 @@ def decision_case_to_csv(result: DecisionCaseResult, display_config: DisplayConf
         })
         rows.append(row)
     rows.extend(_case_metric_rows(result))
+    for candidate in result.candidate_results:
+        row = _case_base(result, "constraints")
+        row["candidate_id"] = candidate.candidate_id
+        if candidate.voyage_result is None or candidate.voyage_result.constraints is None:
+            row["calculation_status"] = candidate.calculation_status
+            row["warning_codes"] = ";".join(issue.code for issue in candidate.issues)
+        else:
+            constraints = candidate.voyage_result.constraints
+            row.update({
+                "calculation_status": candidate.calculation_status,
+                "max_blend_ratio": _text(constraints.max_blend_ratio),
+                "candidate_supply_tonnes": _text(constraints.candidate_supply_tonnes),
+                "incremental_budget": _text(constraints.incremental_budget),
+                "x_budget": _text(constraints.x_budget), "x_supply": _text(constraints.x_supply),
+                "x_cap": _text(constraints.x_cap), "target_status": constraints.target_status,
+                "x_target_min_unconstrained": _text(constraints.x_target_min_unconstrained),
+                "x_target_min": _text(constraints.x_target_min),
+                "x_target_min_cost": _text(constraints.x_target_min_cost),
+                "x_max_improvement": _text(constraints.x_max_improvement),
+                "x_cost_min": _text(constraints.x_cost_min),
+                "warning_codes": ";".join(constraints.warning_codes),
+            })
+        rows.append(row)
+    if result.economics is not None:
+        economics = result.economics
+        row = _case_base(result, "economics")
+        row.update({
+            "comparison_status": economics.comparison_status,
+            "cost_min_scenario_id": _text(economics.cost_min_scenario_id),
+            "target_min_cost_scenario_id": _text(economics.target_min_cost_scenario_id),
+            "max_improvement_scenario_id": _text(economics.max_improvement_scenario_id),
+        })
+        rows.append(row)
+        for point in economics.switch_points:
+            switch = _case_base(result, "switch_point")
+            switch.update({
+                "from_scenario_id": point.from_scenario_id,
+                "to_scenario_id": point.to_scenario_id,
+                "from_candidate_id": _text(point.from_candidate_id),
+                "to_candidate_id": _text(point.to_candidate_id),
+                "value_star": _text(point.value_star),
+                "unit": "case_currency", "value_currency": result.currency,
+            })
+            rows.append(switch)
     for recommendation in result.recommendations:
         row = _case_base(result, "recommendation")
         row.update({
@@ -318,40 +395,39 @@ def decision_case_to_csv(result: DecisionCaseResult, display_config: DisplayConf
             row["unit"] = "case_currency"
             row["value_currency"] = result.currency
         rows.append(row)
-    for candidate in result.candidate_results:
-        if candidate.voyage_result is None or candidate.voyage_result.economics is None:
-            continue
-        for point in candidate.voyage_result.economics.switch_points:
-            row = _case_base(result, "switch_point")
-            row.update({"candidate_id": candidate.candidate_id, "from_scenario_id": f"{candidate.candidate_id}@{format(point.from_ratio.normalize(), 'f')}", "to_scenario_id": f"{candidate.candidate_id}@{format(point.to_ratio.normalize(), 'f')}", "value_star": _text(point.value_star), "unit": "case_currency", "value_currency": result.currency})
-            rows.append(row)
     for trace in getattr(provenance, "factor_resolutions", ()) or ():
         factor = trace.factor
         evidence = getattr(factor, "source_evidence", ()) or ()
         if not evidence:
             evidence = (None,)
-        numeric_fields = (
-            ("lcv_mj_per_g", "MJ/g"), ("wt_t_g_per_mj", "g/MJ"),
-            ("cf_co2_g_per_g", "g/g"), ("cf_ch4_g_per_g", "g/g"),
-            ("cf_n2o_g_per_g", "g/g"), ("rwd", "fraction"),
-            ("cslip_percent", "%"), ("csf_co2_g_per_g", "g/g"),
-            ("csf_ch4_g_per_g", "g/g"), ("csf_n2o_g_per_g", "g/g"),
-        )
+        evidence_fields = {
+            "lcv": ("lcv_mj_per_g", "MJ/g"), "wtT": ("wt_t_g_per_mj", "g/MJ"),
+            "cfCO2": ("cf_co2_g_per_g", "g/g"), "cfCH4": ("cf_ch4_g_per_g", "g/g"),
+            "cfN2O": ("cf_n2o_g_per_g", "g/g"), "rwd": ("rwd", "fraction"),
+            "cslip": ("cslip_percent", "%"), "csfCO2": ("csf_co2_g_per_g", "g/g"),
+            "csfCH4": ("csf_ch4_g_per_g", "g/g"), "csfN2O": ("csf_n2o_g_per_g", "g/g"),
+        }
         for item in evidence:
-            for field_name, field_unit in numeric_fields:
-                value = getattr(factor, field_name, None)
-                if value is None:
-                    continue
-                row = _case_base(result, "factor_evidence")
-                row.update({
-                    "requested_path_id": _text(trace.requested_path_id), "resolved_path_id": _text(trace.resolved_path_id),
-                    "resolution_reason": _text(trace.resolution_reason), "qualification_status": _text(trace.qualification_status),
-                    "factor_status": _text(trace.factor_status), "factor_source_id": _text(getattr(item, "source_id", "")),
-                    "factor_field": field_name, "factor_value": _text(value),
-                    "unit": field_unit,
-                    "verification_status": _text(getattr(item, "verification_status", "")),
-                })
-                rows.append(row)
+            mapped = evidence_fields.get(getattr(item, "field_name", ""))
+            if mapped is None:
+                continue
+            field_name, field_unit = mapped
+            value = getattr(factor, field_name, None)
+            if value is None:
+                continue
+            row = _case_base(result, "factor_evidence")
+            row.update({
+                "requested_path_id": _text(trace.requested_path_id), "resolved_path_id": _text(trace.resolved_path_id),
+                "resolution_reason": _text(trace.resolution_reason), "qualification_status": _text(trace.qualification_status),
+                "factor_status": _text(trace.factor_status), "factor_source_id": _text(getattr(item, "source_id", "")),
+                "factor_field": field_name, "factor_value": _text(value),
+                "unit": field_unit,
+                "verification_status": _text(getattr(item, "verification_status", "")),
+                "equipment_id": _text(getattr(factor, "equipment_id", None)),
+                "wt_t_mode": _text(getattr(factor, "wt_t_mode", None)),
+                "factor_level": _text(getattr(factor, "factor_level", None)),
+            })
+            rows.append(row)
     all_issues = result.issues + tuple(issue for candidate in result.candidate_results for issue in candidate.issues)
     seen_issues = set()
     for issue in all_issues:
@@ -476,7 +552,8 @@ def decision_case_to_pdf(
     story.append(Paragraph(
         "Boundary: voyage-level regulatory estimate for this submitted voyage. "
         "FuelEU indicative penalty equivalent is not a formal annual penalty or annual-limit settlement; "
-        "execution conditions remain pending and this report is not a procurement recommendation.",
+        "execution conditions remain pending and this report is not a procurement recommendation. "
+        "This report does not provide an independent physical lifecycle WtW reduction.",
         styles["ReportBody"],
     ))
 
@@ -492,6 +569,7 @@ def decision_case_to_pdf(
         ["EU ETS reason", text(getattr(provenance, "eu_ets_reason", None))],
         ["EU ETS geographic scope rate", value(getattr(provenance, "eu_ets_geographic_rate", None), "scope_rate")],
         ["EU ETS surrender rate", value(getattr(provenance, "eu_ets_surrender_rate", None), "scope_rate")],
+        ["ETS effective rate", value(getattr(provenance, "eu_ets_effective_rate", None), "scope_rate")],
         ["FuelEU reason", text(getattr(provenance, "fuel_eu_reason", None))],
         ["FuelEU scope rate", value(getattr(provenance, "fuel_eu_rate", None), "scope_rate")],
         ["Source IDs", text("; ".join(getattr(provenance, "source_ids", ()) or ()))],
@@ -528,6 +606,20 @@ def decision_case_to_pdf(
     if len(scenario_rows) == 1:
         scenario_rows.append(["-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-"])
     story.append(make_table(scenario_rows, [22*mm, 18*mm, 14*mm, 20*mm, 20*mm, 19*mm, 19*mm, 19*mm, 16*mm, 16*mm, 16*mm, 16*mm, 19*mm, 31*mm], small=True))
+
+    story.append(Paragraph("EU ETS gas scope and zero-rating status", styles["ReportHeading"]))
+    ets_rows = [["Scenario", "ETS effective rate", "Included gases", "Excluded gases", "Zero-rating status"]]
+    for scenario in result.scenarios:
+        ets = scenario.result.eu_ets
+        ets_rows.append([
+            scenario.scenario_id, value(ets.s_ets_effective, "scope_rate"),
+            "; ".join(ets.included_gases),
+            "; ".join(gas for gas, excluded in (ets.excluded_from_ets_surrender or {}).items() if excluded) or "-",
+            "; ".join(f"{path}: {status}" for path, status in (ets.zero_rating_status_by_fuel_component or {}).items()) or "-",
+        ])
+    if len(ets_rows) == 1:
+        ets_rows.append(["-", "-", "-", "-", "-"])
+    story.append(make_table(ets_rows, [42*mm, 28*mm, 35*mm, 35*mm, 58*mm], small=True))
 
     story.append(Paragraph("Absolute and relative-to-B0 changes", styles["ReportHeading"]))
     change_rows = [["Scenario", "Metric", "Absolute", "Delta", "Relative-to-B0 (%)"]]
@@ -603,7 +695,7 @@ def decision_case_to_pdf(
     story.append(make_table(constraints_rows, [24*mm, 17*mm, 19*mm, 19*mm, 15*mm, 15*mm, 15*mm, 24*mm, 19*mm, 23*mm, 22*mm, 18*mm], small=True))
 
     story.append(Paragraph("Factor evidence and resolution", styles["ReportHeading"]))
-    factor_rows = [["Requested path", "Resolved path", "Fallback reason", "Qualification", "Factor status", "Evidence", "Values"]]
+    factor_rows = [["Requested path", "Resolved path", "Fallback reason", "Qualification", "Factor status", "Equipment ID", "WtT mode", "Evidence", "Values"]]
     for trace in getattr(provenance, "factor_resolutions", ()) or ():
         factor = trace.factor
         values = "; ".join(
@@ -612,10 +704,10 @@ def decision_case_to_pdf(
             if getattr(factor, name, None) is not None
         )
         evidence = "; ".join(getattr(item, "source_id", "") for item in getattr(factor, "source_evidence", ()) or ())
-        factor_rows.append([trace.requested_path_id, trace.resolved_path_id, trace.resolution_reason, trace.qualification_status, trace.factor_status, evidence or "-", values or "-"])
+        factor_rows.append([trace.requested_path_id, trace.resolved_path_id, trace.resolution_reason, trace.qualification_status, trace.factor_status, getattr(factor, "equipment_id", None) or "-", getattr(factor, "wt_t_mode", None) or "-", evidence or "-", values or "-"])
     if len(factor_rows) == 1:
-        factor_rows.append(["-", "-", "-", "-", "-", "-", "-"])
-    story.append(make_table(factor_rows, [25*mm, 25*mm, 34*mm, 24*mm, 22*mm, 35*mm, 35*mm], small=True))
+        factor_rows.append(["-", "-", "-", "-", "-", "-", "-", "-", "-"])
+    story.append(make_table(factor_rows, [22*mm, 22*mm, 28*mm, 22*mm, 20*mm, 24*mm, 20*mm, 34*mm, 42*mm], small=True))
 
     story.append(Paragraph("Port evidence", styles["ReportHeading"]))
     port_rows = [["Role", "Port", "UN/LOCODE", "EU ETS identity", "FuelEU identity", "Rule source ID", "Source version"]]
@@ -647,6 +739,8 @@ def decision_case_to_pdf(
         ["Calculation status vocabulary", "BLOCKED, CALCULABLE, COMPARABLE"],
         ["Execution status", "EXECUTION_CONDITIONS_PENDING"],
         ["FuelEU limitation", "Voyage-level proportional estimate; indicative EUR equivalent is not an annual legal penalty or annual-limit result."],
+        ["Physical WtW limitation", "Independent physical lifecycle WtW reduction is not provided in this MVP."],
+        ["Target-min-cost scenario", text(getattr(result.economics, "target_min_cost_scenario_id", None))],
     ]
     story.append(make_table([["Method", "Value"], *versions], [57*mm, 113*mm], small=True))
 

@@ -122,7 +122,16 @@ def _baseline_matches(left: ScenarioResult, right: ScenarioResult) -> bool:
         and left.baseline_mass_tonnes == right.baseline_mass_tonnes
         and left.candidate_mass_tonnes == right.candidate_mass_tonnes
         and left.physical_energy_mj == right.physical_energy_mj
-        and left.eu_ets == right.eu_ets
+        and (
+            left.eu_ets.raw_co2_t == right.eu_ets.raw_co2_t
+            and left.eu_ets.raw_ch4_t == right.eu_ets.raw_ch4_t
+            and left.eu_ets.raw_n2o_t == right.eu_ets.raw_n2o_t
+            and left.eu_ets.mrv_raw_co2e_t == right.eu_ets.mrv_raw_co2e_t
+            and left.eu_ets.included_gases == right.eu_ets.included_gases
+            and left.eu_ets.ets_co2e_pre_scope_t == right.eu_ets.ets_co2e_pre_scope_t
+            and left.eu_ets.euas_required == right.eu_ets.euas_required
+            and left.eu_ets.eua_cost == right.eu_ets.eua_cost
+        )
         and left.fuel_eu == right.fuel_eu
     )
 
@@ -232,10 +241,23 @@ def _issue_index(issue: Issue) -> int | None:
 
 
 def calculate_decision_case(
-    request: DecisionCaseInput,
+    request: DecisionCaseInput | None,
     initial_issues: tuple[Issue, ...] = (),
 ) -> DecisionCaseResult:
     """Calculate all valid candidates while isolating candidate-local failures."""
+    if request is None:
+        return DecisionCaseResult(
+            report_year=0,
+            departure_port="",
+            arrival_port="",
+            currency="",
+            baseline_scenario=None,
+            candidate_results=_invalid_candidate_results(initial_issues),
+            scenarios=(),
+            recommendations=(),
+            issues=tuple(initial_issues),
+            provenance=_result_provenance(None),
+        )
     case_issues = tuple(issue for issue in initial_issues if issue.scope == "CASE")
     candidate_issues = tuple(issue for issue in initial_issues if issue.scope == "CANDIDATE")
     try:

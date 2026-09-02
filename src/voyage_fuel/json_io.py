@@ -330,7 +330,10 @@ def parse_decision_case(payload: str | Mapping[str, Any]) -> ParsedDecisionCase:
             candidates=tuple(candidates),
         )
     except (InvalidOperation, KeyError, TypeError, ValueError) as error:
-        return _case_issue(error, _error_field(error, "currency"))
+        case_issue = issue_from_exception(error, scope="CASE", field=_error_field(error, "currency"))
+        if candidates_payload and not candidates:
+            return ParsedDecisionCase(request=None, issues=tuple(issues))
+        return ParsedDecisionCase(request=None, issues=(*issues, case_issue))
     return ParsedDecisionCase(request=request, issues=tuple(issues))
 
 

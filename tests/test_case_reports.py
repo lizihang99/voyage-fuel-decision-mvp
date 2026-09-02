@@ -54,6 +54,8 @@ class CaseReportTests(unittest.TestCase):
             "Target", "Balance", "Indicative penalty", "annual", "relative-to-B0", "factor status",
             "Qualification", "Requested path", "Resolved path", "Evidence", "BLOCKED", "FEASIBLE",
             "Conditional", "switch", "2026-08-07", "2026-08-31-audit", "2026-07-23",
+            "independent physical lifecycle WtW reduction", "ETS effective rate",
+            "Excluded gases", "Zero-rating status", "Equipment ID", "Target-min-cost scenario",
         )
         for fragment in expected:
             self.assertIn(fragment.casefold(), text.casefold(), fragment)
@@ -145,6 +147,18 @@ class CaseReportTests(unittest.TestCase):
         self.assertTrue(any(r["scenario_id"] == "uco@0.2" for r in rows if r["record_type"] == "scenario"))
         self.assertTrue(all("EUR" == r["penalty_currency"] for r in rows))
         self.assertTrue(any(r["metric_name"] == "model_cost" and r["absolute"] for r in rows if r["record_type"] == "scenario"))
+
+    def test_case_csv_contains_case_constraints_economics_and_ets_states(self):
+        rows = list(csv.DictReader(io.StringIO(decision_case_to_csv(self.make_result()))))
+        self.assertIn("constraints", {row["record_type"] for row in rows})
+        economics = next(row for row in rows if row["record_type"] == "economics")
+        self.assertTrue(economics["comparison_status"])
+        self.assertTrue(economics["cost_min_scenario_id"])
+        self.assertIn("x_budget", next(row for row in rows if row["record_type"] == "constraints"))
+        scenario_rows = [row for row in rows if row["record_type"] == "scenario"]
+        self.assertTrue(any(row["ets_effective_rate"] for row in scenario_rows))
+        self.assertTrue(any(row["ets_excluded_gases"] for row in scenario_rows))
+        self.assertTrue(any(row["zero_rating_status"] for row in scenario_rows))
 
     def test_display_config_does_not_change_raw_result_or_csv(self):
         result = self.make_result()
