@@ -6,6 +6,8 @@ tmp/
 node_modules/
 __pycache__/
 *.py[cod]
+build/
+*.egg-info/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

@@ -40,7 +40,8 @@ class BrowserAppMixin:
         ARTIFACTS.mkdir(parents=True, exist_ok=True)
         cls.port = _free_port()
         env = os.environ.copy()
-        env["PYTHONPATH"] = str(ROOT / "src") + os.pathsep + env.get("PYTHONPATH", "")
+        if not os.environ.get("VOYAGE_FUEL_USE_INSTALLED_PACKAGE"):
+            env["PYTHONPATH"] = str(ROOT / "src") + os.pathsep + env.get("PYTHONPATH", "")
         cls.server = subprocess.Popen(
             [str(PYTHON), "-m", "voyage_fuel.web", "--host", "127.0.0.1", "--port", str(cls.port)],
             cwd=ROOT,

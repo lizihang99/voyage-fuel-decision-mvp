@@ -58,16 +58,16 @@
 
 ## Current Verified Baseline
 
-基线日期：2026-09-01。
+基线日期：2026-09-02。
 
 基线分支：`python-calculation-kernel`。
 
-当前已验证提交：`a168b6b fix: pinpoint parsed input issue fields`。
+当前已验证提交：`291a1ed test: strengthen specification matrix review coverage`（Task 12 的安装、运行和报告验收证据已在其后工作树中完成，待本次状态提交固化）。
 
 验证结果：
 
 ```text
-Python unittest: 77 passed
+Python unittest: 140 passed
 Node port tests: 29 passed
 Python compileall: passed
 git diff --check: passed
@@ -89,10 +89,10 @@ git diff --check
 | --- | --- | --- | --- | --- | --- |
 | M01 | 港口身份表和范围计算 | `VERIFIED` | `ports.py`；`test_ports.py`；29项Node测试 | 核心计算无缺口；港口解释和来源输出归M10 | 现有规则测试持续通过 |
 | M02 | 36条内置燃料路径和解析器 | `VERIFIED` | `factors.py`；`test_factors.py`；`test_factor_catalog_audit.py`；`test_factor_resolution.py` | 核心解析无缺口；运行时追溯归M10 | 36条路径及全部资格分支测试持续通过 |
-| M03 | 自定义燃料逐字段证据校验 | `VERIFIED` | `custom_factors.py`；`test_custom_factors.py` | 网页高级输入归M15 | 缺字段、单位、滑移和证据状态测试持续通过 |
+| M03 | 自定义燃料逐字段证据校验 | `VERIFIED` | `custom_factors.py`；`test_custom_factors.py`；JSON/API 自定义路径阻断矩阵 | 网页高级自定义因子表单仍属界面增强 | 缺字段、单位、滑移和证据状态测试持续通过 |
 | M04 | B0、B100、质量混兑和能源守恒 | `VERIFIED` | `energy.py`；`calculator.py`；`test_energy.py`；`test_calculator.py` | 无 | 所有报告方案保持B0能源且测试通过 |
-| M05 | EU ETS航次计算 | `IMPLEMENTED` | `emissions.py`；`test_ets.py`；已覆盖2024和2026气体规则 | 缺2025、2029、2030及完整范围/清缴矩阵测试 | 年份、气体、范围和清缴比例矩阵通过 |
-| M06 | FuelEU航次级GHGI、余额和罚款等值 | `IMPLEMENTED` | `emissions.py`；`test_fueleu.py`；已覆盖2024、2025和向量D | 缺2026、2029、2030目标边界测试 | 适用性、年度目标、范围、余额和罚款向量通过 |
+| M05 | EU ETS航次计算 | `VERIFIED` | `emissions.py`；`test_ets.py`；Task 11 `test_spec_matrix.py` 12项矩阵 | 无 | 年份、气体、范围和清缴比例矩阵通过 |
+| M06 | FuelEU航次级GHGI、余额和罚款等值 | `VERIFIED` | `emissions.py`；`test_fueleu.py`；Task 11 `test_spec_matrix.py` 12项矩阵 | 无；仍限于航次级比例估算 | 适用性、年度目标、范围、余额和罚款向量通过 |
 | M07 | 预算、供应、最大混兑和目标比例 | `VERIFIED` | `constraints.py`；`test_constraints.py` | 跨候选统一结论归M09 | 向量G和边界状态测试持续通过 |
 | M08 | 单候选经济临界点和下包络切换 | `VERIFIED` | `economics.py`；`test_economics.py` | 跨候选统一排序归M09 | 临界价、参考价值和下包络测试持续通过 |
 | M09 | 案例级多候选编排和统一比较 | `VERIFIED` | `case_calculator.py`；`case_comparison.py`；`test_case_calculator.py`；`test_case_comparison.py` | 追溯和展示归M10、M13-M15 | 多候选、共享B0、可行可比全局排序和局部阻断回归测试通过 |
@@ -100,12 +100,12 @@ git diff --check
 | M11 | 相对B0变化和条件式建议 | `VERIFIED` | `case_comparison.py`；`test_case_comparison.py` | 页面和报告呈现归M13-M15 | 原始Decimal差值、零基线、条件式结论和临界点关联测试通过 |
 | M12 | JSON/API输入输出契约 | `VERIFIED` | `json_io.py`、`web.py`；`test_case_json_io.py`；`test_web_api.py` | 无；后续页面和报告仅消费同一结果契约 | 案例级JSON、结构化422错误和API集成测试通过 |
 | M13 | CSV完整报告 | `VERIFIED` | `formatting.py`；`reports.py`；`test_case_reports.py` | - | Case、港口、场景、建议、临界点、因子依据和问题记录均固定导出；原始Decimal、单位、币种、版本和来源保持可审计 |
-| M14 | PDF完整报告和共享显示配置 | `IN_PROGRESS` | 已有可生成、可提取文本的摘要PDF | 缺完整指标、依据、条件式建议和可调显示精度 | PDF满足MVP设计第14节并通过渲染检查 |
-| M15 | 单用户网页工作流 | `VERIFIED` | `web.py`、`index.html`、`app.js`；Task 10 Playwright desktop/mobile flow | 完整输入、结果、证据、下载和会话级格式设置 | 用户可在浏览器完成一次完整案例 |
-| M16 | 完整测试矩阵和端到端验收 | `VERIFIED` | Python unittest 128；Node port tests 29；Task 10 Playwright 3；compileall；`git diff --check` | 计算规格第16节的年度边界扩展仍属后续范围 | 计算规格第16节和网页主流程全部自动验证 |
-| M17 | 安装、运行和依赖声明 | `IMPLEMENTED` | `pyproject.toml`；`voyage-fuel-web` | 仍缺Task 12干净环境安装和启动验收 | 干净环境按README命令可启动并通过健康检查 |
+| M14 | PDF完整报告和共享显示配置 | `VERIFIED` | `reports.py`；Task 8 报告测试与渲染；Task 12 安装后 PDF 13页渲染、文本和边界审计 | 无 | PDF满足MVP设计第14节并通过渲染检查 |
+| M15 | 单用户网页工作流 | `VERIFIED` | `web.py`、`index.html`、`app.js`；安装包 Task 10 Playwright desktop/mobile flow | 网页当前覆盖内置燃料和候选约束；高级自定义因子录入仍待后续界面增强 | 用户可在浏览器完成一次完整内置路径案例 |
+| M16 | 完整测试矩阵和端到端验收 | `VERIFIED` | Python unittest 140；Node port tests 29；Task 10 安装包 Playwright 3；Task 11 矩阵 12；compileall；`git diff --check` | 无；年度扩展仍属明确后续范围 | 计算规格第16节和网页主流程全部自动验证 |
+| M17 | 安装、运行和依赖声明 | `VERIFIED` | `pyproject.toml`；非 editable wheel；临时虚拟环境 `.[dev]` 安装；`voyage-fuel-web` `/health`、API、CSV/PDF 实测 | 无 | 干净环境按README命令可启动并通过健康检查 |
 
-总体判断：核心单候选计算能力已验证；完整网页MVP尚未完成。M09-M17是剩余交付路径，其中M09-M12先固定产品契约，M13-M14补齐导出，M15实现网页，M16-M17完成交付验收。
+总体判断：计划内的案例级计算、约束与经济比较、结构化结果、CSV/PDF、单用户网页、测试矩阵和安装后运行链路均已完成并有证据。产品边界仍保持航次级 FuelEU 估算、执行条件待确认和明确排除项。逐字段自定义燃料因子已经在 Python/JSON/API 层完成；网页暂未提供完整高级自定义因子录入表单，这项属于界面增强，不能在网页能力描述中省略。
 
 ---
 
@@ -635,7 +635,7 @@ git commit -m "feat: preserve calculation provenance"
 
 ### Task 6: Complete JSON API and Reproducible Runtime
 
-**Status impact:** M12 becomes `VERIFIED`；M17 becomes `IMPLEMENTED` and is promoted to `VERIFIED` only by Task 12's clean-environment check.
+**Status impact:** M12 and M17 are `VERIFIED` after API integration and the Task 12 clean-environment check.
 
 **Files:**
 - Create: `pyproject.toml`
@@ -648,7 +648,7 @@ git commit -m "feat: preserve calculation provenance"
 - Consumes: `parse_decision_case()`, `calculate_decision_case()`, report functions from Tasks 7 and 8 when available.
 - Produces: `GET /health`, `GET /api/fuels`, `GET /api/ports`, `POST /api/calculate`.
 
-- [ ] **Step 1: Write failing API tests**
+- [x] **Step 1: Write failing API tests**
 
 Using `fastapi.testclient.TestClient`, assert:
 
@@ -660,7 +660,7 @@ Using `fastapi.testclient.TestClient`, assert:
 - a blocked candidate returns HTTP 200 with that candidate marked `BLOCKED` and unaffected candidates calculated;
 - no endpoint writes case data to disk or server session storage.
 
-- [ ] **Step 2: Run API tests and confirm failure**
+- [x] **Step 2: Run API tests and confirm failure**
 
 ```powershell
 $env:PYTHONPATH='src'
@@ -669,7 +669,7 @@ $env:PYTHONPATH='src'
 
 Expected: FAIL because `voyage_fuel.web` and FastAPI dependencies are absent.
 
-- [ ] **Step 3: Add the Python package and service entry point**
+- [x] **Step 3: Add the Python package and service entry point**
 
 Declare Python `>=3.12` and these bounded compatible dependencies in `pyproject.toml`:
 
@@ -685,6 +685,7 @@ dependencies = [
 dev = [
   "httpx>=0.28,<1",
   "playwright>=1.55,<2",
+  "pypdf>=5,<6",
 ]
 ```
 
@@ -697,7 +698,7 @@ voyage-fuel-web = "voyage_fuel.web:main"
 
 `main()` starts Uvicorn on `127.0.0.1:8000` by default and accepts standard command-line host/port overrides. API responses use the common dataclass-to-dict Decimal serializer; business issues are data, while malformed transport requests use HTTP 422.
 
-- [ ] **Step 4: Install and run API tests**
+- [x] **Step 4: Install and run API tests**
 
 ```powershell
 & "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m pip install -e ".[dev]"
@@ -706,7 +707,7 @@ voyage-fuel-web = "voyage_fuel.web:main"
 
 Expected: installation succeeds and tests PASS.
 
-- [ ] **Step 5: Commit API and package metadata**
+- [x] **Step 5: Commit API and package metadata**
 
 ```powershell
 git add pyproject.toml src/voyage_fuel/web.py src/voyage_fuel/json_io.py src/voyage_fuel/__init__.py tests/test_web_api.py docs/superpowers/plans/2026-09-01-mvp-delivery-plan.md
@@ -794,7 +795,7 @@ git commit -m "feat: export auditable decision cases"
 - Consumes: `DecisionCaseResult`, `DisplayConfig`.
 - Produces: `decision_case_to_pdf(result, display_config) -> bytes`, `POST /api/export/pdf`, `POST /api/export/csv`.
 
-- [ ] **Step 1: Write failing complete-PDF tests**
+- [x] **Step 1: Write failing complete-PDF tests**
 
 Generate the multi-candidate fixture and extract PDF text. Assert it contains:
 
@@ -811,7 +812,7 @@ Generate the multi-candidate fixture and extract PDF text. Assert it contains:
 
 Assert changing `DisplayConfig` changes only rendered strings and never the input result object or CSV output.
 
-- [ ] **Step 2: Run PDF tests and confirm failure**
+- [x] **Step 2: Run PDF tests and confirm failure**
 
 ```powershell
 & "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m unittest tests.test_case_reports -v
@@ -819,13 +820,13 @@ Assert changing `DisplayConfig` changes only rendered strings and never the inpu
 
 Expected: FAIL because the current PDF is a single-candidate summary and omits required sections.
 
-- [ ] **Step 3: Build a multi-section auditable report**
+- [x] **Step 3: Build a multi-section auditable report**
 
 Use repeated table headers and fixed A4 margins. Split the report into case boundary, conclusions, scenario comparison, constraints/thresholds, factor evidence, port evidence, issues and methodology/version sections. Long source IDs and Decimal strings must wrap within cells. The PDF consumes `DecisionCaseResult` and `DisplayConfig` only.
 
 Add export endpoints that calculate once from the submitted case payload and pass the same result object directly to CSV/PDF serialization. Do not accept client-supplied calculated values as report truth.
 
-- [ ] **Step 4: Render and inspect the report**
+- [x] **Step 4: Render and inspect the report**
 
 Run tests, generate `output/pdf/mvp-multi-candidate.pdf`, render all pages with Poppler, and inspect page PNGs for clipped tables, overlapping text, missing glyphs and blank pages. Record the command and successful page count in this document's verification log.
 
@@ -835,7 +836,7 @@ Run tests, generate `output/pdf/mvp-multi-candidate.pdf`, render all pages with 
 
 Expected: tests PASS and every rendered page is nonblank with no overflow.
 
-- [ ] **Step 5: Commit the complete reports**
+- [x] **Step 5: Commit the complete reports**
 
 ```powershell
 git add src/voyage_fuel/reports.py src/voyage_fuel/web.py tests/test_case_reports.py tests/fixtures/multi_candidate_case.json docs/superpowers/plans/2026-09-01-mvp-delivery-plan.md
@@ -859,7 +860,7 @@ git commit -m "feat: generate complete decision reports"
 - Consumes: fuel/port lookup APIs, `POST /api/calculate`, CSV/PDF export endpoints.
 - Produces: an in-browser, no-login, session-only workflow at `/`.
 
-- [ ] **Step 1: Write failing page contract tests**
+- [x] **Step 1: Write failing page contract tests**
 
 Using `TestClient`, assert `/` loads an HTML page containing stable accessible IDs for:
 
@@ -882,7 +883,7 @@ CSV and PDF download commands
 
 Assert JavaScript source references structured issue fields and never extracts error codes by parsing message text.
 
-- [ ] **Step 2: Run page tests and confirm failure**
+- [x] **Step 2: Run page tests and confirm failure**
 
 ```powershell
 & "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m unittest tests.test_web_page -v
@@ -890,7 +891,7 @@ Assert JavaScript source references structured issue fields and never extracts e
 
 Expected: FAIL because no HTML application exists.
 
-- [ ] **Step 3: Implement the operational calculator workflow**
+- [x] **Step 3: Implement the operational calculator workflow**
 
 Use a restrained work-focused layout:
 
@@ -906,7 +907,7 @@ The browser holds input, raw result and display preferences only in JavaScript m
 
 Use native controls for numeric input, checkboxes for binary confirmations, selects/menus for path choices, tabs for result views and clear command labels. Ensure table containers scroll horizontally on narrow screens without clipping text or controls.
 
-- [ ] **Step 4: Run page and API tests**
+- [x] **Step 4: Run page and API tests**
 
 ```powershell
 & "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m unittest tests.test_web_page tests.test_web_api -v
@@ -914,7 +915,7 @@ Use native controls for numeric input, checkboxes for binary confirmations, sele
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit the web calculator**
+- [x] **Step 5: Commit the web calculator**
 
 ```powershell
 git add src/voyage_fuel/templates/index.html src/voyage_fuel/static/app.js src/voyage_fuel/static/styles.css src/voyage_fuel/web.py tests/test_web_page.py docs/superpowers/plans/2026-09-01-mvp-delivery-plan.md
@@ -937,7 +938,7 @@ git commit -m "feat: add voyage decision web calculator"
 - Consumes: installed `voyage-fuel-web` command and complete browser application.
 - Produces: repeatable desktop/mobile MVP acceptance evidence.
 
-- [ ] **Step 1: Write the complete browser flow tests**
+- [x] **Step 1: Write the complete browser flow tests**
 
 With Python Playwright, automate:
 
@@ -954,7 +955,7 @@ With Python Playwright, automate:
 
 Add a second flow where one custom candidate is blocked by missing evidence while another built-in candidate remains calculated.
 
-- [ ] **Step 2: Run E2E tests and confirm the first actionable failure**
+- [x] **Step 2: Run E2E tests and confirm the first actionable failure**
 
 Start the server on a free local port, then run:
 
@@ -964,11 +965,11 @@ Start the server on a free local port, then run:
 
 Expected before final implementation: at least one assertion fails for an incomplete browser behavior; collection and browser launch must succeed.
 
-- [ ] **Step 3: Fix only behavior proven by E2E failures**
+- [x] **Step 3: Fix only behavior proven by E2E failures**
 
 Iterate on templates, JavaScript, CSS or API responses without moving calculations into the browser. Preserve stable element IDs and result contracts. For every fixed browser failure, rerun the smallest affected E2E test before the complete E2E suite.
 
-- [ ] **Step 4: Inspect desktop and mobile screenshots**
+- [x] **Step 4: Inspect desktop and mobile screenshots**
 
 Capture results, scenario comparison, evidence and blocked-candidate states at both viewports. Verify:
 
@@ -979,7 +980,7 @@ Capture results, scenario comparison, evidence and blocked-candidate states at b
 - units, warnings and boundary language remain visible;
 - no blank regions caused by failed assets or JavaScript errors.
 
-- [ ] **Step 5: Run the complete automated suite**
+- [x] **Step 5: Run the complete automated suite**
 
 ```powershell
 & "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m unittest discover -s tests -v
@@ -990,7 +991,7 @@ git diff --check
 
 Expected: every Python, browser and Node test passes; compile and diff checks produce no error.
 
-- [ ] **Step 6: Commit browser verification and run instructions**
+- [x] **Step 6: Commit browser verification and run instructions**
 
 ```powershell
 git add tests/e2e pyproject.toml README.md docs/superpowers/plans/2026-09-01-mvp-delivery-plan.md
@@ -1017,7 +1018,7 @@ Update M15 and M16 to `VERIFIED` and record desktop/mobile screenshots and final
 - Consumes: all domain and case-level public interfaces.
 - Produces: explicit coverage for every item in calculation-spec section 16.
 
-- [ ] **Step 1: Add an executable specification matrix**
+- [x] **Step 1: Add an executable specification matrix**
 
 Cover these previously incomplete boundaries explicitly:
 
@@ -1033,7 +1034,7 @@ Cover these previously incomplete boundaries explicitly:
 - every result carries specification versions and source IDs;
 - page/PDF display settings cannot alter CSV or raw result values.
 
-- [ ] **Step 2: Run the matrix and confirm any missing behavior fails**
+- [x] **Step 2: Run the matrix and confirm any missing behavior fails**
 
 ```powershell
 & "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m unittest tests.test_spec_matrix -v
@@ -1041,15 +1042,15 @@ Cover these previously incomplete boundaries explicitly:
 
 Expected: collection succeeds; any failure identifies one specific contract gap.
 
-- [ ] **Step 3: Correct only specification mismatches**
+- [x] **Step 3: Correct only specification mismatches**
 
 Make the smallest domain or output change needed for each failing matrix assertion. Do not broaden the MVP into annual FuelEU allocation, real penalties, banking, borrowing, pooling or physical lifecycle WtW.
 
-- [ ] **Step 4: Run the complete suite**
+- [x] **Step 4: Run the complete suite**
 
 Use the Task 10 complete verification command. Expected: PASS.
 
-- [ ] **Step 5: Commit the specification matrix**
+- [x] **Step 5: Commit the specification matrix**
 
 ```powershell
 git add tests src docs/superpowers/plans/2026-09-01-mvp-delivery-plan.md
@@ -1070,19 +1071,25 @@ git commit -m "test: complete MVP specification matrix"
 - Consumes: complete implementation and all verification evidence.
 - Produces: one reproducible run path, final status record and integration-ready branch.
 
-- [ ] **Step 1: Verify a clean installation and startup**
+- [x] **Step 1: Verify a clean installation and startup**
 
 Create a temporary virtual environment outside the repository, install `.[dev]`, start `voyage-fuel-web`, request `/health`, run one fixture through `/api/calculate`, and verify CSV/PDF downloads. Do not rely on undeclared globally installed packages.
 
-- [ ] **Step 2: Run all automated and visual checks**
+Observed on 2026-09-02: non-editable install succeeded in a temporary Python 3.12 environment; the installed CLI returned `/health` 200, the fixture returned 200 with 12 scenarios and no case issues, CSV returned 200 with a non-empty structured export, and PDF returned 200 with a valid `%PDF-` signature. The wheel explicitly contains the HTML template, JavaScript, CSS and packaged port CSV.
+
+- [x] **Step 2: Run all automated and visual checks**
 
 Run the Task 10 full suite and the Task 8 PDF render check. Run Playwright desktop/mobile flows against the installed service. Record exact pass counts, Python version, browser version and verification date in `Verification Log`.
 
-- [ ] **Step 3: Audit the product boundary language**
+Observed on 2026-09-02: installed-package Playwright E2E `3/3` passed; Poppler rendered the installed-service PDF to 13 pages with exit code 0, and representative first/last pages were visually inspected. `pypdf` extraction confirmed the voyage-level limitation, annual-penalty disclaimer, procurement limitation and execution-pending status.
+
+- [x] **Step 3: Audit the product boundary language**
 
 Search application text, PDF output and README for claims of formal annual FuelEU compliance, real penalty, procurement recommendation or independent physical WtW reduction. Every FuelEU result must remain explicitly voyage-level and proportional; every execution status must remain pending.
 
-- [ ] **Step 4: Update the module table from evidence**
+Observed on 2026-09-02: no forbidden positive claim was found in application text or extracted PDF; required boundary language was present. The README and module table explicitly record that advanced custom-factor entry is API/JSON-complete but not yet a webpage form.
+
+- [x] **Step 4: Update the module table from evidence**
 
 Set a module to `VERIFIED` only when its completion condition is met. Leave no P0/P1 module as `NOT_STARTED`, `IN_PROGRESS`, `IMPLEMENTED` or `BLOCKED`. Do not change excluded future capabilities to completed.
 
@@ -1100,28 +1107,30 @@ Use `superpowers:requesting-code-review` for a final review, address verified fi
 
 ## MVP Acceptance Checklist
 
-- [ ] A user can enter 2024-2030, two valid ports and confirm adjacent valid `Port of Call`.
-- [ ] A user can select a case currency, B0 fuel/mass/price and EUA price.
-- [ ] A user can add, edit and remove multiple independent candidate fuels or quotations.
-- [ ] Every candidate supports allowed pure use, specified ratios, blend cap, supply and incremental budget inputs.
-- [ ] B0, B100 when allowed, user ratios, target ratio and effective constraint boundaries form the fixed report set.
-- [ ] One candidate can be blocked without losing B0 or other candidate results.
-- [ ] Every scenario uses unrounded Decimal calculations and preserves B0 physical energy.
-- [ ] EU ETS years, gases, geographic rates and surrender rates match the specification.
-- [ ] FuelEU GHGI, target, balance and penalty equivalent match the voyage-level specification.
-- [ ] Current-model-cost and reference-adjusted-cost concepts remain separated.
-- [ ] Cross-candidate rankings and conditional recommendations use only eligible scenarios.
-- [ ] Results show absolute values, absolute changes and percentage changes relative to B0.
-- [ ] Results distinguish `BLOCKED`, `CALCULABLE`, `COMPARABLE` and `EXECUTION_CONDITIONS_PENDING`.
-- [ ] Errors identify case/candidate/scenario, component and field without message parsing.
-- [ ] Port identities, reasons, factor resolution, evidence, source IDs and versions are visible.
-- [ ] CSV contains raw values, units, currencies, statuses, versions, evidence and issues.
-- [ ] PDF contains the complete decision case and mandatory limitation language.
-- [ ] Page and PDF share display precision; display changes never alter raw values or decisions.
-- [ ] Browser refresh clears the case and no server/cloud history is created.
-- [ ] Desktop and mobile workflows pass Playwright tests and screenshot inspection.
-- [ ] A clean environment can install and start the application from README instructions.
-- [ ] All Python, Node, API, report and browser tests pass at the recorded final commit.
+- [x] A user can enter 2024-2030, two valid ports and confirm adjacent valid `Port of Call`.
+- [x] A user can select a case currency, B0 fuel/mass/price and EUA price.
+- [x] A user can add, edit and remove multiple independent candidate fuels or quotations.
+- [x] Every candidate supports allowed pure use, specified ratios, blend cap, supply and incremental budget inputs.
+- [x] B0, B100 when allowed, user ratios, target ratio and effective constraint boundaries form the fixed report set.
+- [x] One candidate can be blocked without losing B0 or other candidate results.
+- [x] Every scenario uses unrounded Decimal calculations and preserves B0 physical energy.
+- [x] EU ETS years, gases, geographic rates and surrender rates match the specification.
+- [x] FuelEU GHGI, target, balance and penalty equivalent match the voyage-level specification.
+- [x] Current-model-cost and reference-adjusted-cost concepts remain separated.
+- [x] Cross-candidate rankings and conditional recommendations use only eligible scenarios.
+- [x] Results show absolute values, absolute changes and percentage changes relative to B0.
+- [x] Results distinguish `BLOCKED`, `CALCULABLE`, `COMPARABLE` and `EXECUTION_CONDITIONS_PENDING`.
+- [x] Errors identify case/candidate/scenario, component and field without message parsing.
+- [x] Port identities, reasons, factor resolution, evidence, source IDs and versions are visible.
+- [x] CSV contains raw values, units, currencies, statuses, versions, evidence and issues.
+- [x] PDF contains the complete decision case and mandatory limitation language.
+- [x] Page and PDF share display precision; display changes never alter raw values or decisions.
+- [x] Browser refresh clears the case and no server/cloud history is created.
+- [x] Desktop and mobile workflows pass Playwright tests and screenshot inspection.
+- [x] A clean environment can install and start the application from README instructions.
+- [x] All Python, Node, API, report and browser tests pass at the recorded final commit.
+
+网页当前通过 API/JSON 支持完整自定义燃料因子校验，但没有逐字段高级因子录入表单；这属于网页界面增强项，不能替代 API 层的证据校验，也不改变本计划已验证的内核和报告边界。
 
 ## Explicit MVP Exclusions
 
@@ -1152,6 +1161,7 @@ Use `superpowers:requesting-code-review` for a final review, address verified fi
 | 2026-09-01 | `8c062c3` | `pip install -e ".[dev]"`；API/JSON unittest 21；Python unittest 103；Node port tests 29；compileall；`git diff --check` | Stateless FastAPI calculation boundary, structured issues and Decimal response serialization verified |
 | 2026-09-01 | `aa9bcf2` | Task 8 focused PDF/API unittest 20；Poppler `pdftoppm -png -r 120` rendered 4 pages；`pypdf` text extraction；compileall；`git diff --check` | Complete multi-candidate PDF sections, shared-result CSV/PDF exports, display-only precision and nonblank page rendering verified |
 | 2026-09-02 | `abefa13` + Task 10 review fix round 3 | Python unittest 128；Node port tests 29；Playwright E2E 3；desktop/mobile/blocked screenshots；CSV parsed header/case/port/scenario/status assertions；PDF text extraction assertions for case/ports/scenarios/status/limitation；compileall；`git diff --check` | Browser workflow, responsive controls, RFNBO fallback evidence, display precision stability, blocked-candidate isolation and report content verified; generated PDF is local ignored output |
+| 2026-09-02 | pending final status commit | Temporary non-editable wheel install；installed CLI `/health`、case API、CSV/PDF；installed-package Playwright 3；Poppler 13-page render；pypdf boundary audit；Python unittest 140；Node port tests 29；compileall；`git diff --check` | Package assets and dev dependencies fixed; clean-environment runtime and final acceptance evidence verified |
 
 Future entries must record evidence after it has been run. Do not add expected pass counts as if they were observed results.
 

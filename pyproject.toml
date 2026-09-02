@@ -18,6 +18,7 @@ dependencies = [
 dev = [
   "httpx>=0.28,<1",
   "playwright>=1.55,<2",
+  "pypdf>=5,<6",
 ]
 
 [tool.pytest.ini_options]
@@ -33,4 +34,4 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-voyage_fuel = ["data/*.csv"]
+voyage_fuel = ["data/*.csv", "templates/*.html", "static/*"]
