@@ -62,7 +62,7 @@
 
 基线分支：`python-calculation-kernel`。
 
-当前已验证提交：`67331bf feat: add minimal advanced custom fuel form`。
+当前已验证提交：`7fd6924 feat: add minimal advanced custom fuel form`。
 
 验证结果：
 
