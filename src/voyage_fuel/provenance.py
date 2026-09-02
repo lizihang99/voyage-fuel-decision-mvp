@@ -60,6 +60,7 @@ class ResultProvenance:
     calculation_spec_version: str = CALCULATION_SPEC_VERSION
     fuel_factor_version: str = FUEL_FACTOR_VERSION
     port_rule_version: str = PORT_RULE_VERSION
+    eu_ets_effective_rate: Decimal | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "factor_resolutions", tuple(self.factor_resolutions))
@@ -70,6 +71,8 @@ class ResultProvenance:
             object.__setattr__(self, "eu_ets_surrender_rate", Decimal(str(self.eu_ets_surrender_rate)))
         if self.fuel_eu_rate is not None:
             object.__setattr__(self, "fuel_eu_rate", Decimal(str(self.fuel_eu_rate)))
+        if self.eu_ets_effective_rate is not None:
+            object.__setattr__(self, "eu_ets_effective_rate", Decimal(str(self.eu_ets_effective_rate)))
 
     @property
     def port_decisions(self) -> tuple[PortDecision | None, PortDecision | None]:

@@ -108,6 +108,27 @@ class CustomFactorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "BLOCKED.*csf"):
             resolve_custom_factor(payload)
 
+    def test_custom_factor_keeps_equipment_and_field_evidence(self):
+        payload = {
+            "pathId": "CUSTOM_MDO", "equipmentId": "CUSTOM_ENGINE", "lcv": "0.04",
+            "wtTMode": "STATIC", "wtT": "10", "cfCO2": "3", "cfCH4": "0", "cfN2O": "0",
+            "cslip": "NA", "methaneSlipApplicable": False, "rwd": "1",
+            "eligibleBiomassFraction": "0", "qualificationStatus": "VERIFIED_ELIGIBLE",
+            "sourceEvidence": evidence({
+                "lcv": ("MJ/gFuel", "VERIFIED"), "wtT": ("gCO2eq/MJ", "VERIFIED"),
+                "cfCO2": ("gGHG/gFuel", "VERIFIED"), "cfCH4": ("gGHG/gFuel", "VERIFIED"),
+                "cfN2O": ("gGHG/gFuel", "VERIFIED"), "cslip": ("%", "VERIFIED"),
+                "methaneSlipApplicable": ("boolean", "VERIFIED"), "rwd": ("ratio", "VERIFIED"),
+                "eligibleBiomassFraction": ("fraction", "VERIFIED"),
+            }),
+        }
+        factor = resolve_custom_factor(payload)
+        self.assertEqual(factor.equipment_id, "CUSTOM_ENGINE")
+        self.assertEqual({item.field_name for item in factor.source_evidence}, {
+            "lcv", "wtT", "cfCO2", "cfCH4", "cfN2O", "cslip",
+            "methaneSlipApplicable", "rwd", "eligibleBiomassFraction",
+        })
+
 
 if __name__ == "__main__":
     unittest.main()

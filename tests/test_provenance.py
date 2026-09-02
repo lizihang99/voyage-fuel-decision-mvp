@@ -110,7 +110,7 @@ class ProvenanceTests(unittest.TestCase):
             baseline_component=baseline,
             baseline_mass_tonnes=Decimal("100"),
             eua_price_per_tco2e=Decimal("80"),
-            candidates=(),
+            candidates=(CandidateInput("fallback", baseline),),
         )
 
         result = calculate_decision_case(request)

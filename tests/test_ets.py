@@ -25,6 +25,15 @@ def hfo_component(price="600"):
 
 
 class EuEtsTests(unittest.TestCase):
+    def test_non_biomass_path_cannot_claim_biomass_zero_rating(self):
+        with self.assertRaisesRegex(ValueError, "INVALID_BIOMASS_FRACTION"):
+            FuelComponent(
+                hfo_component().factor,
+                Decimal("600"),
+                eligible_biomass_fraction=Decimal("1"),
+                qualification_status="ASSUMED_ELIGIBLE",
+            )
+
     def test_2024_only_co2_enters_surrender(self):
         result = calculate_eu_ets(
             2024,
@@ -38,6 +47,9 @@ class EuEtsTests(unittest.TestCase):
         self.assertEqual(result.included_gases, ("CO2",))
         self.assertEqual(result.euas_required, Decimal("124.56"))
         self.assertEqual(result.eua_cost, Decimal("9964.8"))
+        self.assertEqual(result.ets_scope_by_gas["CO2"], result.s_ets_effective)
+        self.assertTrue(result.excluded_from_ets_surrender["CH4"])
+        self.assertTrue(result.excluded_from_ets_surrender["N2O"])
 
     def test_2026_includes_ch4_and_n2o(self):
         result = calculate_eu_ets(
@@ -49,6 +61,8 @@ class EuEtsTests(unittest.TestCase):
         self.assertEqual(result.included_gases, ("CO2", "CH4", "N2O"))
         self.assertEqual(result.eua_cost, None)
         self.assertEqual(result.euas_required, Decimal("311.4") + Decimal("28") * Decimal("0.005") + Decimal("265") * Decimal("0.018"))
+        self.assertEqual(set(result.ets_scope_by_gas), {"CO2", "CH4", "N2O"})
+
 
 
 if __name__ == "__main__":

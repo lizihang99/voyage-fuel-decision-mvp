@@ -184,4 +184,8 @@ def resolve_custom_factor(payload: Mapping[str, Any], report_year: int | None = 
         cslip_semantics="NA" if cslip is None else ("VERIFIED" if all_verified else "SA"),
         source_evidence=records,
         qualification_status=qualification,
+        equipment_id=equipment_id,
+        wt_t_mode=mode,
+        factor_level="CUSTOM",
+        biomass_eligible=(mode == "BIO_E"),
     )

@@ -47,6 +47,10 @@ class FuelFactor:
     requested_path_id: Optional[str] = None
     resolution_reason: Optional[str] = None
     qualification_status: Optional[str] = None
+    equipment_id: Optional[str] = None
+    wt_t_mode: Optional[str] = None
+    factor_level: Optional[str] = None
+    biomass_eligible: bool = False
 
     def __post_init__(self) -> None:
         for field_name in (
@@ -102,6 +106,7 @@ class FuelDefinition:
     default_cf_ch4_g_per_g: Optional[Decimal] = None
     default_cf_n2o_g_per_g: Optional[Decimal] = None
     default_cslip_percent: Optional[Decimal] = None
+    biomass_eligible: bool = False
 
     def __post_init__(self) -> None:
         for name in (
@@ -140,6 +145,8 @@ class FuelComponent:
         object.__setattr__(self, "eligible_biomass_fraction", as_decimal(self.eligible_biomass_fraction))
         if not ZERO <= self.eligible_biomass_fraction <= ONE:
             raise ValueError("eligible_biomass_fraction must be between 0 and 1")
+        if self.eligible_biomass_fraction != ZERO and not self.factor.biomass_eligible:
+            raise ValueError("INVALID_BIOMASS_FRACTION: fuel path cannot claim eligible biomass")
         if self.qualification_status.upper() in {"NOT_DEMONSTRATED", "INELIGIBLE"} and self.eligible_biomass_fraction != ZERO:
             raise ValueError("INVALID_BIOMASS_FRACTION: qualification does not permit eligible biomass")
 
@@ -200,6 +207,21 @@ class EtsResult:
     ets_co2e_pre_scope_t: Decimal
     euas_required: Decimal
     eua_cost: Optional[Decimal]
+    mrv_raw_by_gas: dict[str, Decimal] | None = None
+    ets_scope_by_gas: dict[str, Decimal] | None = None
+    excluded_from_ets_surrender: dict[str, bool] | None = None
+    s_ets_geo: Decimal = ZERO
+    s_ets_surrender: Decimal = ZERO
+    s_ets_effective: Decimal = ZERO
+    zero_rating_status_by_fuel_component: dict[str, str] | None = None
+
+
+@dataclass(frozen=True)
+class EtsFuelComponentStatus:
+    path_id: str
+    qualification_status: str
+    eligible_biomass_fraction: Decimal
+    zero_rating_status: str
 
 
 @dataclass(frozen=True)

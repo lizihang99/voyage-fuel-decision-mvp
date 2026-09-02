@@ -24,6 +24,7 @@ def calculate_eu_ets(
     co2_g = Decimal("0")
     ch4_g = Decimal("0")
     n2o_g = Decimal("0")
+    zero_rating_status: dict[str, str] = {}
     for amount in amounts:
         factor = amount.component.factor
         mass_g = amount.mass_tonnes * GRAMS_PER_TONNE
@@ -35,6 +36,15 @@ def calculate_eu_ets(
             non_combusted_g = Decimal("0")
         burned_g = mass_g - non_combusted_g
         eligible = amount.component.eligible_biomass_fraction
+        qualification = amount.component.qualification_status.upper()
+        if eligible > Decimal("0") and factor.biomass_eligible and qualification in {"ASSUMED_ELIGIBLE", "VERIFIED_ELIGIBLE"}:
+            zero_rating_status[factor.path_id] = "ZERO_RATED"
+        elif factor.biomass_eligible and qualification not in {"ASSUMED_ELIGIBLE", "VERIFIED_ELIGIBLE"}:
+            zero_rating_status[factor.path_id] = "ZERO_RATING_NOT_VERIFIED"
+        elif factor.biomass_eligible:
+            zero_rating_status[factor.path_id] = "NOT_ZERO_RATED"
+        else:
+            zero_rating_status[factor.path_id] = "NOT_ZERO_RATED"
         co2_g += burned_g * factor.cf_co2_g_per_g * (Decimal("1") - eligible)
         ch4_g += burned_g * factor.cf_ch4_g_per_g
         n2o_g += burned_g * factor.cf_n2o_g_per_g
@@ -55,6 +65,14 @@ def calculate_eu_ets(
         raise ValueError(f"Unsupported reporting year: {year}")
     euas = pre_scope * scope.eu_ets_effective_rate
     eua_cost = None if eua_price_per_tco2e is None else euas * eua_price_per_tco2e
+    mrv_raw_by_gas = {"CO2": co2_t, "CH4": ch4_t, "N2O": n2o_t}
+    excluded_from_ets_surrender = {
+        gas: gas not in included_gases for gas in ("CO2", "CH4", "N2O")
+    }
+    ets_scope_by_gas = {
+        gas: (scope.eu_ets_effective_rate if gas in included_gases else Decimal("0"))
+        for gas in ("CO2", "CH4", "N2O")
+    }
     return EtsResult(
         raw_co2_t=co2_t,
         raw_ch4_t=ch4_t,
@@ -64,6 +82,13 @@ def calculate_eu_ets(
         ets_co2e_pre_scope_t=pre_scope,
         euas_required=euas,
         eua_cost=eua_cost,
+        mrv_raw_by_gas=mrv_raw_by_gas,
+        ets_scope_by_gas=ets_scope_by_gas,
+        excluded_from_ets_surrender=excluded_from_ets_surrender,
+        s_ets_geo=scope.eu_ets_scope_rate,
+        s_ets_surrender=scope.eu_ets_surrender_rate,
+        s_ets_effective=scope.eu_ets_effective_rate,
+        zero_rating_status_by_fuel_component=zero_rating_status,
     )
 
 

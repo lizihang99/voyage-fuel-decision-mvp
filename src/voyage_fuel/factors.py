@@ -15,7 +15,8 @@ def _definition(path_id: str, equipment_id: str, level: str, mode: str, lcv: str
                 default_e: Optional[str] = None, default_eu: Optional[str] = None,
                 default_lcv: Optional[str] = None, default_wt_t: Optional[str] = None,
                 default_co2: Optional[str] = None, default_ch4: Optional[str] = None,
-                default_n2o: Optional[str] = None, default_cslip: Optional[str] = None) -> FuelDefinition:
+                default_n2o: Optional[str] = None, default_cslip: Optional[str] = None,
+                biomass_eligible: bool = False) -> FuelDefinition:
     return FuelDefinition(
         path_id=path_id, equipment_id=equipment_id, factor_level=level, wt_t_mode=mode,
         lcv_mj_per_g=Decimal(lcv), wt_t_g_per_mj=None if wt_t is None else Decimal(wt_t),
@@ -33,6 +34,7 @@ def _definition(path_id: str, equipment_id: str, level: str, mode: str, lcv: str
         default_cf_ch4_g_per_g=None if default_ch4 is None else Decimal(default_ch4),
         default_cf_n2o_g_per_g=None if default_n2o is None else Decimal(default_n2o),
         default_cslip_percent=None if default_cslip is None else Decimal(default_cslip),
+        biomass_eligible=biomass_eligible,
     )
 
 
@@ -60,17 +62,17 @@ for definition in (
     _definition("LPG_BUTANE", "LPG_BUTANE", "B", "STATIC", "0.046", "7.8", "3.030", "0.00005", "0.00018", cslip_required=True, default_cslip="0"),
     _definition("NH3_NG_FC", "NH3_NG_FC", "B", "STATIC", "0.0186", "121", "0", "0.00005", "0.00018", cslip_required=True, default_cslip="0"),
     _definition("NH3_NG_ICE", "NH3_NG_ICE", "B", "STATIC", "0.0186", "121", "0", "0.00005", "0.00018", cslip_required=True, default_cslip="0"),
-    _definition("BIOETHANOL", "BIOETHANOL", "B", "BIO_E", "0.027", None, "1.913", "0.00005", "0.00018", default_lcv="0.02685", default_wt_t="20", default_cslip="0"),
-    _definition("BIODIESEL", "BIODIESEL", "B", "BIO_E", "0.037", None, "2.834", "0.00005", "0.00018", default_lcv="0.037", default_wt_t="20", default_cslip="0"),
-    _definition("HVO", "HVO", "B", "BIO_E", "0.044", None, "3.115", "0.00005", "0.00018", default_lcv="0.044", default_wt_t="15", default_cslip="0"),
-    _definition("BIOLNG_OTTO_MS", "BIOLNG_OTTO_MS", "B", "BIO_E", "0.050", None, "2.750", "0", "0.00011", cslip="3.1", methane_slip=True, default_lcv="0.0491", default_wt_t="10", default_cslip="3.1"),
-    _definition("BIOLNG_OTTO_SS", "BIOLNG_OTTO_SS", "B", "BIO_E", "0.050", None, "2.750", "0", "0.00011", cslip="1.7", methane_slip=True, default_lcv="0.0491", default_wt_t="10", default_cslip="1.7"),
-    _definition("BIOLNG_DIESEL_SS", "BIOLNG_DIESEL_SS", "B", "BIO_E", "0.050", None, "2.750", "0", "0.00011", cslip="0.2", methane_slip=True, default_lcv="0.0491", default_wt_t="10", default_cslip="0.2"),
-    _definition("BIOLNG_LBSI", "BIOLNG_LBSI", "B", "BIO_E", "0.050", None, "2.750", "0", "0.00011", cslip="2.6", methane_slip=True, default_lcv="0.0491", default_wt_t="10", default_cslip="2.6"),
-    _definition("BIOMETHANOL", "BIOMETHANOL", "B", "BIO_E", "0.020", None, "1.375", "0.00005", "0.00018", default_lcv="0.01986", default_wt_t="18", default_cslip="0"),
-    _definition("BIOH2_FC", "BIOH2_FC", "B", "CERTIFIED", "0.120", None, "0", "0", "0", default_lcv="0.120", default_wt_t="25", default_cslip="0"),
-    _definition("BIOH2_ICE", "BIOH2_ICE", "B", "CERTIFIED", "0.120", None, "0", "0", "0.00018", default_lcv="0.120", default_wt_t="25", default_n2o="0.00002", default_cslip="0"),
-    _definition("UCO_FAME", "UCO_FAME", "B", "BIO_E", "0.037", None, "2.834", "0.00005", "0.00018", default_e="14.9", default_lcv="0.037", default_cslip="0"),
+    _definition("BIOETHANOL", "BIOETHANOL", "B", "BIO_E", "0.027", None, "1.913", "0.00005", "0.00018", default_lcv="0.02685", default_wt_t="20", default_cslip="0", biomass_eligible=True),
+    _definition("BIODIESEL", "BIODIESEL", "B", "BIO_E", "0.037", None, "2.834", "0.00005", "0.00018", default_lcv="0.037", default_wt_t="20", default_cslip="0", biomass_eligible=True),
+    _definition("HVO", "HVO", "B", "BIO_E", "0.044", None, "3.115", "0.00005", "0.00018", default_lcv="0.044", default_wt_t="15", default_cslip="0", biomass_eligible=True),
+    _definition("BIOLNG_OTTO_MS", "BIOLNG_OTTO_MS", "B", "BIO_E", "0.050", None, "2.750", "0", "0.00011", cslip="3.1", methane_slip=True, default_lcv="0.0491", default_wt_t="10", default_cslip="3.1", biomass_eligible=True),
+    _definition("BIOLNG_OTTO_SS", "BIOLNG_OTTO_SS", "B", "BIO_E", "0.050", None, "2.750", "0", "0.00011", cslip="1.7", methane_slip=True, default_lcv="0.0491", default_wt_t="10", default_cslip="1.7", biomass_eligible=True),
+    _definition("BIOLNG_DIESEL_SS", "BIOLNG_DIESEL_SS", "B", "BIO_E", "0.050", None, "2.750", "0", "0.00011", cslip="0.2", methane_slip=True, default_lcv="0.0491", default_wt_t="10", default_cslip="0.2", biomass_eligible=True),
+    _definition("BIOLNG_LBSI", "BIOLNG_LBSI", "B", "BIO_E", "0.050", None, "2.750", "0", "0.00011", cslip="2.6", methane_slip=True, default_lcv="0.0491", default_wt_t="10", default_cslip="2.6", biomass_eligible=True),
+    _definition("BIOMETHANOL", "BIOMETHANOL", "B", "BIO_E", "0.020", None, "1.375", "0.00005", "0.00018", default_lcv="0.01986", default_wt_t="18", default_cslip="0", biomass_eligible=True),
+    _definition("BIOH2_FC", "BIOH2_FC", "B", "CERTIFIED", "0.120", None, "0", "0", "0", default_lcv="0.120", default_wt_t="25", default_cslip="0", biomass_eligible=True),
+    _definition("BIOH2_ICE", "BIOH2_ICE", "B", "CERTIFIED", "0.120", None, "0", "0", "0.00018", default_lcv="0.120", default_wt_t="25", default_n2o="0.00002", default_cslip="0", biomass_eligible=True),
+    _definition("UCO_FAME", "UCO_FAME", "B", "BIO_E", "0.037", None, "2.834", "0.00005", "0.00018", default_e="14.9", default_lcv="0.037", default_cslip="0", biomass_eligible=True),
     _definition("E_DIESEL", "E_DIESEL", "B", "RFNBO_E", "0.0427", None, "3.206", "0.00005", "0.00018", fallback="MDO", default_e="28.2", default_eu="73.2", default_wt_t="3", default_cslip="0"),
     _definition("E_METHANOL", "E_METHANOL", "B", "RFNBO_E", "0.0199", None, "1.375", "0.00005", "0.00018", fallback="METHANOL_NG", default_e="28.2", default_eu="68.9", default_wt_t="3", default_cslip="0"),
     _definition("E_LNG_OTTO_MEDIUM_SPEED", "E_LNG_OTTO_MS", "B", "RFNBO_E", "0.0491", None, "2.750", "0", "0.00011", cslip="3.1", methane_slip=True, fallback="LNG_OTTO_MEDIUM_SPEED", default_e="28.2", default_eu="56.2", default_wt_t="2", default_cslip="3.1"),
@@ -136,6 +138,20 @@ def _factor_from_definition(definition: FuelDefinition, status: str, wt_t: Decim
             ("cslip_percent", None if not definition.cslip_required else Decimal("0")),
         ) if value is None
     )
+    catalog_source = f"FACTOR-CATALOG:{definition.path_id}"
+    catalog_evidence = tuple(
+        EvidenceRecord(field_name, catalog_source, "BUILTIN_CATALOG", unit, "VERIFIED")
+        for field_name, unit in (
+            ("lcv", "MJ/gFuel"),
+            ("wtT", "gCO2eq/MJ"),
+            ("cfCO2", "gGHG/gFuel"),
+            ("cfCH4", "gGHG/gFuel"),
+            ("cfN2O", "gGHG/gFuel"),
+            ("cslip", "%"),
+            ("methaneSlipApplicable", "boolean"),
+            ("rwd", "ratio"),
+        )
+    )
     return FuelFactor(
         path_id=definition.path_id, lcv_mj_per_g=lcv, wt_t_g_per_mj=wt_t,
         cf_co2_g_per_g=selected(definition.default_cf_co2_g_per_g, definition.cf_co2_g_per_g) or Decimal("0"),
@@ -146,13 +162,11 @@ def _factor_from_definition(definition: FuelDefinition, status: str, wt_t: Decim
         csf_ch4_g_per_g=Decimal("1") if definition.methane_slip_applicable else Decimal("0"),
         na_fields=na_fields,
         cslip_semantics=cslip_semantics,
-        source_evidence=(EvidenceRecord(
-            field_name="catalog",
-            source_id=f"FACTOR-CATALOG:{definition.path_id}",
-            source_type="BUILTIN_CATALOG",
-            unit="factor",
-            verification_status="VERIFIED",
-        ),),
+        source_evidence=catalog_evidence,
+        equipment_id=definition.equipment_id,
+        wt_t_mode=definition.wt_t_mode,
+        factor_level=definition.factor_level,
+        biomass_eligible=definition.biomass_eligible,
     )
 
 

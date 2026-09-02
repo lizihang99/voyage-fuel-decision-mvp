@@ -164,6 +164,7 @@ def _result_provenance(request: DecisionCaseInput | None) -> ResultProvenance:
             eu_ets_geographic_rate=None,
             eu_ets_surrender_rate=None,
             fuel_eu_rate=None,
+            eu_ets_effective_rate=None,
             factor_resolutions=(),
             source_ids=(),
             status="UNAVAILABLE",
@@ -183,6 +184,7 @@ def _result_provenance(request: DecisionCaseInput | None) -> ResultProvenance:
             eu_ets_geographic_rate=None,
             eu_ets_surrender_rate=None,
             fuel_eu_rate=None,
+            eu_ets_effective_rate=None,
             factor_resolutions=tuple(factor_traces),
             source_ids=deduplicate_source_ids(source_ids),
             status="PARTIAL",
@@ -199,6 +201,7 @@ def _result_provenance(request: DecisionCaseInput | None) -> ResultProvenance:
         eu_ets_geographic_rate=scope.eu_ets_scope_rate,
         eu_ets_surrender_rate=scope.eu_ets_surrender_rate,
         fuel_eu_rate=scope.fuel_eu_scope_rate,
+        eu_ets_effective_rate=scope.eu_ets_effective_rate,
         factor_resolutions=tuple(factor_traces),
         source_ids=deduplicate_source_ids(source_ids),
     )
