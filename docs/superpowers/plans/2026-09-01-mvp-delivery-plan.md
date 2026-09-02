@@ -62,7 +62,7 @@
 
 基线分支：`python-calculation-kernel`。
 
-当前已验证提交：`291a1ed test: strengthen specification matrix review coverage`（Task 12 的安装、运行和报告验收证据已在其后工作树中完成，待本次状态提交固化）。
+当前已验证提交：`58c6a81 fix: verify installed MVP runtime`。
 
 验证结果：
 
@@ -1093,7 +1093,7 @@ Observed on 2026-09-02: no forbidden positive claim was found in application tex
 
 Set a module to `VERIFIED` only when its completion condition is met. Leave no P0/P1 module as `NOT_STARTED`, `IN_PROGRESS`, `IMPLEMENTED` or `BLOCKED`. Do not change excluded future capabilities to completed.
 
-- [ ] **Step 5: Commit the final status**
+- [x] **Step 5: Commit the final status**
 
 ```powershell
 git add README.md docs/superpowers/plans/2026-09-01-mvp-delivery-plan.md
@@ -1161,7 +1161,7 @@ Use `superpowers:requesting-code-review` for a final review, address verified fi
 | 2026-09-01 | `8c062c3` | `pip install -e ".[dev]"`；API/JSON unittest 21；Python unittest 103；Node port tests 29；compileall；`git diff --check` | Stateless FastAPI calculation boundary, structured issues and Decimal response serialization verified |
 | 2026-09-01 | `aa9bcf2` | Task 8 focused PDF/API unittest 20；Poppler `pdftoppm -png -r 120` rendered 4 pages；`pypdf` text extraction；compileall；`git diff --check` | Complete multi-candidate PDF sections, shared-result CSV/PDF exports, display-only precision and nonblank page rendering verified |
 | 2026-09-02 | `abefa13` + Task 10 review fix round 3 | Python unittest 128；Node port tests 29；Playwright E2E 3；desktop/mobile/blocked screenshots；CSV parsed header/case/port/scenario/status assertions；PDF text extraction assertions for case/ports/scenarios/status/limitation；compileall；`git diff --check` | Browser workflow, responsive controls, RFNBO fallback evidence, display precision stability, blocked-candidate isolation and report content verified; generated PDF is local ignored output |
-| 2026-09-02 | pending final status commit | Temporary non-editable wheel install；installed CLI `/health`、case API、CSV/PDF；installed-package Playwright 3；Poppler 13-page render；pypdf boundary audit；Python unittest 140；Node port tests 29；compileall；`git diff --check` | Package assets and dev dependencies fixed; clean-environment runtime and final acceptance evidence verified |
+| 2026-09-02 | `58c6a81` | Temporary non-editable wheel install；installed CLI `/health`、case API、CSV/PDF；installed-package Playwright 3；Poppler 13-page render；pypdf boundary audit；Python unittest 140；Node port tests 29；compileall；`git diff --check` | Package assets and dev dependencies fixed; clean-environment runtime and final acceptance evidence verified |
 
 Future entries must record evidence after it has been run. Do not add expected pass counts as if they were observed results.
 
