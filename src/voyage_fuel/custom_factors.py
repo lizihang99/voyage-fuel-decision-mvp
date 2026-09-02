@@ -80,7 +80,7 @@ def _require_units(records: tuple[EvidenceRecord, ...]) -> None:
             raise _blocked(f"unsupported unit for sourceEvidence field {record.field_name}")
 
 
-def resolve_custom_factor(payload: Mapping[str, Any]) -> FuelFactor:
+def resolve_custom_factor(payload: Mapping[str, Any], report_year: int | None = None) -> FuelFactor:
     """Parse a complete custom path; no built-in defaults are applied."""
     if not isinstance(payload, Mapping):
         raise _blocked("custom factor must be an object")
@@ -91,12 +91,16 @@ def resolve_custom_factor(payload: Mapping[str, Any]) -> FuelFactor:
     mode = str(payload.get("wtTMode", "")).strip().upper()
     if mode not in {"STATIC", "BIO_E", "RFNBO_E", "CERTIFIED"}:
         raise _blocked("wtTMode must be explicit and supported")
+    qualification = str(payload.get("qualificationStatus", "NOT_DEMONSTRATED")).strip().upper()
+    if qualification not in {"NOT_DEMONSTRATED", "ASSUMED_ELIGIBLE", "VERIFIED_ELIGIBLE", "INELIGIBLE"}:
+        raise _blocked("qualificationStatus must be explicit and supported")
+    if mode == "RFNBO_E" and qualification in {"NOT_DEMONSTRATED", "INELIGIBLE"}:
+        raise _blocked("RFNBO qualification is required for RFNBO_E")
     methane = payload.get("methaneSlipApplicable")
     if not isinstance(methane, bool):
         raise _blocked("methaneSlipApplicable must be an explicit boolean")
 
     lcv = _decimal(payload, "lcv")
-    assert lcv is not None
     if lcv <= ZERO:
         raise _blocked("lcv must be positive")
     cf_co2 = _decimal(payload, "cfCO2", allow_na=True)
@@ -111,9 +115,13 @@ def resolve_custom_factor(payload: Mapping[str, Any]) -> FuelFactor:
         raise ValueError(f"INVALID_CSLIP: non-methane custom path {path_id}")
 
     rwd = _decimal(payload, "rwd")
-    assert rwd is not None
     if rwd not in {ONE, TWO}:
-        raise _blocked("rwd must be 1 or 2")
+        raise ValueError("INVALID_RWD: rwd must be 1 or 2")
+    if rwd == TWO:
+        if mode != "RFNBO_E":
+            raise ValueError("INVALID_RWD: rwd=2 is only valid for RFNBO_E")
+        if report_year is None or not 2025 <= report_year <= 2033:
+            raise _blocked("rwd=2 is only valid for qualified RFNBO from 2025 through 2033")
 
     required = ["lcv", "cfCO2", "cfCH4", "cfN2O", "cslip", "methaneSlipApplicable", "rwd"]
     if mode in {"STATIC", "CERTIFIED"}:
@@ -121,13 +129,13 @@ def resolve_custom_factor(payload: Mapping[str, Any]) -> FuelFactor:
         required.append("wtT")
     elif mode == "BIO_E":
         e_value = _decimal(payload, "E")
-        assert e_value is not None and cf_co2 is not None
+        if cf_co2 is None:
+            raise _blocked("cfCO2 is required for BIO_E")
         wt_t = e_value - cf_co2 / lcv
         required.append("E")
     else:
         e_value = _decimal(payload, "E")
         eu_value = _decimal(payload, "eu")
-        assert e_value is not None and eu_value is not None
         if e_value > MAX_RFNBO_E:
             raise ValueError(f"RFNBO_E_EXCEEDS_LIMIT: {path_id}")
         wt_t = e_value - eu_value
@@ -144,13 +152,16 @@ def resolve_custom_factor(payload: Mapping[str, Any]) -> FuelFactor:
         csf_co2 = csf_ch4 = csf_n2o = ZERO
 
     eligible_fraction = _decimal(payload, "eligibleBiomassFraction")
-    assert eligible_fraction is not None
     if not ZERO <= eligible_fraction <= ONE:
         raise _blocked("eligibleBiomassFraction must be between 0 and 1")
     required.append("eligibleBiomassFraction")
     records, all_verified = _evidence_records(payload, tuple(dict.fromkeys(required)))
     _require_units(records)
-    factor_status = "VERIFIED" if all_verified else "ESTIMATED"
+    factor_status = (
+        "ESTIMATED"
+        if mode == "RFNBO_E" and qualification == "ASSUMED_ELIGIBLE"
+        else "VERIFIED" if all_verified else "ESTIMATED"
+    )
     na_fields = tuple(name for name, value in (
         ("cf_co2_g_per_g", cf_co2), ("cf_ch4_g_per_g", cf_ch4),
         ("cf_n2o_g_per_g", cf_n2o), ("cslip_percent", cslip),
@@ -172,4 +183,5 @@ def resolve_custom_factor(payload: Mapping[str, Any]) -> FuelFactor:
         na_fields=na_fields,
         cslip_semantics="NA" if cslip is None else ("VERIFIED" if all_verified else "SA"),
         source_evidence=records,
+        qualification_status=qualification,
     )

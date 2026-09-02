@@ -175,14 +175,19 @@ def _validated_cslip(definition: FuelDefinition, cslip_percent: Optional[Decimal
 
 def _resolve_factor(path_id: str, qualification_status: str = "NOT_DEMONSTRATED",
                    e_value: Optional[Decimal] = None, eu_value: Optional[Decimal] = None,
-                   cslip_percent: Optional[Decimal] = None, verified_wt_t: Optional[Decimal] = None) -> FuelFactor:
+                   cslip_percent: Optional[Decimal] = None, verified_wt_t: Optional[Decimal] = None,
+                   report_year: Optional[int] = None) -> FuelFactor:
     definition = get_definition(path_id)
     status = str(qualification_status).upper()
     if status not in {"NOT_DEMONSTRATED", "ASSUMED_ELIGIBLE", "VERIFIED_ELIGIBLE", "INELIGIBLE"}:
         raise ValueError(f"BLOCKED: unsupported qualification status {qualification_status}")
     if definition.wt_t_mode == "RFNBO_E":
         if status in {"NOT_DEMONSTRATED", "INELIGIBLE"}:
-            return _resolve_factor(definition.fallback_path_id or "", "NOT_DEMONSTRATED")
+            return _resolve_factor(
+                definition.fallback_path_id or "", "NOT_DEMONSTRATED", report_year=report_year
+            )
+        if report_year is not None and not 2025 <= report_year <= 2033:
+            raise ValueError("BLOCKED: rwd=2 is only valid for qualified RFNBO from 2025 through 2033")
         if status == "VERIFIED_ELIGIBLE" and (e_value is None or eu_value is None):
             raise ValueError(f"BLOCKED: verified RFNBO requires E and eu for {definition.path_id}")
         e = Decimal(str(e_value)) if e_value is not None else definition.default_e_g_per_mj
@@ -265,7 +270,8 @@ def _resolve_factor(path_id: str, qualification_status: str = "NOT_DEMONSTRATED"
 def resolve_factor(path_id: str, qualification_status: str = "NOT_DEMONSTRATED",
                    e_value: Optional[Decimal] = None, eu_value: Optional[Decimal] = None,
                    cslip_percent: Optional[Decimal] = None,
-                   verified_wt_t: Optional[Decimal] = None) -> FuelFactor:
+                   verified_wt_t: Optional[Decimal] = None,
+                   report_year: Optional[int] = None) -> FuelFactor:
     """Compatibility resolver returning only the resolved factor."""
     requested = _key(path_id)
     qualification = str(qualification_status).upper()
@@ -276,6 +282,7 @@ def resolve_factor(path_id: str, qualification_status: str = "NOT_DEMONSTRATED",
         eu_value=eu_value,
         cslip_percent=cslip_percent,
         verified_wt_t=verified_wt_t,
+        report_year=report_year,
     )
     reason = (
         "RFNBO_QUALIFICATION_NOT_DEMONSTRATED"
@@ -293,7 +300,8 @@ def resolve_factor(path_id: str, qualification_status: str = "NOT_DEMONSTRATED",
 def resolve_factor_trace(path_id: str, qualification_status: str = "NOT_DEMONSTRATED",
                         e_value: Optional[Decimal] = None, eu_value: Optional[Decimal] = None,
                         cslip_percent: Optional[Decimal] = None,
-                        verified_wt_t: Optional[Decimal] = None) -> FactorResolutionTrace:
+                        verified_wt_t: Optional[Decimal] = None,
+                        report_year: Optional[int] = None) -> FactorResolutionTrace:
     """Resolve a factor while retaining the requested-to-resolved path decision."""
     factor = resolve_factor(
         path_id,
@@ -302,6 +310,7 @@ def resolve_factor_trace(path_id: str, qualification_status: str = "NOT_DEMONSTR
         eu_value=eu_value,
         cslip_percent=cslip_percent,
         verified_wt_t=verified_wt_t,
+        report_year=report_year,
     )
     requested = factor.requested_path_id or _key(path_id)
     qualification = factor.qualification_status or str(qualification_status).upper()

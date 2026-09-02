@@ -100,6 +100,8 @@ class DecisionCaseInput:
             raise ValueError("INVALID_BASELINE_MASS: baseline_mass_tonnes must be positive")
         if self.eua_price_per_tco2e is not None and self.eua_price_per_tco2e < ZERO:
             raise ValueError("INVALID_EUA_PRICE: eua_price_per_tco2e must be non-negative")
+        if not self.candidates:
+            raise ValueError("MISSING_REQUIRED_FACTOR: at least one candidate is required")
         candidate_ids = tuple(candidate.candidate_id for candidate in self.candidates)
         if len(candidate_ids) != len(set(candidate_ids)):
             raise ValueError("DUPLICATE_CANDIDATE_ID: candidate_id values must be unique")

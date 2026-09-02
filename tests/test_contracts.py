@@ -25,7 +25,7 @@ class ContractTests(unittest.TestCase):
             departure_port="CNSHG", arrival_port="NLRTM",
             adjacent_valid_port_of_call_confirmed=True, currency="EUR",
             baseline_component=self.baseline, baseline_mass_tonnes=Decimal("100"),
-            eua_price_per_tco2e=Decimal("80"), candidates=(),
+            eua_price_per_tco2e=Decimal("80"), candidates=(self.candidate,),
         )
         for report_year in (2023, 2031):
             with self.subTest(report_year=report_year):
@@ -42,11 +42,12 @@ class ContractTests(unittest.TestCase):
             )
 
     def test_case_accepts_mvp_report_year_endpoints(self):
+        candidate = CandidateInput(candidate_id="candidate-1", component=self.candidate)
         common = dict(
             departure_port="CNSHG", arrival_port="NLRTM",
             adjacent_valid_port_of_call_confirmed=True, currency="EUR",
             baseline_component=self.baseline, baseline_mass_tonnes=Decimal("100"),
-            eua_price_per_tco2e=Decimal("80"), candidates=(),
+            eua_price_per_tco2e=Decimal("80"), candidates=(candidate,),
         )
         for report_year in (2024, 2030):
             with self.subTest(report_year=report_year):
@@ -93,6 +94,15 @@ class ContractTests(unittest.TestCase):
             })
         with self.assertRaisesRegex(ValueError, "DUPLICATE_CANDIDATE_ID"):
             DecisionCaseInput(currency="EUR", candidates=(candidate, candidate), **common)
+
+    def test_case_rejects_empty_candidate_collection(self):
+        with self.assertRaisesRegex(ValueError, "MISSING_REQUIRED_FACTOR"):
+            DecisionCaseInput(
+                report_year=2026, departure_port="CNSHG", arrival_port="NLRTM",
+                adjacent_valid_port_of_call_confirmed=True, currency="EUR",
+                baseline_component=self.baseline, baseline_mass_tonnes=Decimal("100"),
+                eua_price_per_tco2e=Decimal("80"), candidates=(),
+            )
 
 
 if __name__ == "__main__":

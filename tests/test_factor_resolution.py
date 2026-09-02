@@ -28,6 +28,13 @@ class FactorResolutionTests(unittest.TestCase):
         self.assertEqual(factor.rwd, Decimal("2"))
         self.assertEqual(factor.wt_t_g_per_mj, Decimal("8.2"))
 
+    def test_assumed_rfnbo_rwd_two_is_not_available_in_2024(self):
+        with self.assertRaisesRegex(ValueError, "BLOCKED"):
+            resolve_factor(
+                "E_DIESEL", qualification_status="ASSUMED_ELIGIBLE",
+                e_value=Decimal("28.2"), eu_value=Decimal("20"), report_year=2024,
+            )
+
     def test_verified_rfnbo_requires_e_and_eu(self):
         with self.assertRaisesRegex(ValueError, "BLOCKED"):
             resolve_factor("E_DIESEL", qualification_status="VERIFIED_ELIGIBLE")

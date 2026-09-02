@@ -21,18 +21,39 @@ class _InputError(ValueError):
         self.field = field
 
 
+_STRUCTURED_ERROR_CODES = frozenset({
+    "INVALID_CSLIP",
+    "INVALID_RWD",
+    "INVALID_EMISSION_FACTOR",
+    "INVALID_BIOMASS_FRACTION",
+    "RFNBO_E_EXCEEDS_LIMIT",
+})
+
+
+def _as_input_error(error: Exception, field: str) -> _InputError:
+    """Keep an explicit domain error code at the JSON boundary."""
+    if isinstance(error, _InputError):
+        return error
+    message = str(error).strip()
+    code = message.partition(":")[0]
+    if code not in _STRUCTURED_ERROR_CODES:
+        code = "MISSING_REQUIRED_FACTOR"
+    return _InputError(code, field, message)
+
+
 def _strict_bool(value: Any, *, field: str) -> bool:
     if type(value) is not bool:
         raise _InputError("MISSING_REQUIRED_FACTOR", field, f"{field} must be a boolean")
     return value
 
 
-def parse_component(payload: Mapping[str, Any]) -> FuelComponent:
+def parse_component(payload: Mapping[str, Any], *, report_year: int | None = None) -> FuelComponent:
     """Parse a fuel component using decimal-safe factor resolution."""
-    return _parse_component(payload, field_prefix="")
+    return _parse_component(payload, field_prefix="", report_year=report_year)
 
 
-def _parse_component(payload: Mapping[str, Any], *, field_prefix: str) -> FuelComponent:
+def _parse_component(payload: Mapping[str, Any], *, field_prefix: str,
+                     report_year: int | None = None) -> FuelComponent:
     def field(name: str) -> str:
         return f"{field_prefix}.{name}" if field_prefix else name
 
@@ -55,16 +76,17 @@ def _parse_component(payload: Mapping[str, Any], *, field_prefix: str) -> FuelCo
                 eu_value=None if eu_value is None else Decimal(str(eu_value)),
                 cslip_percent=None if cslip is None else Decimal(str(cslip)),
                 verified_wt_t=None if verified_wt is None else Decimal(str(verified_wt)),
+                report_year=report_year,
             )
         except KeyError:
             custom = True
         except (InvalidOperation, TypeError, ValueError) as error:
-            raise _InputError("MISSING_REQUIRED_FACTOR", field("pathId"), str(error)) from error
+            raise _as_input_error(error, field("pathId")) from error
     if custom:
         try:
-            factor = resolve_custom_factor(payload)
-        except (InvalidOperation, KeyError, TypeError, ValueError) as error:
-            raise _InputError("MISSING_REQUIRED_FACTOR", field("pathId"), str(error)) from error
+            factor = resolve_custom_factor(payload, report_year=report_year)
+        except (AssertionError, InvalidOperation, KeyError, TypeError, ValueError) as error:
+            raise _as_input_error(error, field("pathId")) from error
     try:
         return FuelComponent(
             factor=factor,
@@ -136,7 +158,8 @@ def _decimal_sequence(value: Any, *, field: str) -> tuple[Decimal, ...]:
     return tuple(_decimal(item, field=f"{field}[{index}]") for index, item in enumerate(value))
 
 
-def _parse_candidate(payload: Mapping[str, Any], *, field_prefix: str) -> CandidateInput:
+def _parse_candidate(payload: Mapping[str, Any], *, field_prefix: str,
+                     report_year: int | None = None) -> CandidateInput:
     candidate_id = payload.get("candidateId")
     if not isinstance(candidate_id, str):
         raise _InputError("INVALID_CANDIDATE_ID", f"{field_prefix}.candidateId", "candidateId is required")
@@ -182,7 +205,7 @@ def _parse_candidate(payload: Mapping[str, Any], *, field_prefix: str) -> Candid
             )
     return CandidateInput(
         candidate_id=candidate_id,
-        component=_parse_component(payload, field_prefix=field_prefix),
+        component=_parse_component(payload, field_prefix=field_prefix, report_year=report_year),
         specified_blend_ratios=specified_ratios,
         max_blend_ratio=max_blend_ratio,
         allows_pure_use=_strict_bool(
@@ -238,6 +261,8 @@ def parse_decision_case(payload: str | Mapping[str, Any]) -> ParsedDecisionCase:
         candidates_payload = decoded.get("candidates")
         if not isinstance(candidates_payload, (list, tuple)):
             raise _InputError("MISSING_REQUIRED_FACTOR", "candidates", "candidates must be an array")
+        if not candidates_payload:
+            raise _InputError("MISSING_REQUIRED_FACTOR", "candidates", "at least one candidate is required")
         candidate_ids = [
             item.get("candidateId")
             for item in candidates_payload
@@ -245,7 +270,7 @@ def parse_decision_case(payload: str | Mapping[str, Any]) -> ParsedDecisionCase:
         ]
         if len(candidate_ids) != len(set(candidate_ids)):
             raise _InputError("DUPLICATE_CANDIDATE_ID", "candidates", "candidateId values must be unique")
-        baseline_component = _parse_component(baseline, field_prefix="baseline")
+        baseline_component = _parse_component(baseline, field_prefix="baseline", report_year=report_year)
         if "massTonnes" not in baseline:
             raise _InputError("INVALID_BASELINE_MASS", "baseline.massTonnes", "massTonnes is required")
         baseline_mass = _decimal(baseline["massTonnes"], field="baseline.massTonnes")
@@ -274,8 +299,10 @@ def parse_decision_case(payload: str | Mapping[str, Any]) -> ParsedDecisionCase:
         try:
             if not isinstance(candidate_payload, Mapping):
                 raise _InputError("INVALID_CANDIDATE_ID", f"candidates[{index}]", "candidate must be an object")
-            candidates.append(_parse_candidate(candidate_payload, field_prefix=f"candidates[{index}]"))
-        except (InvalidOperation, KeyError, TypeError, ValueError) as error:
+            candidates.append(
+                _parse_candidate(candidate_payload, field_prefix=f"candidates[{index}]", report_year=report_year)
+            )
+        except (AssertionError, InvalidOperation, KeyError, TypeError, ValueError) as error:
             issues.append(
                 issue_from_exception(
                     error,

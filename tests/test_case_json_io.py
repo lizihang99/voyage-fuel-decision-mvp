@@ -33,6 +33,76 @@ def minimum_payload():
     }
 
 
+def _custom_evidence(fields):
+    return {
+        field: [{
+            "sourceId": f"SRC-{field}",
+            "sourceType": "LAB_CERTIFICATE",
+            "unit": unit,
+            "verificationStatus": "VERIFIED",
+        }]
+        for field, unit in fields.items()
+    }
+
+
+def custom_factor_payload(*, mode="STATIC", qualification="NOT_DEMONSTRATED",
+                          rwd="1", cslip="NA", cf_co2="3", e="20", eu="10"):
+    fields = {
+        "lcv": "MJ/gFuel",
+        "wtT": "gCO2eq/MJ",
+        "E": "gCO2eq/MJ",
+        "eu": "gCO2eq/MJ",
+        "cfCO2": "gGHG/gFuel",
+        "cfCH4": "gGHG/gFuel",
+        "cfN2O": "gGHG/gFuel",
+        "cslip": "%",
+        "methaneSlipApplicable": "boolean",
+        "rwd": "ratio",
+        "eligibleBiomassFraction": "fraction",
+    }
+    payload = {
+        "pathId": "CUSTOM_PATH",
+        "custom": True,
+        "equipmentId": "CUSTOM_ENGINE",
+        "lcv": "0.04",
+        "wtTMode": mode,
+        "wtT": "10",
+        "E": e,
+        "eu": eu,
+        "cfCO2": cf_co2,
+        "cfCH4": "0",
+        "cfN2O": "0",
+        "cslip": cslip,
+        "methaneSlipApplicable": False,
+        "rwd": rwd,
+        "eligibleBiomassFraction": "0",
+        "qualificationStatus": qualification,
+        "sourceEvidence": _custom_evidence(fields),
+    }
+    return payload
+
+
+def case_with_custom_candidate(candidate, *, report_year=2026):
+    return {
+        "reportYear": report_year,
+        "departurePort": "CNSHG",
+        "arrivalPort": "NLRTM",
+        "adjacentValidPortOfCallConfirmed": True,
+        "currency": "EUR",
+        "baseline": {"pathId": "MDO", "massTonnes": "100", "pricePerTonne": "700"},
+        "euaPricePerTCO2e": "80",
+        "candidates": [{
+            **candidate,
+            "candidateId": "custom-1",
+            "pricePerTonne": "1000",
+        }, {
+            "candidateId": "valid-1",
+            "pathId": "MDO",
+            "pricePerTonne": "700",
+        }],
+    }
+
+
 class CaseJsonIoTests(unittest.TestCase):
     def test_parses_case_candidates_with_decimal_values(self):
         parsed = parse_decision_case(minimum_payload())
@@ -165,6 +235,79 @@ class CaseJsonIoTests(unittest.TestCase):
             "candidate": {"pathId": "UCO_FAME", "pricePerTonne": "1000"},
         }
         self.assertIsInstance(calculate_voyage_json(payload), str)
+
+    def test_custom_rfnbo_without_qualification_is_blocked(self):
+        payload = case_with_custom_candidate(
+            custom_factor_payload(mode="RFNBO_E", qualification="NOT_DEMONSTRATED", rwd="2")
+        )
+
+        parsed = parse_decision_case(payload)
+
+        self.assertIsNotNone(parsed.request)
+        self.assertEqual(parsed.issues[0].code, "MISSING_REQUIRED_FACTOR")
+        self.assertEqual(parsed.issues[0].scope, "CANDIDATE")
+
+    def test_custom_rfnbo_rwd_two_is_blocked_before_2025(self):
+        payload = case_with_custom_candidate(
+            custom_factor_payload(mode="RFNBO_E", qualification="ASSUMED_ELIGIBLE", rwd="2"),
+            report_year=2024,
+        )
+
+        parsed = parse_decision_case(payload)
+
+        self.assertIsNotNone(parsed.request)
+        self.assertEqual(parsed.issues[0].code, "MISSING_REQUIRED_FACTOR")
+
+    def test_custom_rfnbo_rwd_two_is_allowed_from_2025(self):
+        payload = case_with_custom_candidate(
+            custom_factor_payload(mode="RFNBO_E", qualification="ASSUMED_ELIGIBLE", rwd="2"),
+            report_year=2025,
+        )
+
+        parsed = parse_decision_case(payload)
+
+        self.assertEqual(parsed.issues, ())
+        assert parsed.request is not None
+        factor = parsed.request.candidates[0].component.factor
+        self.assertEqual(factor.rwd, Decimal("2"))
+        self.assertEqual(factor.qualification_status, "ASSUMED_ELIGIBLE")
+
+    def test_invalid_cslip_preserves_structured_error_code(self):
+        payload = case_with_custom_candidate(custom_factor_payload(cslip="101"))
+
+        parsed = parse_decision_case(payload)
+
+        self.assertEqual(parsed.issues[0].code, "INVALID_CSLIP")
+
+    def test_rfnbo_e_exceeds_limit_preserves_structured_error_code(self):
+        payload = case_with_custom_candidate(
+            custom_factor_payload(mode="RFNBO_E", qualification="ASSUMED_ELIGIBLE", e="28.3")
+        )
+
+        parsed = parse_decision_case(payload)
+
+        self.assertEqual(parsed.issues[0].code, "RFNBO_E_EXCEEDS_LIMIT")
+
+    def test_bio_e_missing_cf_co2_returns_issue_instead_of_assertion_error(self):
+        payload = case_with_custom_candidate(
+            custom_factor_payload(mode="BIO_E", qualification="ASSUMED_ELIGIBLE", cf_co2="NA")
+        )
+
+        parsed = parse_decision_case(payload)
+
+        self.assertEqual(parsed.issues[0].code, "MISSING_REQUIRED_FACTOR")
+
+    def test_empty_candidates_is_case_blocking(self):
+        payload = minimum_payload()
+        payload["candidates"] = []
+
+        parsed = parse_decision_case(payload)
+
+        self.assertIsNone(parsed.request)
+        self.assertEqual(parsed.issues[0].code, "MISSING_REQUIRED_FACTOR")
+        self.assertEqual(parsed.issues[0].scope, "CASE")
+        self.assertEqual(parsed.issues[0].field, "candidates")
+        self.assertTrue(parsed.issues[0].blocking)
 
 
 if __name__ == "__main__":
