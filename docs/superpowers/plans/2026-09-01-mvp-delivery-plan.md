@@ -68,9 +68,9 @@
 
 ```text
 Python unittest: 150 passed
- Node port tests: 29 passed
- Playwright E2E: 12 passed (included in the repository discovery run)
- Python compileall: passed
+Node port tests: 29 passed
+Playwright E2E: 12 passed (included in the repository discovery run)
+Python compileall: passed
 git diff --check: passed
 ```
 
