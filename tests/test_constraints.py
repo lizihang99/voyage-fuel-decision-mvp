@@ -77,6 +77,19 @@ class ConstraintTests(unittest.TestCase):
         self.assertIsNone(result.x_target_min_unconstrained)
         self.assertIn("TARGET_NOT_APPLICABLE", result.warning_codes)
 
+    def test_target_no_solution_still_reports_maximum_improvement_boundary(self):
+        candidate = FuelComponent(get_builtin_factor("HFO"), Decimal("1000"))
+        result = calculate_constraints(
+            report_year=2026, baseline_mass_tonnes=Decimal("100"),
+            baseline=self.baseline, candidate=candidate, scope=self.scope,
+            candidate_supply_tonnes=None, incremental_budget=None,
+            max_blend_ratio=Decimal("1"), baseline_energy_mj=Decimal("4270000"),
+            eua_price_per_tco2e=Decimal("80"),
+        )
+
+        self.assertEqual(result.target_status, "TARGET_NO_SOLUTION")
+        self.assertEqual(result.x_max_improvement, Decimal("0"))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -3,11 +3,22 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from .contracts import CaseScenario, CandidateResult, ConditionalRecommendation, MetricDelta
+from itertools import combinations
+
+from .contracts import (
+    CaseEconomicsResult,
+    CaseScenario,
+    CaseValueSwitchPoint,
+    CandidateResult,
+    ConditionalRecommendation,
+    MetricDelta,
+)
 from .models import ScenarioResult
 
 
 HUNDRED = Decimal("100")
+ZERO = Decimal("0")
+ONE = Decimal("1")
 
 
 def metric_delta(value: Decimal | None, baseline: Decimal | None) -> MetricDelta:
@@ -65,7 +76,7 @@ def build_case_scenarios(
         CaseScenario(
             scenario_id="B0",
             candidate_id=None,
-            calculation_status="CALCULABLE",
+            calculation_status=("COMPARABLE" if baseline.model_cost is not None else "CALCULABLE"),
             result=baseline,
             deltas={key: metric_delta(value, value) for key, value in baseline_values.items()},
         )
@@ -91,8 +102,7 @@ def build_case_scenarios(
     eligible = sorted(
         (
             row for row in rows
-            if row.candidate_id is not None
-            and row.calculation_status == "COMPARABLE"
+            if row.calculation_status == "COMPARABLE"
             and row.result.constraint_status == "FEASIBLE"
             and row.result.model_cost is not None
         ),
@@ -109,6 +119,95 @@ def build_case_scenarios(
             current_model_cost_rank=ranks.get(row.scenario_id),
         )
         for row in rows
+    )
+
+
+def _case_adjusted_cost(row: CaseScenario, value: Decimal) -> Decimal:
+    improvement = row.result.compliance_improvement_tco2e or ZERO
+    return row.result.model_cost - value * improvement  # type: ignore[operator]
+
+
+def calculate_case_value_switch_points(
+    scenarios: tuple[CaseScenario, ...],
+) -> tuple[CaseValueSwitchPoint, ...]:
+    """Return only lower-envelope switches across all case scenarios."""
+    eligible = tuple(
+        row for row in scenarios
+        if row.result.constraint_status == "FEASIBLE"
+        and row.result.model_cost is not None
+        and row.result.compliance_improvement_tco2e is not None
+    )
+    if len(eligible) < 2:
+        return ()
+
+    intersections: set[Decimal] = set()
+    for left, right in combinations(eligible, 2):
+        slope_delta = left.result.compliance_improvement_tco2e - right.result.compliance_improvement_tco2e
+        cost_delta = left.result.model_cost - right.result.model_cost
+        if slope_delta == ZERO:
+            continue
+        value = cost_delta / slope_delta
+        if value >= ZERO:
+            intersections.add(value)
+    if not intersections:
+        return ()
+
+    ordered = sorted(intersections)
+    transitions: list[CaseValueSwitchPoint] = []
+
+    def winner(value: Decimal) -> CaseScenario:
+        return min(eligible, key=lambda row: (_case_adjusted_cost(row, value), row.scenario_id))
+
+    for index, value in enumerate(ordered):
+        previous = ZERO if index == 0 else ordered[index - 1]
+        following = None if index + 1 == len(ordered) else ordered[index + 1]
+        left_probe = (previous + value) / Decimal("2") if index else ZERO
+        right_probe = value + ONE if following is None else (value + following) / Decimal("2")
+        left_winner = winner(left_probe)
+        right_winner = winner(right_probe)
+        if left_winner.scenario_id == right_winner.scenario_id:
+            continue
+        transitions.append(CaseValueSwitchPoint(
+            from_scenario_id=left_winner.scenario_id,
+            to_scenario_id=right_winner.scenario_id,
+            from_candidate_id=left_winner.candidate_id,
+            to_candidate_id=right_winner.candidate_id,
+            value_star=value,
+        ))
+    return tuple(transitions)
+
+
+def build_case_economics(
+    scenarios: tuple[CaseScenario, ...],
+) -> CaseEconomicsResult:
+    """Summarize cross-candidate winners without recalculating scenarios."""
+    priced = tuple(
+        row for row in scenarios
+        if row.result.constraint_status == "FEASIBLE" and row.result.model_cost is not None
+    )
+    cost_min = min(priced, key=lambda row: (row.result.model_cost, row.scenario_id)) if priced else None
+    target_candidates = tuple(
+        row for row in priced
+        if row.result.fuel_eu.target_g_per_mj is not None
+        and row.result.fuel_eu.compliance_balance_g is not None
+        and row.result.fuel_eu.compliance_balance_g >= ZERO
+    )
+    target_min = min(target_candidates, key=lambda row: (row.result.model_cost, row.scenario_id)) if target_candidates else None
+    improvement_candidates = tuple(
+        row for row in scenarios
+        if row.result.constraint_status == "FEASIBLE"
+        and row.result.compliance_improvement_tco2e is not None
+    )
+    max_improvement = max(
+        improvement_candidates,
+        key=lambda row: (row.result.compliance_improvement_tco2e, row.scenario_id),
+    ) if improvement_candidates else None
+    return CaseEconomicsResult(
+        comparison_status="COMPARABLE" if priced else "CALCULABLE",
+        cost_min_scenario_id=cost_min.scenario_id if cost_min else None,
+        target_min_cost_scenario_id=target_min.scenario_id if target_min else None,
+        max_improvement_scenario_id=max_improvement.scenario_id if max_improvement else None,
+        switch_points=calculate_case_value_switch_points(scenarios),
     )
 
 
@@ -206,11 +305,7 @@ def build_recommendations(
     """Build conditional result records from existing constraints and economics."""
     recommendations: list[ConditionalRecommendation] = []
     ranked = tuple(row for row in scenarios if row.current_model_cost_rank is not None)
-    incomplete_economics = any(
-        candidate.voyage_result is not None and candidate.calculation_status != "COMPARABLE"
-        for candidate in candidates
-    )
-    if ranked and not incomplete_economics:
+    if ranked:
         winner = min(ranked, key=lambda row: row.current_model_cost_rank or 0)
         recommendations.append(ConditionalRecommendation(
             recommendation_id="CURRENT_MODEL_COST_MIN",
@@ -243,25 +338,20 @@ def build_recommendations(
             candidate, scenarios, constraints.x_max_improvement, constraints.target_status,
         ))
 
-        economics = voyage.economics
-        if economics is None:
-            continue
-        for index, point in enumerate(economics.switch_points, start=1):
-            from_row = _scenario_for_ratio(scenarios, candidate.candidate_id, point.from_ratio)
-            to_row = _scenario_for_ratio(scenarios, candidate.candidate_id, point.to_ratio)
-            if from_row is None or to_row is None:
-                continue
-            recommendations.append(ConditionalRecommendation(
-                recommendation_id=f"REFERENCE_ADJUSTED_COST_SWITCH:{candidate.candidate_id}:{index}",
-                condition="REFERENCE_ADJUSTED_COST_SENSITIVITY",
-                scenario_id=None,
-                reason="LOWER_ENVELOPE_SWITCH",
-                assumptions=("EXECUTION_CONDITIONS_PENDING", "REFERENCE_VALUE_SENSITIVITY"),
-                status="CONDITIONAL",
-                from_scenario_id=from_row.scenario_id,
-                to_scenario_id=to_row.scenario_id,
-                from_candidate_id=from_row.candidate_id,
-                to_candidate_id=to_row.candidate_id,
-                value_star=point.value_star,
-            ))
+    switches = calculate_case_value_switch_points(scenarios)
+    for index, point in enumerate(switches, start=1):
+        prefix = point.to_candidate_id or point.from_candidate_id or "B0"
+        recommendations.append(ConditionalRecommendation(
+            recommendation_id=f"REFERENCE_ADJUSTED_COST_SWITCH:{prefix}:{index}",
+            condition="REFERENCE_ADJUSTED_COST_SENSITIVITY",
+            scenario_id=None,
+            reason="LOWER_ENVELOPE_SWITCH",
+            assumptions=("EXECUTION_CONDITIONS_PENDING", "REFERENCE_VALUE_SENSITIVITY"),
+            status="CONDITIONAL",
+            from_scenario_id=point.from_scenario_id,
+            to_scenario_id=point.to_scenario_id,
+            from_candidate_id=point.from_candidate_id,
+            to_candidate_id=point.to_candidate_id,
+            value_star=point.value_star,
+        ))
     return tuple(recommendations)

@@ -16,7 +16,7 @@ from .contracts import (
 )
 from .issues import issue_from_exception
 from .models import ScenarioResult, VoyageInput
-from .case_comparison import build_case_scenarios, build_recommendations
+from .case_comparison import build_case_economics, build_case_scenarios, build_recommendations
 from .ports import calculate_scope_rates
 from .provenance import FactorResolutionTrace, ResultProvenance, deduplicate_source_ids
 
@@ -324,6 +324,7 @@ def calculate_decision_case(
     candidate_results = tuple(results)
     scenarios = build_case_scenarios(baseline, candidate_results)
     recommendations = build_recommendations(scenarios, candidate_results)
+    economics = build_case_economics(scenarios)
     provenance = _result_provenance(request)
     return DecisionCaseResult(
         report_year=request.report_year,
@@ -336,6 +337,7 @@ def calculate_decision_case(
         recommendations=recommendations,
         issues=(*case_issue_list, *candidate_issues),
         provenance=provenance,
+        economics=economics,
     )
 
 

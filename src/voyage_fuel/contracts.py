@@ -155,6 +155,28 @@ class CaseScenario:
 
 
 @dataclass(frozen=True)
+class CaseValueSwitchPoint:
+    """One global lower-envelope transition across all case scenarios."""
+
+    from_scenario_id: str
+    to_scenario_id: str
+    from_candidate_id: str | None
+    to_candidate_id: str | None
+    value_star: Decimal
+
+
+@dataclass(frozen=True)
+class CaseEconomicsResult:
+    """Case-wide economic winners and reference-value sensitivity."""
+
+    comparison_status: str
+    cost_min_scenario_id: str | None
+    target_min_cost_scenario_id: str | None
+    max_improvement_scenario_id: str | None
+    switch_points: tuple[CaseValueSwitchPoint, ...] = ()
+
+
+@dataclass(frozen=True)
 class DecisionCaseResult:
     report_year: int
     departure_port: str
@@ -166,3 +188,4 @@ class DecisionCaseResult:
     recommendations: tuple[ConditionalRecommendation, ...]
     issues: tuple[Issue, ...]
     provenance: object | None = None
+    economics: CaseEconomicsResult | None = None

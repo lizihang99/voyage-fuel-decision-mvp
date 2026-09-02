@@ -161,7 +161,7 @@ def calculate_constraints(
             x_target_cost = x_target if omega >= ZERO else x_cap
 
     x_max_improvement: Optional[Decimal]
-    if x_target_unconstrained is None or target_status == "TARGET_NOT_APPLICABLE":
+    if target_status == "TARGET_NOT_APPLICABLE":
         x_max_improvement = None
     else:
         n_b, d_b = _unit_n_d(baseline)

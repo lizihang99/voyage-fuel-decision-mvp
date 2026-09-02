@@ -32,6 +32,43 @@ def _case(*candidates: CandidateInput, eua: str | None = "80") -> DecisionCaseIn
 
 
 class CaseComparisonTests(unittest.TestCase):
+    def test_current_model_cost_minimum_can_be_b0(self):
+        result = calculate_decision_case(_case(
+            CandidateInput(
+                "expensive-hfo", _component("HFO", "2000"),
+                specified_blend_ratios=(Decimal("1"),),
+                max_blend_ratio=Decimal("1"), allows_pure_use=True,
+            ),
+        ))
+
+        recommendation = next(
+            item for item in result.recommendations
+            if item.recommendation_id == "CURRENT_MODEL_COST_MIN"
+        )
+        baseline = next(item for item in result.scenarios if item.scenario_id == "B0")
+        self.assertEqual(recommendation.scenario_id, "B0")
+        self.assertEqual(baseline.current_model_cost_rank, 1)
+
+    def test_global_switch_points_remove_dominated_candidate_intersections(self):
+        result = calculate_decision_case(_case(
+            CandidateInput(
+                "uco", _component("UCO_FAME", "1000"),
+                specified_blend_ratios=(Decimal("0.2"),),
+                max_blend_ratio=Decimal("0.3"), allows_pure_use=True,
+            ),
+            CandidateInput(
+                "lng", _component("LNG_OTTO_MEDIUM_SPEED", "3000"),
+                specified_blend_ratios=(Decimal("0.1"), Decimal("0.5")),
+                max_blend_ratio=Decimal("0.5"), allows_pure_use=True,
+            ),
+        ))
+
+        self.assertIsNotNone(result.economics)
+        assert result.economics is not None
+        self.assertTrue(all(
+            point.to_candidate_id != "lng"
+            for point in result.economics.switch_points
+        ))
     def test_projection_keeps_absolute_results_and_unrounded_decimal_deltas(self):
         result = calculate_decision_case(_case(
             CandidateInput("uco", _component("UCO_FAME", "1000"), specified_blend_ratios=(Decimal("0.2"),)),
@@ -71,9 +108,11 @@ class CaseComparisonTests(unittest.TestCase):
 
         ranked = tuple(scenario for scenario in result.scenarios if scenario.current_model_cost_rank is not None)
         self.assertTrue(ranked)
+        self.assertIn("B0", [scenario.scenario_id for scenario in ranked])
         self.assertTrue(all(
-            scenario.candidate_id is not None
-            and scenario.calculation_status == "COMPARABLE"
+            (scenario.scenario_id == "B0" and scenario.candidate_id is None)
+            or (scenario.candidate_id is not None
+            and scenario.calculation_status == "COMPARABLE")
             and scenario.result.constraint_status == "FEASIBLE"
             for scenario in ranked
         ))
