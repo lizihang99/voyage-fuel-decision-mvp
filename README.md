@@ -54,4 +54,4 @@ P0-P1/
 & "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m unittest discover -s tests/e2e -v
 ```
 
-测试截图和导出证据写入 `tests/e2e/artifacts/`，服务状态和计算结果保持浏览器内存与本地临时进程范围内，不创建案例会话文件。
+测试截图和导出证据写入 `tests/e2e/artifacts/`；其中 PDF 导出会在本地生成但已加入忽略清单，因为 ReportLab 的运行元数据会使二进制内容随运行变化。服务状态和计算结果保持浏览器内存与本地临时进程范围内，不创建案例会话文件。

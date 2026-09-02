@@ -1,4 +1,5 @@
 import os
+import csv
 import shutil
 import socket
 import subprocess
@@ -8,6 +9,7 @@ import unittest
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
+from pypdf import PdfReader
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -168,7 +170,18 @@ class MVPFlowTests(BrowserAppMixin, unittest.TestCase):
             csv_path = ARTIFACTS / "desktop-result.csv"
             csv_download.save_as(csv_path)
             self.assertGreater(csv_path.stat().st_size, 50)
-            self.assertIn("record_type", csv_path.read_text(encoding="utf-8-sig"))
+            with csv_path.open("r", encoding="utf-8-sig", newline="") as csv_file:
+                csv_rows = list(csv.DictReader(csv_file))
+            self.assertIn("record_type", csv_rows[0])
+            self.assertGreaterEqual(len(csv_rows), 10)
+            self.assertEqual({row["record_type"] for row in csv_rows} & {"case", "port", "scenario"}, {"case", "port", "scenario"})
+            case_row = next(row for row in csv_rows if row["record_type"] == "case")
+            self.assertEqual(case_row["report_year"], "2026")
+            self.assertEqual(case_row["departure_port"], "CNSHG")
+            self.assertEqual(case_row["arrival_port"], "NLRTM")
+            scenario_rows = [row for row in csv_rows if row["record_type"] == "scenario"]
+            self.assertTrue({row["scenario_id"] for row in scenario_rows} >= {"B0", "uco-quote-1@0.2", "lng-quote-1@0.1"})
+            self.assertTrue(any(row["execution_status"] == "EXECUTION_CONDITIONS_PENDING" for row in scenario_rows))
             with page.expect_download() as download_info:
                 page.locator("#export-pdf").click()
             pdf_download = download_info.value
@@ -176,6 +189,17 @@ class MVPFlowTests(BrowserAppMixin, unittest.TestCase):
             pdf_download.save_as(pdf_path)
             self.assertGreater(pdf_path.stat().st_size, 1000)
             self.assertTrue(pdf_path.read_bytes().startswith(b"%PDF"))
+            pdf_text = " ".join((page.extract_text() or "") for page in PdfReader(str(pdf_path)).pages)
+            pdf_text = " ".join(pdf_text.split()).lower()
+            self.assertIn("report year: 2026", pdf_text)
+            self.assertIn("cnshg", pdf_text)
+            self.assertIn("nlrtm", pdf_text)
+            self.assertIn("b0", pdf_text)
+            self.assertIn("uco-quote-1@0.2", pdf_text)
+            self.assertIn("lng-quote-1@0.1", pdf_text)
+            self.assertIn("execution_conditions_pending", pdf_text)
+            self.assertIn("voyage-level proportional estimate", pdf_text)
+            self.assertIn("not an annual legal penalty", pdf_text)
 
             scenario_ids_before = [row["scenario_id"] for row in raw_before["scenarios"]]
             page.locator("#precision-price").fill("0")

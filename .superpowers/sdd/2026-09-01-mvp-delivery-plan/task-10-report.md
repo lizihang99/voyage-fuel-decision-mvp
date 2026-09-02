@@ -78,3 +78,21 @@ git diff --check
 ```
 
 All commands completed successfully after the second review fix.
+
+## Review Fix Round 3 (PDF/Export Evidence)
+
+Addressed the two scoped review findings from the post-Task-10 review:
+
+- Removed the generated `tests/e2e/artifacts/desktop-result.pdf` from Git tracking and ignored that path. ReportLab embeds run-dependent metadata, so retaining the binary caused repeat runs to produce noisy diffs and `git diff --check 3bcbbe4..HEAD` to flag generated output. The E2E flow still writes the PDF locally for inspection; reruns do not create a tracked change. No files under `output/` were touched.
+- Strengthened desktop export assertions in `tests/e2e/test_mvp_flow.py`. CSV is parsed with `csv.DictReader` and must contain the expected header, case row (`2026`, `CNSHG`, `NLRTM`), scenario rows (`B0`, UCO FAME and LNG IDs), and `EXECUTION_CONDITIONS_PENDING`. PDF is parsed with `pypdf`, whitespace-normalized, and checked for the report year, both ports, B0 and both candidate scenario IDs, execution status, and the voyage-level / non-annual-penalty limitation language.
+
+Focused verification after the changes:
+
+```text
+python -m unittest discover -s tests/e2e -v
+Ran 3 tests ... OK
+python -m compileall -q src tests
+git diff --check
+```
+
+The PDF assertion intentionally normalizes extracted text because ReportLab wraps long table cells across lines; this validates report content without coupling the test to page layout. The generated PDF remains available under `tests/e2e/artifacts/` after a run but is ignored by Git.
