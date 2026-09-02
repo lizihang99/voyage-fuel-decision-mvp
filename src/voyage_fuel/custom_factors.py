@@ -120,8 +120,8 @@ def resolve_custom_factor(payload: Mapping[str, Any], report_year: int | None = 
     if rwd == TWO:
         if mode != "RFNBO_E":
             raise ValueError("INVALID_RWD: rwd=2 is only valid for RFNBO_E")
-        if report_year is None or not 2025 <= report_year <= 2033:
-            raise _blocked("rwd=2 is only valid for qualified RFNBO from 2025 through 2033")
+        if report_year is None or not 2025 <= report_year <= 2030:
+            raise _blocked("rwd=2 is only valid for qualified RFNBO from 2025 through 2030")
 
     required = ["lcv", "cfCO2", "cfCH4", "cfN2O", "cslip", "methaneSlipApplicable", "rwd"]
     if mode in {"STATIC", "CERTIFIED"}:

@@ -104,6 +104,16 @@ def case_with_custom_candidate(candidate, *, report_year=2026):
 
 
 class CaseJsonIoTests(unittest.TestCase):
+    def test_component_qualification_status_is_normalized(self):
+        payload = case_with_custom_candidate(custom_factor_payload(qualification="assumed_eligible"))
+
+        parsed = parse_decision_case(payload)
+
+        self.assertIsNotNone(parsed.request)
+        assert parsed.request is not None
+        self.assertEqual(parsed.request.candidates[0].component.qualification_status,
+                         "ASSUMED_ELIGIBLE")
+
     def test_parses_case_candidates_with_decimal_values(self):
         parsed = parse_decision_case(minimum_payload())
 

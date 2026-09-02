@@ -186,8 +186,8 @@ def _resolve_factor(path_id: str, qualification_status: str = "NOT_DEMONSTRATED"
             return _resolve_factor(
                 definition.fallback_path_id or "", "NOT_DEMONSTRATED", report_year=report_year
             )
-        if report_year is not None and not 2025 <= report_year <= 2033:
-            raise ValueError("BLOCKED: rwd=2 is only valid for qualified RFNBO from 2025 through 2033")
+        if report_year is not None and not 2025 <= report_year <= 2030:
+            raise ValueError("BLOCKED: rwd=2 is only valid for qualified RFNBO from 2025 through 2030")
         if status == "VERIFIED_ELIGIBLE" and (e_value is None or eu_value is None):
             raise ValueError(f"BLOCKED: verified RFNBO requires E and eu for {definition.path_id}")
         e = Decimal(str(e_value)) if e_value is not None else definition.default_e_g_per_mj

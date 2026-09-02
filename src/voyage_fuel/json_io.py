@@ -59,7 +59,7 @@ def _parse_component(payload: Mapping[str, Any], *, field_prefix: str,
 
     if not isinstance(payload, Mapping):
         raise _InputError("MISSING_REQUIRED_FACTOR", field_prefix or "component", "component must be an object")
-    qualification = str(payload.get("qualificationStatus", "NOT_DEMONSTRATED"))
+    qualification = str(payload.get("qualificationStatus", "NOT_DEMONSTRATED")).strip().upper()
     e_value = payload.get("e")
     eu_value = payload.get("eu")
     cslip = payload.get("cslip")
@@ -97,7 +97,7 @@ def _parse_component(payload: Mapping[str, Any], *, field_prefix: str,
             eligible_biomass_fraction=_decimal(
                 payload.get("eligibleBiomassFraction", "0"), field=field("eligibleBiomassFraction")
             ),
-            qualification_status=str(payload.get("qualificationStatus", "NOT_DEMONSTRATED")),
+            qualification_status=qualification,
         )
     except (InvalidOperation, TypeError, ValueError) as error:
         if isinstance(error, _InputError):
