@@ -55,6 +55,34 @@ class WebPageContractTests(unittest.TestCase):
         html = self.client.get("/").text
         self.assertRegex(html, r"<fieldset>\s*<legend>候选燃料报价</legend>")
 
+    def test_advanced_custom_fuel_form_exposes_minimal_factor_contract(self):
+        html = self.client.get("/").text
+        source = self.client.get("/static/app.js").text
+        for field in (
+            'data-field="candidateMode"',
+            'data-field="customFuelName"',
+            'data-field="customFuelType"',
+            'data-field="wtTMode"',
+            'data-field="lcv"',
+            'data-field="wtT"',
+            'data-field="cfCO2"',
+            'data-field="cfCH4"',
+            'data-field="cfN2O"',
+            'data-field="cfCH4ZeroEstimate"',
+            'data-field="cfN2OZeroEstimate"',
+            'data-field="methaneSlipApplicable"',
+            'data-field="qualificationStatus"',
+            'data-field="sourceId"',
+            'data-field="sourceType"',
+            'data-field="verificationStatus"',
+        ):
+            self.assertIn(field, source)
+        self.assertIn("sourceEvidence", source)
+        self.assertIn("CUSTOM_NON_METHANE", source)
+        self.assertIn("RFNBO_E", source)
+        self.assertIn("RFNBO 资格未确认", html + source)
+        self.assertIn("certified-warning", source)
+
 
 if __name__ == "__main__":
     unittest.main()

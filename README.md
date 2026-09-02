@@ -45,11 +45,11 @@ P0-P1/
 
 当前分支已经完成并验证案例级多候选计算、结构化结果与追溯、CSV/PDF报告、单用户网页工作流，以及安装后服务和浏览器验收。唯一事实来源和逐模块证据见[MVP交付计划与进度](./docs/superpowers/plans/2026-09-01-mvp-delivery-plan.md)。
 
-FuelEU结果仍是航次级按比例分配估算，不代表正式年度合规余额或真实年度罚款；系统不输出采购建议或独立物理生命周期WtW减排。逐字段自定义燃料因子已在Python/JSON/API层支持并要求证据，网页当前提供内置路径和候选约束输入，网页高级自定义因子表单仍属于后续界面增强。
+FuelEU结果仍是航次级按比例分配估算，不代表正式年度合规余额或真实年度罚款；系统不输出采购建议或独立物理生命周期WtW减排。逐字段自定义燃料因子已在Python/JSON/API层支持并要求证据，网页高级自定义模式提供最小输入适配：普通非甲烷燃料默认隐藏Cslip等设备字段，CH4/N2O可由用户明确勾选“按0估算”，气体路径可显式选择甲烷滑移是否适用，适用时才填写Cslip和滑移因子；生物燃料可在未证明资格时使用BIO_E估算，EU ETS合格生物质比例仍按0处理；未证明RFNBO资格时页面锁定普通WtT输入，避免直接套用RFNBO奖励。自定义路径和候选身份由页面会话内稳定 ID 管理，最终字段、单位和证据完整性仍由后端校验。
 
 ## 浏览器验收
 
-网页端到端测试位于 `tests/e2e/`，使用 Python Playwright 启动隔离的本地 `voyage-fuel-web` 服务，并覆盖桌面 `1440x900`、移动 `390x844`、多候选比较、RFNBO 回退证据、阻断候选隔离、显示精度和 CSV/PDF 导出。运行前请安装 Playwright 浏览器；也可以通过 `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` 指向已有 Chrome：
+网页端到端测试位于 `tests/e2e/`，使用 Python Playwright 启动隔离的本地 `voyage-fuel-web` 服务，并覆盖桌面 `1440x900`、移动 `390x844`、多候选比较、高级自定义燃料最小输入、RFNBO 资格保护、候选重绘状态保留、阻断候选隔离、显示精度和 CSV/PDF 导出。运行前请安装 Playwright 浏览器；也可以通过 `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` 指向已有 Chrome：
 
 ```powershell
 & "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m playwright install chromium

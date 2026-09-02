@@ -15,3 +15,6 @@ pnpm-debug.log*
 
 # Generated browser export; timestamps make PDF bytes nondeterministic.
 tests/e2e/artifacts/desktop-result.pdf
+
+# Local report renderings generated during verification.
+output/

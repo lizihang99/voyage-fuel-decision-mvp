@@ -62,14 +62,15 @@
 
 基线分支：`python-calculation-kernel`。
 
-当前已验证提交：`58c6a81 fix: verify installed MVP runtime`。
+当前已验证提交：`67331bf feat: add minimal advanced custom fuel form`。
 
 验证结果：
 
 ```text
-Python unittest: 140 passed
-Node port tests: 29 passed
-Python compileall: passed
+Python unittest: 150 passed
+ Node port tests: 29 passed
+ Playwright E2E: 12 passed (included in the repository discovery run)
+ Python compileall: passed
 git diff --check: passed
 ```
 
@@ -89,7 +90,7 @@ git diff --check
 | --- | --- | --- | --- | --- | --- |
 | M01 | 港口身份表和范围计算 | `VERIFIED` | `ports.py`；`test_ports.py`；29项Node测试 | 核心计算无缺口；港口解释和来源输出归M10 | 现有规则测试持续通过 |
 | M02 | 36条内置燃料路径和解析器 | `VERIFIED` | `factors.py`；`test_factors.py`；`test_factor_catalog_audit.py`；`test_factor_resolution.py` | 核心解析无缺口；运行时追溯归M10 | 36条路径及全部资格分支测试持续通过 |
-| M03 | 自定义燃料逐字段证据校验 | `VERIFIED` | `custom_factors.py`；`test_custom_factors.py`；JSON/API 自定义路径阻断矩阵 | 网页高级自定义因子表单仍属界面增强 | 缺字段、单位、滑移和证据状态测试持续通过 |
+| M03 | 自定义燃料逐字段证据校验 | `VERIFIED` | `custom_factors.py`；`test_custom_factors.py`；JSON/API 自定义路径阻断矩阵；网页高级自定义最小输入 E2E | 页面只负责适配输入，不替代后端证据校验；直接构造 JSON/API 的 RFNBO 资格一致性仍属后端加固项 | 缺字段、单位、滑移、证据状态和网页 payload 组装测试持续通过 |
 | M04 | B0、B100、质量混兑和能源守恒 | `VERIFIED` | `energy.py`；`calculator.py`；`test_energy.py`；`test_calculator.py` | 无 | 所有报告方案保持B0能源且测试通过 |
 | M05 | EU ETS航次计算 | `VERIFIED` | `emissions.py`；`test_ets.py`；Task 11 `test_spec_matrix.py` 12项矩阵 | 无 | 年份、气体、范围和清缴比例矩阵通过 |
 | M06 | FuelEU航次级GHGI、余额和罚款等值 | `VERIFIED` | `emissions.py`；`test_fueleu.py`；Task 11 `test_spec_matrix.py` 12项矩阵 | 无；仍限于航次级比例估算 | 适用性、年度目标、范围、余额和罚款向量通过 |
@@ -101,11 +102,11 @@ git diff --check
 | M12 | JSON/API输入输出契约 | `VERIFIED` | `json_io.py`、`web.py`；`test_case_json_io.py`；`test_web_api.py` | 无；后续页面和报告仅消费同一结果契约 | 案例级JSON、结构化422错误和API集成测试通过 |
 | M13 | CSV完整报告 | `VERIFIED` | `formatting.py`；`reports.py`；`test_case_reports.py` | - | Case、港口、场景、建议、临界点、因子依据和问题记录均固定导出；原始Decimal、单位、币种、版本和来源保持可审计 |
 | M14 | PDF完整报告和共享显示配置 | `VERIFIED` | `reports.py`；Task 8 报告测试与渲染；Task 12 安装后 PDF 13页渲染、文本和边界审计 | 无 | PDF满足MVP设计第14节并通过渲染检查 |
-| M15 | 单用户网页工作流 | `VERIFIED` | `web.py`、`index.html`、`app.js`；安装包 Task 10 Playwright desktop/mobile flow | 网页当前覆盖内置燃料和候选约束；高级自定义因子录入仍待后续界面增强 | 用户可在浏览器完成一次完整内置路径案例 |
-| M16 | 完整测试矩阵和端到端验收 | `VERIFIED` | Python unittest 140；Node port tests 29；Task 10 安装包 Playwright 3；Task 11 矩阵 12；compileall；`git diff --check` | 无；年度扩展仍属明确后续范围 | 计算规格第16节和网页主流程全部自动验证 |
+| M15 | 单用户网页工作流 | `VERIFIED` | `web.py`、`index.html`、`app.js`；内置燃料 desktop/mobile flow；高级自定义最小输入与 RFNBO 保护 E2E | 无；正式年度模式仍属范围外 | 用户可在浏览器完成内置路径或高级自定义燃料的一次航次案例 |
+| M16 | 完整测试矩阵和端到端验收 | `VERIFIED` | Python unittest 150（含当前网页测试）；Node port tests 29；Playwright E2E 12；Task 11 矩阵 12；compileall；`git diff --check` | 无；年度扩展仍属明确后续范围 | 计算规格第16节和网页主流程全部自动验证 |
 | M17 | 安装、运行和依赖声明 | `VERIFIED` | `pyproject.toml`；非 editable wheel；临时虚拟环境 `.[dev]` 安装；`voyage-fuel-web` `/health`、API、CSV/PDF 实测 | 无 | 干净环境按README命令可启动并通过健康检查 |
 
-总体判断：计划内的案例级计算、约束与经济比较、结构化结果、CSV/PDF、单用户网页、测试矩阵和安装后运行链路均已完成并有证据。产品边界仍保持航次级 FuelEU 估算、执行条件待确认和明确排除项。逐字段自定义燃料因子已经在 Python/JSON/API 层完成；网页暂未提供完整高级自定义因子录入表单，这项属于界面增强，不能在网页能力描述中省略。
+总体判断：计划内的案例级计算、约束与经济比较、结构化结果、CSV/PDF、单用户网页、测试矩阵和安装后运行链路均已完成并有证据。产品边界仍保持航次级 FuelEU 估算、执行条件待确认和明确排除项。逐字段自定义燃料因子已经在 Python/JSON/API 层完成，网页现已提供最小输入的高级自定义因子表单：普通非甲烷路径默认隐藏 Cslip 等设备字段，零值采用需要用户确认的估算选项，气体路径可明确选择甲烷滑移适用性，生物燃料未证明资格时仍可使用 BIO_E 估算，未证明 RFNBO 资格时锁定为普通 WtT 输入；页面使用稳定会话 ID 生成自定义路径和候选身份，后端仍负责最终证据和字段校验。
 
 ---
 
@@ -1087,7 +1088,7 @@ Observed on 2026-09-02: installed-package Playwright E2E `3/3` passed; Poppler r
 
 Search application text, PDF output and README for claims of formal annual FuelEU compliance, real penalty, procurement recommendation or independent physical WtW reduction. Every FuelEU result must remain explicitly voyage-level and proportional; every execution status must remain pending.
 
-Observed on 2026-09-02: no forbidden positive claim was found in application text or extracted PDF; required boundary language was present. The README and module table explicitly record that advanced custom-factor entry is API/JSON-complete but not yet a webpage form.
+Observed on 2026-09-02: no forbidden positive claim was found in application text or extracted PDF; required boundary language was present. The README and module table record that advanced custom-factor entry is available in the webpage as a minimal input adapter, while final factor completeness and evidence validation remain server-side.
 
 - [x] **Step 4: Update the module table from evidence**
 
@@ -1129,8 +1130,12 @@ Use `superpowers:requesting-code-review` for a final review, address verified fi
 - [x] Desktop and mobile workflows pass Playwright tests and screenshot inspection.
 - [x] A clean environment can install and start the application from README instructions.
 - [x] All Python, Node, API, report and browser tests pass at the recorded final commit.
+- [x] 高级自定义燃料模式只要求用户填写实际可获得的核心因子和一个来源编号；页面自动生成后端所需的单位、设备、资格和逐字段证据结构。
+- [x] 普通非甲烷自定义路径默认隐藏 Cslip/滑移因子；CH4/N2O 按 0 估算必须由用户明确确认并标记为 `ESTIMATED`。
+- [x] 气体自定义路径按需显示甲烷滑移适用性、Cslip 和滑移因子；未证明 RFNBO 资格时页面锁定普通 WtT 输入，不直接发送 RFNBO 公式模式。
+- [x] 自定义 `pathId` 和自动生成的 `candidateId` 在页面会话内保持稳定且唯一；生物燃料 `BIO_E` 不因未证明资格被错误降级为静态 WtT。
 
-网页当前通过 API/JSON 支持完整自定义燃料因子校验，但没有逐字段高级因子录入表单；这属于网页界面增强项，不能替代 API 层的证据校验，也不改变本计划已验证的内核和报告边界。
+网页现在通过最小输入适配支持高级自定义燃料因子录入；页面只负责默认值、条件显示、稳定身份和 payload 组装，最终字段、单位、滑移和证据完整性仍由 API/JSON 层校验，不改变本计划已验证的内核和报告边界。页面层会阻断未证明 RFNBO 的奖励公式；本轮遵循“不修改后端计算逻辑”的范围，直接构造 custom RFNBO JSON 时的资格一致性仍记录为后端后续加固项。
 
 ## Explicit MVP Exclusions
 
@@ -1162,6 +1167,9 @@ Use `superpowers:requesting-code-review` for a final review, address verified fi
 | 2026-09-01 | `aa9bcf2` | Task 8 focused PDF/API unittest 20；Poppler `pdftoppm -png -r 120` rendered 4 pages；`pypdf` text extraction；compileall；`git diff --check` | Complete multi-candidate PDF sections, shared-result CSV/PDF exports, display-only precision and nonblank page rendering verified |
 | 2026-09-02 | `abefa13` + Task 10 review fix round 3 | Python unittest 128；Node port tests 29；Playwright E2E 3；desktop/mobile/blocked screenshots；CSV parsed header/case/port/scenario/status assertions；PDF text extraction assertions for case/ports/scenarios/status/limitation；compileall；`git diff --check` | Browser workflow, responsive controls, RFNBO fallback evidence, display precision stability, blocked-candidate isolation and report content verified; generated PDF is local ignored output |
 | 2026-09-02 | `58c6a81` | Temporary non-editable wheel install；installed CLI `/health`、case API、CSV/PDF；installed-package Playwright 3；Poppler 13-page render；pypdf boundary audit；Python unittest 140；Node port tests 29；compileall；`git diff --check` | Package assets and dev dependencies fixed; clean-environment runtime and final acceptance evidence verified |
+| 2026-09-02 | working tree | Initial web page/API tests 16；MVP web-flow E2E 7；`node --check`；`git diff --check` | Advanced custom-factor minimal input adapter, explicit zero-estimate semantics, gas-field conditional display, rule-defined RWD, unqualified RFNBO protection and candidate-collection state preservation verified without backend changes |
+| 2026-09-02 | working tree (review fixes) | Focused page/API/custom JSON 23；MVP web-flow E2E 11；`node --check`；`git diff --check` | BIO_E qualification handling, stable custom path IDs, unique generated candidate IDs, explicit gas methane-slip applicability and certified-WtT warning verified; backend calculation logic unchanged |
+| 2026-09-02 | working tree (final verification) | Python unittest discover 150（含 Playwright E2E 12）；Node port tests 29；compileall；`node --check`；`git diff --check` | Advanced custom-factor webpage adapter and review fixes pass the complete repository acceptance run; no Python calculation files changed |
 
 Future entries must record evidence after it has been run. Do not add expected pass counts as if they were observed results.
 

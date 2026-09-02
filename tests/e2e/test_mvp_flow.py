@@ -1,5 +1,6 @@
 import os
 import csv
+import json
 import shutil
 import socket
 import subprocess
@@ -140,6 +141,233 @@ class BrowserAppMixin:
         self.assertEqual([scenario_id for _, scenario_id in expected], [scenario_id for _, scenario_id, _ in sorted(ranked)])
 
 class MVPFlowTests(BrowserAppMixin, unittest.TestCase):
+    def test_custom_fuel_form_builds_minimal_backend_factor_payload(self):
+        context, page = self.new_page()
+        try:
+            self.choose_port(page, "#departure-port-search", "CNSHG")
+            self.choose_port(page, "#arrival-port-search", "NLRTM")
+            page.locator("#case-currency").select_option("EUR")
+            page.locator("#baseline-fuel").select_option("MDO")
+            page.locator("#baseline-mass").fill("100")
+            page.locator("#baseline-price").fill("700")
+            page.locator("#eua-price").fill("80")
+
+            row = page.locator(".candidate-row").first
+            row.locator('[data-field="candidateMode"]').select_option("custom")
+            self.assertTrue(row.locator(".custom-editor").is_visible())
+            self.assertFalse(row.locator('[data-field="cslip"]').is_visible())
+            self.assertFalse(row.locator('[data-field="csfCO2"]').is_visible())
+
+            row.locator('[data-field="candidateId"]').fill("custom-waste-oil")
+            row.locator('[data-field="customFuelName"]').fill("Waste Oil")
+            row.locator('[data-field="lcv"]').fill("0.04")
+            row.locator('[data-field="wtT"]').fill("10")
+            row.locator('[data-field="cfCO2"]').fill("3")
+            row.locator('[data-field="cfCH4ZeroEstimate"]').check()
+            row.locator('[data-field="cfN2OZeroEstimate"]').check()
+            row.locator('[data-field="pricePerTonne"]').fill("900")
+            row.locator('[data-field="specifiedBlendRatios"]').fill("0.2")
+            row.locator('[data-field="sourceId"]').fill("SUP-123")
+
+            with page.expect_response(lambda response: response.url.endswith("/api/calculate") and response.request.method == "POST") as response_info:
+                page.locator("#calculate-command").click()
+            response = response_info.value
+            self.assertEqual(response.status, 200)
+            result = response.json()
+            self.assertEqual(result["candidate_results"][0]["calculation_status"], "COMPARABLE")
+            self.assertEqual(result["candidate_results"][0]["voyage_result"]["candidate_factor"]["factor_status"], "ESTIMATED")
+            body = json.loads(response.request.post_data)
+            custom = body["candidates"][0]
+            self.assertTrue(custom["custom"])
+            self.assertEqual(custom["pathId"], custom["customPathId"])
+            self.assertTrue(custom["pathId"].startswith("CUSTOM_FUEL_"))
+            self.assertEqual(custom["equipmentId"], "CUSTOM_NON_METHANE")
+            self.assertEqual(custom["cslip"], "NA")
+            self.assertFalse(custom["methaneSlipApplicable"])
+            self.assertEqual(custom["rwd"], "1")
+            self.assertEqual(custom["eligibleBiomassFraction"], "0")
+            self.assertEqual(custom["cfCH4"], "0")
+            self.assertEqual(custom["cfN2O"], "0")
+            self.assertEqual(custom["sourceEvidence"]["lcv"][0]["sourceId"], "SUP-123")
+            self.assertEqual(custom["sourceEvidence"]["cfCH4"][0]["verificationStatus"], "ESTIMATED")
+            page.locator("#result-run-status").filter(has_text="已完成").wait_for()
+        finally:
+            context.close()
+
+    def test_unqualified_custom_rfnbo_is_locked_to_non_rfnbo_mode(self):
+        context, page = self.new_page()
+        try:
+            row = page.locator(".candidate-row").first
+            row.locator('[data-field="candidateMode"]').select_option("custom")
+            row.locator('[data-field="customProfile"]').select_option("rfnbo")
+            row.locator('[data-field="wtTMode"]').select_option("RFNBO_E")
+            self.assertTrue(row.locator('[data-field="rfnbo-warning"]').is_visible())
+            self.assertEqual(row.locator('[data-field="wtTMode"]').input_value(), "STATIC")
+            self.assertFalse(row.locator('[data-field="e"]').is_visible())
+            self.assertTrue(row.locator('[data-field="wtT"]').is_visible())
+        finally:
+            context.close()
+
+    def test_unqualified_custom_biofuel_keeps_bio_e_formula(self):
+        context, page = self.new_page()
+        try:
+            self.choose_port(page, "#departure-port-search", "CNSHG")
+            self.choose_port(page, "#arrival-port-search", "NLRTM")
+            page.locator("#baseline-fuel").select_option("MDO")
+            page.locator("#baseline-mass").fill("100")
+            page.locator("#baseline-price").fill("700")
+            page.locator("#eua-price").fill("80")
+            row = page.locator(".candidate-row").first
+            row.locator('[data-field="candidateMode"]').select_option("custom")
+            row.locator('[data-field="customFuelName"]').fill("Unqualified Biofuel")
+            row.locator('[data-field="customProfile"]').select_option("biofuel")
+            row.locator('[data-field="wtTMode"]').select_option("BIO_E")
+            self.assertEqual(row.locator('[data-field="wtTMode"]').input_value(), "BIO_E")
+            row.locator('[data-field="lcv"]').fill("0.037")
+            row.locator('[data-field="e"]').fill("14.9")
+            row.locator('[data-field="cfCO2"]').fill("2.834")
+            row.locator('[data-field="cfCH4ZeroEstimate"]').check()
+            row.locator('[data-field="cfN2OZeroEstimate"]').check()
+            row.locator('[data-field="pricePerTonne"]').fill("900")
+            row.locator('[data-field="specifiedBlendRatios"]').fill("0.2")
+            row.locator('[data-field="sourceId"]').fill("BIO-SUP-1")
+            with page.expect_response(lambda response: response.url.endswith("/api/calculate") and response.request.method == "POST") as response_info:
+                page.locator("#calculate-command").click()
+            response = response_info.value
+            self.assertEqual(response.status, 200)
+            result = response.json()
+            self.assertEqual(result["candidate_results"][0]["calculation_status"], "COMPARABLE")
+            self.assertEqual(result["candidate_results"][0]["voyage_result"]["candidate_factor"]["factor_status"], "ESTIMATED")
+            body = json.loads(response.request.post_data)
+            custom = body["candidates"][0]
+            self.assertEqual(custom["wtTMode"], "BIO_E")
+            self.assertEqual(custom["eligibleBiomassFraction"], "0")
+        finally:
+            context.close()
+
+    def test_custom_candidate_path_ids_are_unique_for_duplicate_names(self):
+        context, page = self.new_page()
+        try:
+            self.choose_port(page, "#departure-port-search", "CNSHG")
+            self.choose_port(page, "#arrival-port-search", "NLRTM")
+            page.locator("#baseline-fuel").select_option("MDO")
+            page.locator("#baseline-mass").fill("100")
+            page.locator("#baseline-price").fill("700")
+            page.locator("#eua-price").fill("80")
+            for index in range(2):
+                if index:
+                    page.locator("#add-candidate").click()
+                row = page.locator(".candidate-row").nth(index)
+                row.locator('[data-field="candidateMode"]').select_option("custom")
+                row.locator('[data-field="customFuelName"]').fill("Same Name Fuel")
+            with page.expect_response(lambda response: response.url.endswith("/api/calculate") and response.request.method == "POST") as response_info:
+                page.locator("#calculate-command").click()
+            response = response_info.value
+            self.assertEqual(response.status, 200)
+            body = json.loads(response.request.post_data)
+            path_ids = [candidate["pathId"] for candidate in body["candidates"]]
+            self.assertEqual(len(path_ids), len(set(path_ids)))
+        finally:
+            context.close()
+
+    def test_generated_candidate_ids_stay_unique_after_remove_and_add(self):
+        context, page = self.new_page()
+        try:
+            page.locator("#add-candidate").click()
+            page.locator(".candidate-row").first.locator(".remove-candidate").click()
+            page.locator("#add-candidate").click()
+            candidate_ids = page.locator('[data-field="candidateId"]').evaluate_all("inputs => inputs.map(input => input.value)")
+            self.assertEqual(len(candidate_ids), len(set(candidate_ids)))
+        finally:
+            context.close()
+
+    def test_qualified_custom_rfnbo_shows_rule_defined_rwd(self):
+        context, page = self.new_page()
+        try:
+            row = page.locator(".candidate-row").first
+            row.locator('[data-field="candidateMode"]').select_option("custom")
+            row.locator('[data-field="customProfile"]').select_option("rfnbo")
+            row.locator('[data-field="qualificationStatus"]').select_option("ASSUMED_ELIGIBLE")
+            row.locator('[data-field="wtTMode"]').select_option("RFNBO_E")
+            rwd = row.locator('[data-field="rwd"]')
+            self.assertTrue(rwd.is_visible())
+            self.assertEqual(rwd.input_value(), "2")
+            self.assertTrue(rwd.is_editable() is False)
+        finally:
+            context.close()
+
+    def test_custom_gas_shows_slip_factors_only_for_nonzero_cslip(self):
+        context, page = self.new_page()
+        try:
+            row = page.locator(".candidate-row").first
+            row.locator('[data-field="candidateMode"]').select_option("custom")
+            row.locator('[data-field="customFuelType"]').select_option("gas")
+            self.assertTrue(row.locator('[data-field="cslip"]').is_visible())
+            self.assertFalse(row.locator('[data-field="csfCO2"]').is_visible())
+            row.locator('[data-field="cslip"]').fill("1.5")
+            self.assertTrue(row.locator('[data-field="csfCO2"]').is_visible())
+            self.assertTrue(row.locator('[data-field="csfCH4"]').is_visible())
+            self.assertTrue(row.locator('[data-field="csfN2O"]').is_visible())
+        finally:
+            context.close()
+
+    def test_custom_gas_can_explicitly_disable_methane_slip(self):
+        context, page = self.new_page()
+        try:
+            self.choose_port(page, "#departure-port-search", "CNSHG")
+            self.choose_port(page, "#arrival-port-search", "NLRTM")
+            page.locator("#baseline-fuel").select_option("MDO")
+            page.locator("#baseline-mass").fill("100")
+            page.locator("#baseline-price").fill("700")
+            page.locator("#eua-price").fill("80")
+            row = page.locator(".candidate-row").first
+            row.locator('[data-field="candidateMode"]').select_option("custom")
+            row.locator('[data-field="customFuelType"]').select_option("gas")
+            self.assertEqual(row.locator('[data-field="methaneSlipApplicable"]').count(), 1)
+            row.locator('[data-field="methaneSlipApplicable"]').select_option("false")
+            self.assertFalse(row.locator('[data-field="cslip"]').is_visible())
+            self.assertFalse(row.locator('[data-field="csfCO2"]').is_visible())
+            row.locator('[data-field="customFuelName"]').fill("Gaseous Hydrogen")
+            row.locator('[data-field="lcv"]').fill("0.12")
+            row.locator('[data-field="wtT"]').fill("132")
+            row.locator('[data-field="cfCO2"]').fill("0")
+            row.locator('[data-field="cfCH4ZeroEstimate"]').check()
+            row.locator('[data-field="cfN2OZeroEstimate"]').check()
+            row.locator('[data-field="pricePerTonne"]').fill("1200")
+            row.locator('[data-field="specifiedBlendRatios"]').fill("0.2")
+            row.locator('[data-field="sourceId"]').fill("H2-SUP-1")
+            with page.expect_response(lambda response: response.url.endswith("/api/calculate") and response.request.method == "POST") as response_info:
+                page.locator("#calculate-command").click()
+            response = response_info.value
+            self.assertEqual(response.status, 200)
+            body = json.loads(response.request.post_data)
+            custom = body["candidates"][0]
+            self.assertEqual(custom["equipmentId"], "CUSTOM_GAS")
+            self.assertFalse(custom["methaneSlipApplicable"])
+            self.assertEqual(custom["cslip"], "NA")
+        finally:
+            context.close()
+
+    def test_custom_editor_state_survives_candidate_collection_rerender(self):
+        context, page = self.new_page()
+        try:
+            row = page.locator(".candidate-row").first
+            stable_path_id = row.get_attribute("data-custom-path-id")
+            row.locator('[data-field="candidateMode"]').select_option("custom")
+            row.locator('[data-field="customFuelName"]').fill("Persistent Fuel")
+            row.locator('[data-field="customProfile"]').select_option("biofuel")
+            row.locator('[data-field="cfCH4ZeroEstimate"]').check()
+            page.locator("#add-candidate").click()
+            restored = page.locator(".candidate-row").first
+            self.assertEqual(restored.locator('[data-field="candidateMode"]').input_value(), "custom")
+            self.assertEqual(restored.locator('[data-field="customFuelName"]').input_value(), "Persistent Fuel")
+            self.assertEqual(restored.locator('[data-field="customProfile"]').input_value(), "biofuel")
+            self.assertTrue(restored.locator('[data-field="cfCH4ZeroEstimate"]').is_checked())
+            self.assertTrue(restored.locator(".custom-editor").is_visible())
+            self.assertEqual(restored.get_attribute("data-custom-path-id"), stable_path_id)
+        finally:
+            context.close()
+
     def test_complete_desktop_and_mobile_flow(self):
         context, page = self.new_page()
         try:
