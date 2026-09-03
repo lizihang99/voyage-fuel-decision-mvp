@@ -107,6 +107,9 @@ class FuelDefinition:
     default_cf_n2o_g_per_g: Optional[Decimal] = None
     default_cslip_percent: Optional[Decimal] = None
     biomass_eligible: bool = False
+    # Fields explicitly sourced from a default snapshot. This stays distinct
+    # from values auto-filled from the formal catalog in __post_init__.
+    default_fields: frozenset[str] = frozenset()
 
     def __post_init__(self) -> None:
         for name in (

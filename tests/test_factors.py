@@ -1,7 +1,7 @@
 import unittest
 from decimal import Decimal
 
-from voyage_fuel.factors import builtin_path_ids, get_definition
+from voyage_fuel.factors import builtin_path_ids, get_builtin_factor, get_definition
 
 
 class FactorCatalogTests(unittest.TestCase):
@@ -17,6 +17,23 @@ class FactorCatalogTests(unittest.TestCase):
         self.assertEqual(definition.wt_t_mode, "STATIC")
         self.assertEqual(definition.lcv_mj_per_g, Decimal("0.0405"))
         self.assertEqual(definition.wt_t_g_per_mj, Decimal("13.5"))
+
+    def test_builtin_evidence_uses_fixed_status_for_regulatory_path(self):
+        factor = get_builtin_factor("MDO")
+        statuses = {record.field_name: record.verification_status for record in factor.source_evidence}
+        self.assertEqual(statuses["lcv"], "FIXED")
+        self.assertEqual(statuses["wtT"], "FIXED")
+        self.assertEqual(statuses["cfCO2"], "FIXED")
+        self.assertEqual(statuses["eligibleBiomassFraction"], "FIXED")
+
+    def test_builtin_default_evidence_uses_estimated_status_and_covers_biomass_field(self):
+        factor = get_builtin_factor("BIODIESEL")
+        statuses = {record.field_name: record.verification_status for record in factor.source_evidence}
+        self.assertEqual(factor.factor_status, "ESTIMATED")
+        self.assertEqual(statuses["lcv"], "ESTIMATED")
+        self.assertEqual(statuses["wtT"], "ESTIMATED")
+        self.assertEqual(statuses["cfCO2"], "FIXED")
+        self.assertEqual(statuses["eligibleBiomassFraction"], "ESTIMATED")
 
     def test_unknown_and_ops_paths_are_rejected(self):
         with self.assertRaises(KeyError):

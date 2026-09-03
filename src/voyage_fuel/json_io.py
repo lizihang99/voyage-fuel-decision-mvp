@@ -114,14 +114,15 @@ def _request(payload: Mapping[str, Any]) -> VoyageInput:
     candidate = payload.get("candidate")
     if not isinstance(baseline, Mapping) or not isinstance(candidate, Mapping):
         raise ValueError("baseline and candidate objects are required")
+    report_year = int(payload["reportYear"])
     eua_price = payload.get("euaPricePerTCO2e")
     return VoyageInput(
-        report_year=int(payload["reportYear"]),
+        report_year=report_year,
         departure_port=str(payload["departurePort"]),
         arrival_port=str(payload["arrivalPort"]),
-        baseline_component=parse_component(baseline),
+        baseline_component=parse_component(baseline, report_year=report_year),
         baseline_mass_tonnes=Decimal(str(baseline["massTonnes"])),
-        candidate_component=parse_component(candidate),
+        candidate_component=parse_component(candidate, report_year=report_year),
         eua_price_per_tco2e=None if eua_price is None else Decimal(str(eua_price)),
         specified_blend_ratios=tuple(Decimal(str(value)) for value in payload.get("specifiedBlendRatios", ())),
         max_blend_ratio=Decimal(str(payload.get("maxBlendRatio", "1"))),

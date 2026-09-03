@@ -35,6 +35,12 @@ def _definition(path_id: str, equipment_id: str, level: str, mode: str, lcv: str
         default_cf_n2o_g_per_g=None if default_n2o is None else Decimal(default_n2o),
         default_cslip_percent=None if default_cslip is None else Decimal(default_cslip),
         biomass_eligible=biomass_eligible,
+        default_fields=frozenset(
+            name for name, value in (
+                ("lcv", default_lcv), ("wtT", default_wt_t), ("cfCO2", default_co2),
+                ("cfCH4", default_ch4), ("cfN2O", default_n2o), ("cslip", default_cslip),
+            ) if value is not None
+        ),
     )
 
 
@@ -113,6 +119,30 @@ def _factor_from_definition(definition: FuelDefinition, status: str, wt_t: Decim
     def selected(default: Optional[Decimal], formal: Optional[Decimal]) -> Optional[Decimal]:
         return default if use_defaults and default is not None else formal
 
+    # Evidence status follows the value actually selected for this resolution.
+    # Metadata and equipment-level slip remain regulatory facts even when a
+    # path's WtT is an estimate; default snapshots are explicitly estimated.
+    def evidence_status(field_name: str) -> str:
+        if field_name in {"methaneSlipApplicable", "rwd"}:
+            return "FIXED"
+        if field_name == "eligibleBiomassFraction":
+            return status if definition.biomass_eligible else "FIXED"
+        if field_name == "cslip":
+            if not definition.methane_slip_applicable and not definition.cslip_required:
+                return "FIXED"
+            if definition.methane_slip_applicable:
+                return "FIXED"
+            if status == "VERIFIED":
+                return "VERIFIED"
+            return "ESTIMATED" if definition.default_cslip_percent is not None else "FIXED"
+        if status == "VERIFIED":
+            return "VERIFIED"
+        if field_name == "wtT":
+            return status
+        if status == "ESTIMATED" and use_defaults and field_name in definition.default_fields:
+            return "ESTIMATED"
+        return "FIXED"
+
     lcv = selected(definition.default_lcv_mj_per_g, definition.lcv_mj_per_g)
     if lcv is None:
         raise ValueError(f"BLOCKED: LCV required for {definition.path_id}")
@@ -140,7 +170,7 @@ def _factor_from_definition(definition: FuelDefinition, status: str, wt_t: Decim
     )
     catalog_source = f"FACTOR-CATALOG:{definition.path_id}"
     catalog_evidence = tuple(
-        EvidenceRecord(field_name, catalog_source, "BUILTIN_CATALOG", unit, "VERIFIED")
+        EvidenceRecord(field_name, catalog_source, "BUILTIN_CATALOG", unit, evidence_status(field_name))
         for field_name, unit in (
             ("lcv", "MJ/gFuel"),
             ("wtT", "gCO2eq/MJ"),
@@ -150,6 +180,7 @@ def _factor_from_definition(definition: FuelDefinition, status: str, wt_t: Decim
             ("cslip", "%"),
             ("methaneSlipApplicable", "boolean"),
             ("rwd", "ratio"),
+            ("eligibleBiomassFraction", "fraction"),
         )
     )
     return FuelFactor(

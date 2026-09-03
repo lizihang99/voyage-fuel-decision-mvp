@@ -160,6 +160,25 @@ class FactorCatalogAuditTests(unittest.TestCase):
             self.assertTrue(factor.lcv_mj_per_g > 0, path_id)
             self.assertTrue(factor.wt_t_g_per_mj is not None, path_id)
 
+    def test_every_builtin_factor_has_complete_catalog_evidence_statuses(self):
+        allowed_statuses = {"FIXED", "ESTIMATED", "VERIFIED"}
+        for path_id in builtin_path_ids():
+            factor = resolve_factor(path_id)
+            evidence = {item.field_name: item for item in factor.source_evidence}
+            self.assertIn("eligibleBiomassFraction", evidence, path_id)
+            self.assertEqual(set(evidence), {
+                "lcv", "wtT", "cfCO2", "cfCH4", "cfN2O", "cslip",
+                "methaneSlipApplicable", "rwd", "eligibleBiomassFraction",
+            }, path_id)
+            self.assertTrue(
+                all(item.verification_status in allowed_statuses for item in evidence.values()),
+                path_id,
+            )
+            if factor.biomass_eligible:
+                self.assertEqual(evidence["eligibleBiomassFraction"].verification_status, factor.factor_status, path_id)
+            else:
+                self.assertEqual(evidence["eligibleBiomassFraction"].verification_status, "FIXED", path_id)
+
     def test_na_and_rc_factor_semantics_are_not_collapsed_into_fixed_zero(self):
         hydrogen = resolve_factor("H2_NG_FC")
         self.assertIn("cf_n2o_g_per_g", hydrogen.na_fields)

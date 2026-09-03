@@ -194,6 +194,44 @@ class CaseReportTests(unittest.TestCase):
         self.assertTrue(any(row["factor_field"] == "lcv_mj_per_g" and row["factor_value"] for row in evidence))
         self.assertTrue(all("E-" not in row["factor_value"] for row in evidence))
 
+    def test_custom_factor_evidence_is_complete_in_csv_and_pdf(self):
+        units = {
+            "lcv": "MJ/gFuel", "wtT": "gCO2eq/MJ", "cfCO2": "gGHG/gFuel",
+            "cfCH4": "gGHG/gFuel", "cfN2O": "gGHG/gFuel", "cslip": "%",
+            "methaneSlipApplicable": "boolean", "rwd": "ratio", "eligibleBiomassFraction": "fraction",
+        }
+        evidence = {
+            field: [{"sourceId": f"SRC-{field}", "sourceType": "TEST", "unit": unit, "verificationStatus": "VERIFIED"}]
+            for field, unit in units.items()
+        }
+        payload = {
+            "reportYear": 2026, "departurePort": "CNSHG", "arrivalPort": "NLRTM",
+            "adjacentValidPortOfCallConfirmed": True, "currency": "EUR",
+            "baseline": {"pathId": "MDO", "massTonnes": "100", "pricePerTonne": "700"},
+            "euaPricePerTCO2e": "80",
+            "candidates": [{
+                "candidateId": "custom", "pricePerTonne": "900", "specifiedBlendRatios": ["0.2"],
+                "pathId": "CUSTOM_FACTOR", "custom": True, "equipmentId": "CUSTOM_ENGINE",
+                "lcv": "0.04", "wtTMode": "STATIC", "wtT": "10", "cfCO2": "3", "cfCH4": "0", "cfN2O": "0",
+                "cslip": "NA", "methaneSlipApplicable": False, "rwd": "1", "eligibleBiomassFraction": "0",
+                "sourceEvidence": evidence,
+            }],
+        }
+        result = calculate_decision_case(parse_decision_case(payload).request)
+        rows = list(csv.DictReader(io.StringIO(decision_case_to_csv(result))))
+        factor_rows = [row for row in rows if row["record_type"] == "factor_evidence"]
+        fields = {row["evidence_field"] for row in factor_rows}
+        self.assertIn("methaneSlipApplicable", fields)
+        self.assertIn("eligibleBiomassFraction", fields)
+        for row in factor_rows:
+            self.assertTrue(row["factor_source_id"])
+            self.assertTrue(row["unit"])
+            self.assertTrue(row["verification_status"])
+        from pypdf import PdfReader
+        pdf_text = "\n".join(page.extract_text() or "" for page in PdfReader(io.BytesIO(decision_case_to_pdf(result))).pages)
+        for fragment in ("methaneSlipApplicable", "eligibleBiomassFraction", "SRC-methaneSlipApplicable", "VERIFIED", "boolean", "fraction"):
+            self.assertIn(fragment.casefold(), pdf_text.casefold())
+
     def test_currency_columns_for_penalty_and_recommendation_values(self):
         rows = list(csv.DictReader(io.StringIO(decision_case_to_csv(self.make_result()))))
         penalties = [row for row in rows if row["record_type"] == "scenario" and row["metric_name"] == "fueleu_indicative_penalty_eur"]

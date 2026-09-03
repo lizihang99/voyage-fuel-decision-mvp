@@ -84,6 +84,20 @@ class JsonIoTests(unittest.TestCase):
         self.assertEqual(result["scenarios"][1]["ratio"], "1")
         self.assertEqual(result["scenarios"][1]["fuel_eu"]["wt_t_intensity_g_per_mj"], "4.1")
 
+    def test_legacy_json_passes_report_year_to_rfnbo_validation(self):
+        payload = {
+            "reportYear": 2024,
+            "departurePort": "CNSHG",
+            "arrivalPort": "NLRTM",
+            "baseline": {"pathId": "MDO", "massTonnes": "1", "pricePerTonne": "700"},
+            "candidate": {
+                "pathId": "E_DIESEL", "pricePerTonne": "1000",
+                "qualificationStatus": "ASSUMED_ELIGIBLE", "e": "28.2", "eu": "20",
+            },
+        }
+        with self.assertRaisesRegex(ValueError, "rwd=2 is only valid"):
+            calculate_voyage_json(payload)
+
 
 if __name__ == "__main__":
     unittest.main()

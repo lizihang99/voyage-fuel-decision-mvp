@@ -204,7 +204,7 @@ CASE_CSV_COLUMNS = (
     "fuel_factor_version", "port_rule_version", "port_role", "port_name", "unlocode",
     "eu_ets_identity", "fuel_eu_identity", "port_rule_source_id", "requested_path_id",
     "resolved_path_id", "resolution_reason", "qualification_status", "factor_status",
-    "factor_source_id", "factor_field", "factor_value", "verification_status", "issue_code", "issue_scope",
+    "factor_source_id", "factor_source_type", "factor_field", "evidence_field", "factor_value", "verification_status", "issue_code", "issue_scope",
     "issue_field", "component", "issue_component", "issue_blocking", "issue_message", "value_star", "eu_ets_reason", "fuel_eu_reason",
     "eu_ets_scope_rate", "eu_ets_surrender_rate", "fuel_eu_scope_rate",
     "ets_effective_rate", "ets_included_gases", "ets_excluded_gases", "zero_rating_status",
@@ -406,6 +406,8 @@ def decision_case_to_csv(result: DecisionCaseResult, display_config: DisplayConf
             "cfN2O": ("cf_n2o_g_per_g", "g/g"), "rwd": ("rwd", "fraction"),
             "cslip": ("cslip_percent", "%"), "csfCO2": ("csf_co2_g_per_g", "g/g"),
             "csfCH4": ("csf_ch4_g_per_g", "g/g"), "csfN2O": ("csf_n2o_g_per_g", "g/g"),
+            "methaneSlipApplicable": ("methane_slip_applicable", "boolean"),
+            "eligibleBiomassFraction": ("biomass_eligible", "fraction"),
         }
         for item in evidence:
             mapped = evidence_fields.get(getattr(item, "field_name", ""))
@@ -413,6 +415,8 @@ def decision_case_to_csv(result: DecisionCaseResult, display_config: DisplayConf
                 continue
             field_name, field_unit = mapped
             value = getattr(factor, field_name, None)
+            if item is not None and item.field_name == "eligibleBiomassFraction":
+                value = "1" if getattr(factor, "biomass_eligible", False) else "0"
             if value is None:
                 continue
             row = _case_base(result, "factor_evidence")
@@ -420,8 +424,9 @@ def decision_case_to_csv(result: DecisionCaseResult, display_config: DisplayConf
                 "requested_path_id": _text(trace.requested_path_id), "resolved_path_id": _text(trace.resolved_path_id),
                 "resolution_reason": _text(trace.resolution_reason), "qualification_status": _text(trace.qualification_status),
                 "factor_status": _text(trace.factor_status), "factor_source_id": _text(getattr(item, "source_id", "")),
-                "factor_field": field_name, "factor_value": _text(value),
-                "unit": field_unit,
+                "factor_source_type": _text(getattr(item, "source_type", "")),
+                "factor_field": field_name, "evidence_field": getattr(item, "field_name", field_name), "factor_value": _text(value),
+                "unit": _text(getattr(item, "unit", field_unit)),
                 "verification_status": _text(getattr(item, "verification_status", "")),
                 "equipment_id": _text(getattr(factor, "equipment_id", None)),
                 "wt_t_mode": _text(getattr(factor, "wt_t_mode", None)),
@@ -695,19 +700,25 @@ def decision_case_to_pdf(
     story.append(make_table(constraints_rows, [24*mm, 17*mm, 19*mm, 19*mm, 15*mm, 15*mm, 15*mm, 24*mm, 19*mm, 23*mm, 22*mm, 18*mm], small=True))
 
     story.append(Paragraph("Factor evidence and resolution", styles["ReportHeading"]))
-    factor_rows = [["Requested path", "Resolved path", "Fallback reason", "Qualification", "Factor status", "Equipment ID", "WtT mode", "Evidence", "Values"]]
+    factor_rows = [["Requested path", "Resolved path", "Fallback reason", "Qualification", "Factor status", "Equipment ID", "WtT mode", "Evidence (field/source/type/unit/status/value)"]]
     for trace in getattr(provenance, "factor_resolutions", ()) or ():
         factor = trace.factor
-        values = "; ".join(
-            f"{name}={value(getattr(factor, name, None), 'factor')}"
-            for name in ("lcv_mj_per_g", "wt_t_g_per_mj", "cf_co2_g_per_g", "cf_ch4_g_per_g", "cf_n2o_g_per_g", "rwd", "cslip_percent")
-            if getattr(factor, name, None) is not None
+        field_values = {
+            "lcv": getattr(factor, "lcv_mj_per_g", None), "wtT": getattr(factor, "wt_t_g_per_mj", None),
+            "cfCO2": getattr(factor, "cf_co2_g_per_g", None), "cfCH4": getattr(factor, "cf_ch4_g_per_g", None),
+            "cfN2O": getattr(factor, "cf_n2o_g_per_g", None), "rwd": getattr(factor, "rwd", None),
+            "cslip": getattr(factor, "cslip_percent", None),
+            "methaneSlipApplicable": getattr(factor, "methane_slip_applicable", None),
+            "eligibleBiomassFraction": Decimal("1") if getattr(factor, "biomass_eligible", False) else Decimal("0"),
+        }
+        evidence = "; ".join(
+            f"{item.field_name}/{item.source_id}/{item.source_type}/{item.unit}/{item.verification_status}/{value(field_values.get(item.field_name), 'factor')}"
+            for item in getattr(factor, "source_evidence", ()) or ()
         )
-        evidence = "; ".join(getattr(item, "source_id", "") for item in getattr(factor, "source_evidence", ()) or ())
-        factor_rows.append([trace.requested_path_id, trace.resolved_path_id, trace.resolution_reason, trace.qualification_status, trace.factor_status, getattr(factor, "equipment_id", None) or "-", getattr(factor, "wt_t_mode", None) or "-", evidence or "-", values or "-"])
+        factor_rows.append([trace.requested_path_id, trace.resolved_path_id, trace.resolution_reason, trace.qualification_status, trace.factor_status, getattr(factor, "equipment_id", None) or "-", getattr(factor, "wt_t_mode", None) or "-", evidence or "-"])
     if len(factor_rows) == 1:
         factor_rows.append(["-", "-", "-", "-", "-", "-", "-", "-", "-"])
-    story.append(make_table(factor_rows, [22*mm, 22*mm, 28*mm, 22*mm, 20*mm, 24*mm, 20*mm, 34*mm, 42*mm], small=True))
+    story.append(make_table(factor_rows, [22*mm, 22*mm, 28*mm, 22*mm, 20*mm, 24*mm, 20*mm, 145*mm], small=True))
 
     story.append(Paragraph("Port evidence", styles["ReportHeading"]))
     port_rows = [["Role", "Port", "UN/LOCODE", "EU ETS identity", "FuelEU identity", "Rule source ID", "Source version"]]
