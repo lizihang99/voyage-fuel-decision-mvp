@@ -33,3 +33,10 @@ The runtime emitted an existing FastAPI/Starlette `httpx` deprecation warning; i
 
 - The requested full repository acceptance suite is intentionally deferred to the controller/final plan gate.
 - E2E artifact modifications already present in the worktree were left untouched and excluded from the commit.
+
+## Review fix round
+
+- Strengthened the counterexample fixtures so RFNBO and `BIO_E` cases include all unrelated required fields and assert the targeted qualification, year-window, and `cfCO2` messages.
+- Made the dominated-intersection test assert a real lower-envelope transition and independently verify that a synthetic LNG intersection is omitted from the global envelope.
+- Asserted ETS CH4/N2O exclusion values, non-empty web scenarios, case-level maximum-improvement recommendation exposure, and key CSV/evidence fields.
+- Focused verification after the review fixes: `Ran 20 tests in 2.842s; OK`.

@@ -2,6 +2,7 @@ import csv
 import io
 import json
 import unittest
+from dataclasses import replace
 from decimal import Decimal
 from pathlib import Path
 
@@ -9,7 +10,7 @@ from fastapi.testclient import TestClient
 from pypdf import PdfReader
 
 from voyage_fuel.case_calculator import calculate_decision_case
-from voyage_fuel.case_comparison import metric_delta
+from voyage_fuel.case_comparison import calculate_case_value_switch_points, metric_delta
 from voyage_fuel.contracts import CandidateInput, DecisionCaseInput
 from voyage_fuel.emissions import calculate_eu_ets, calculate_fueleu
 from voyage_fuel.factors import get_builtin_factor, resolve_factor
@@ -61,7 +62,7 @@ class SpecificationMatrixTests(unittest.TestCase):
     @staticmethod
     def _custom_factor(mode="STATIC", *, qualification="NOT_DEMONSTRATED", rwd="1", cf_co2="3", cslip="NA"):
         fields = {
-            "lcv": "MJ/gFuel", "wtT": "gCO2eq/MJ", "cfCO2": "gGHG/gFuel",
+            "lcv": "MJ/gFuel", "wtT": "gCO2eq/MJ", "E": "gCO2eq/MJ", "eu": "gCO2eq/MJ", "cfCO2": "gGHG/gFuel",
             "cfCH4": "gGHG/gFuel", "cfN2O": "gGHG/gFuel", "cslip": "%",
             "methaneSlipApplicable": "boolean", "rwd": "ratio", "eligibleBiomassFraction": "fraction",
         }
@@ -69,7 +70,7 @@ class SpecificationMatrixTests(unittest.TestCase):
                     for key, unit in fields.items()}
         return {
             "pathId": "CUSTOM_FACTOR", "custom": True, "equipmentId": "CUSTOM_ENGINE",
-            "lcv": "0.04", "wtTMode": mode, "wtT": "10", "cfCO2": cf_co2,
+            "lcv": "0.04", "wtTMode": mode, "wtT": "10", "E": "20", "eu": "10", "cfCO2": cf_co2,
             "cfCH4": "0", "cfN2O": "0", "cslip": cslip, "methaneSlipApplicable": False,
             "rwd": rwd, "eligibleBiomassFraction": "0", "qualificationStatus": qualification,
             "sourceEvidence": evidence,
@@ -96,7 +97,26 @@ class SpecificationMatrixTests(unittest.TestCase):
             {"candidateId": "lng", "pathId": "LNG_OTTO_MEDIUM_SPEED", "pricePerTonne": "3000", "specifiedBlendRatios": ["0.1", "0.5"], "maxBlendRatio": "0.5", "allowsPureUse": True},
         ])
         switch_result = calculate_decision_case(parse_decision_case(switch_request).request)
-        self.assertTrue(all(p.to_candidate_id != "lng" for p in switch_result.economics.switch_points))
+        self.assertIsNotNone(switch_result.economics)
+        self.assertTrue(switch_result.economics.switch_points)
+        self.assertEqual(
+            [(p.from_scenario_id, p.to_scenario_id, p.to_candidate_id) for p in switch_result.economics.switch_points],
+            [("B0", "uco@0.3", "uco")],
+        )
+
+        # A local LNG/UCO intersection exists, but LNG is never on the global
+        # lower envelope because B0 and UCO are cheaper on either side.
+        baseline = next(row for row in switch_result.scenarios if row.scenario_id == "B0")
+        uco = next(row for row in switch_result.scenarios if row.scenario_id == "uco@0.3")
+        lng = next(row for row in switch_result.scenarios if row.scenario_id == "lng@0.1")
+        synthetic = (
+            replace(baseline, result=replace(baseline.result, model_cost=Decimal("80"), compliance_improvement_tco2e=Decimal("0"))),
+            replace(uco, result=replace(uco.result, model_cost=Decimal("100"), compliance_improvement_tco2e=Decimal("1"))),
+            replace(lng, result=replace(lng.result, model_cost=Decimal("90"), compliance_improvement_tco2e=Decimal("0.2"))),
+        )
+        envelope = calculate_case_value_switch_points(synthetic)
+        self.assertEqual(len(envelope), 1)
+        self.assertEqual((envelope[0].from_scenario_id, envelope[0].to_scenario_id, envelope[0].value_star), ("B0", "uco@0.3", Decimal("20")))
 
     def test_factor_qualification_and_special_input_guards_keep_structured_issues(self):
         cases = (
@@ -109,6 +129,12 @@ class SpecificationMatrixTests(unittest.TestCase):
             parsed = parse_decision_case(self._case_payload(year=year, candidates=[{"candidateId": "custom", **custom}]))
             self.assertTrue(parsed.issues, custom)
             self.assertEqual(parsed.issues[0].code, code)
+            if custom["wtTMode"] == "BIO_E":
+                self.assertIn("cfCO2 is required for BIO_E", parsed.issues[0].message)
+            if custom["wtTMode"] == "RFNBO_E" and year == 2024:
+                self.assertIn("2025 through 2030", parsed.issues[0].message)
+            if custom["wtTMode"] == "RFNBO_E" and year == 2026:
+                self.assertIn("RFNBO qualification is required", parsed.issues[0].message)
 
     def test_non_biomass_factor_cannot_claim_biomass_zero_rating(self):
         parsed = parse_decision_case(self._case_payload(candidates=[{"candidateId": "mdo", "pathId": "MDO", "eligibleBiomassFraction": "1"}]))
@@ -120,6 +146,13 @@ class SpecificationMatrixTests(unittest.TestCase):
         result = calculate_voyage(VoyageInput(2026, "CNSHG", "NLRTM", _component("MDO"), Decimal("100"), high, None))
         self.assertEqual(result.constraints.target_status, "TARGET_NO_SOLUTION")
         self.assertEqual(result.constraints.x_max_improvement, Decimal("0"))
+        self.assertTrue(any(row.ratio == Decimal("0") for row in result.scenarios))
+        case_payload = self._case_payload(candidates=[{"candidateId": "high", "pathId": "HFO", "pricePerTonne": "1000"}])
+        case = calculate_decision_case(parse_decision_case(case_payload).request)
+        self.assertEqual(case.economics.max_improvement_scenario_id, "B0")
+        maximum = next(item for item in case.recommendations if item.recommendation_id == "MAX_COMPLIANCE_IMPROVEMENT:high")
+        self.assertEqual(maximum.scenario_id, "B0")
+        self.assertIn("TARGET_NO_SOLUTION", maximum.assumptions)
 
     def test_empty_candidates_and_2024_ets_exclusion_are_structured(self):
         parsed = parse_decision_case(self._case_payload(candidates=[]))
@@ -129,7 +162,9 @@ class SpecificationMatrixTests(unittest.TestCase):
         result = decision_case_result_to_dict(calculate_decision_case(parsed_ets.request, parsed_ets.issues))
         ets = result["scenarios"][0]["result"]["eu_ets"]
         self.assertEqual(ets["included_gases"], ["CO2"])
-        self.assertIn("CH4", ets["excluded_from_ets_surrender"])
+        self.assertTrue(ets["excluded_from_ets_surrender"]["CH4"])
+        self.assertTrue(ets["excluded_from_ets_surrender"]["N2O"])
+        self.assertFalse(ets["excluded_from_ets_surrender"]["CO2"])
 
     def test_factor_output_and_csv_expose_metadata_constraints_and_economics(self):
         custom = self._custom_factor()
@@ -138,12 +173,20 @@ class SpecificationMatrixTests(unittest.TestCase):
         result = decision_case_result_to_dict(calculate_decision_case(parsed_custom.request, parsed_custom.issues))
         factor = result["provenance"]["factor_resolutions"][0]["factor"]
         self.assertEqual(factor["equipment_id"], "CUSTOM_ENGINE")
-        self.assertTrue(factor["source_evidence"])
+        evidence = {item["field_name"]: item for item in factor["source_evidence"]}
+        self.assertEqual(set(evidence), {"lcv", "wtT", "cfCO2", "cfCH4", "cfN2O", "cslip", "methaneSlipApplicable", "rwd", "eligibleBiomassFraction"})
+        self.assertEqual(evidence["cfCO2"]["source_id"], "SRC-cfCO2")
+        self.assertEqual(evidence["cfCO2"]["unit"], "gGHG/gFuel")
+        self.assertEqual(evidence["cfCO2"]["verification_status"], "VERIFIED")
         parsed = parse_decision_case(self._case_payload())
         case_result = calculate_decision_case(parsed.request, parsed.issues)
         rows = list(csv.DictReader(io.StringIO(decision_case_to_csv(case_result))))
         self.assertIn("constraints", {r["record_type"] for r in rows})
         self.assertIn("economics", {r["record_type"] for r in rows})
+        constraints = next(r for r in rows if r["record_type"] == "constraints")
+        economics = next(r for r in rows if r["record_type"] == "economics")
+        self.assertTrue(constraints["x_cap"])
+        self.assertTrue(economics["cost_min_scenario_id"])
 
     def test_web_baseline_custom_input_and_boundary_language_are_public_contracts(self):
         payload = self._case_payload(baseline={**self._custom_factor(), "massTonnes": "100", "pricePerTonne": "700"})
@@ -152,14 +195,33 @@ class SpecificationMatrixTests(unittest.TestCase):
         body = response.json()
         self.assertEqual(body["provenance"]["factor_resolutions"][0]["factor"]["equipment_id"], "CUSTOM_ENGINE")
         scenarios = [s for c in body["candidate_results"] for s in (c["voyage_result"]["scenarios"] if c["voyage_result"] else [])]
+        self.assertTrue(scenarios)
         self.assertTrue(all(s["execution_status"] == "EXECUTION_CONDITIONS_PENDING" for s in scenarios))
         root = TestClient(app).get("/").text
         readme = (Path(__file__).parents[1] / "README.md").read_text(encoding="utf-8")
         pdf = PdfReader(io.BytesIO(__import__('voyage_fuel.reports', fromlist=['decision_case_to_pdf']).decision_case_to_pdf(calculate_decision_case(parse_decision_case(self._case_payload()).request)) ))
         pdf_text = "\n".join(page.extract_text() or "" for page in pdf.pages)
-        for text in (root, pdf_text, readme):
-            for fragment in ("voyage-level", "not a formal annual penalty", "not a procurement recommendation", "independent physical lifecycle WtW reduction", "EXECUTION_CONDITIONS_PENDING"):
-                self.assertIn(fragment.casefold(), text.casefold())
+        for fragment in (
+            "Boundary: voyage-level proportional estimate; not a formal annual penalty; not a procurement recommendation; independent physical lifecycle WtW reduction is not provided. EXECUTION_CONDITIONS_PENDING.",
+        ):
+            self.assertIn(fragment.casefold(), root.casefold())
+        for fragment in (
+            "Boundary: voyage-level regulatory estimate for this submitted voyage.",
+            "not a formal annual penalty or annual-limit settlement",
+            "not a procurement recommendation",
+            "does not provide an independent physical lifecycle WtW reduction",
+            "execution conditions remain",
+            "pending and this report is not a procurement recommendation",
+        ):
+            self.assertIn(fragment.casefold(), pdf_text.casefold())
+        for fragment in (
+            "voyage-level",
+            "not a formal annual penalty",
+            "not a procurement recommendation",
+            "independent physical lifecycle WtW reduction",
+            "EXECUTION_CONDITIONS_PENDING",
+        ):
+            self.assertIn(fragment.casefold(), readme.casefold())
     def test_ets_year_gas_and_surrender_matrix(self):
         factor = _synthetic_factor("GWP_MATRIX", wt_t="0", co2="1", ch4="0.000001", n2o="0.000001")
         amount = [FuelAmount(FuelComponent(factor, Decimal("80")), Decimal("1"))]
