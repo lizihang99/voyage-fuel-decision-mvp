@@ -145,6 +145,28 @@ class WebApiTests(unittest.TestCase):
             self.assertEqual(response.status_code, 422)
             self.assertEqual(response.json()["issues"][0]["code"], "PORT_OF_CALL_CONFIRMATION_REQUIRED")
 
+    def test_readme_documents_reproducible_runtime_and_product_boundaries(self):
+        readme = (Path(__file__).parents[1] / "README.md").read_text(encoding="utf-8")
+        source = self.client.get("/").text + self.client.get("/static/app.js").text
+        required = (
+            "py -3.12 -m venv .venv",
+            ".venv\\Scripts\\python.exe -m pip install \".[dev]\"",
+            ".venv\\Scripts\\voyage-fuel-web.exe",
+            "Invoke-RestMethod http://127.0.0.1:8000/health",
+            "/api/calculate",
+            "/api/export/csv",
+            "/api/export/pdf",
+            "voyage-level",
+            "not a formal annual penalty",
+            "not a procurement recommendation",
+            "independent physical lifecycle WtW reduction",
+            "EXECUTION_CONDITIONS_PENDING",
+        )
+        for fragment in required:
+            self.assertIn(fragment, readme, fragment)
+        for fragment in ("voyage-level", "not a formal annual penalty", "not a procurement recommendation", "independent physical lifecycle WtW reduction", "EXECUTION_CONDITIONS_PENDING"):
+            self.assertIn(fragment, source, fragment)
+
 
 if __name__ == "__main__":
     unittest.main()

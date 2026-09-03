@@ -1,5 +1,59 @@
 # P0-P1现行设计基线
 
+## Python MVP运行
+
+项目计算内核和网页服务使用 Python 3.12。下面的命令在仓库根目录执行，创建独立虚拟环境并安装当前包及开发依赖：
+
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install ".[dev]"
+.\.venv\Scripts\voyage-fuel-web.exe --host 127.0.0.1 --port 8000
+```
+
+另开一个 PowerShell 窗口检查服务：
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:8000/health
+```
+
+预期返回 `status: ok`。浏览器访问 `http://127.0.0.1:8000/` 即可使用单航次计算器。
+
+### API和导出
+
+`tests/fixtures/multi_candidate_case.json` 是可复现的双候选案例。服务启动后，可以直接计算并保存 JSON 结果：
+
+```powershell
+$caseBody = Get-Content -Raw .\tests\fixtures\multi_candidate_case.json
+Invoke-RestMethod http://127.0.0.1:8000/api/calculate -Method Post -ContentType "application/json" -Body $caseBody | ConvertTo-Json -Depth 20
+```
+
+CSV 和 PDF 由服务端重新校验并计算，客户端不能伪造结果字段：
+
+```powershell
+Invoke-WebRequest http://127.0.0.1:8000/api/export/csv -Method Post -ContentType "application/json" -Body $caseBody -OutFile .\voyage-fuel-decision.csv
+Invoke-WebRequest http://127.0.0.1:8000/api/export/pdf -Method Post -ContentType "application/json" -Body $caseBody -OutFile .\voyage-fuel-decision.pdf
+```
+
+### 聚焦测试
+
+不需要每次运行全量测试。开发时按改动范围运行对应套件：
+
+```powershell
+$env:PYTHONPATH = "src"
+& ".\.venv\Scripts\python.exe" -m unittest tests.test_case_reports tests.test_reports -v
+& ".\.venv\Scripts\python.exe" -m unittest tests.test_web_api tests.test_web_page -v
+& ".\.venv\Scripts\python.exe" -m unittest tests.e2e.test_display_precision tests.e2e.test_mvp_flow -v
+```
+
+最终验收才运行完整 Python、Node、编译和 JavaScript 语法检查，命令以 `docs/superpowers/plans/2026-09-02-mvp-gap-remediation-plan.md` 的 Task 7 为准。
+
+## MVP边界
+
+结果是 `voyage-level` 的 FuelEU 法规口径比例估算。FuelEU 指示性金额 `not a formal annual penalty`，结果 `not a procurement recommendation`，也不提供 `independent physical lifecycle WtW reduction`。所有可计算方案的执行状态为 `EXECUTION_CONDITIONS_PENDING`，表示认证、兼容性、供应和交付条件仍待确认。
+
+本期只处理 2024-2030 年两个相邻有效 Port of Call 之间的单航段；固定因子库开放 36 条航行燃料路径，`ELECTRICITY_OPS` 不进入本期。2024-2025 年 EU ETS 只纳入 CO2，2026 年起纳入 CO2、CH4 和 N2O。系统不实现正式年度 FuelEU 结算、真实年度罚款、Banking、Borrowing、Pooling、OPS 或登录和云端案例历史。
+
 这个文件夹集中保存本轮确认的产品骨架、两个固定基础，以及支撑它们的数据、法规原文、核对材料和港口可再生成链。
 
 ## 阅读顺序
@@ -43,7 +97,7 @@ P0-P1/
 
 项目的模块状态、已验证证据、剩余任务、执行顺序和最终验收条件统一维护在[MVP交付计划与进度](./docs/superpowers/plans/2026-09-01-mvp-delivery-plan.md)。其他计划文件作为历史记录保留，不作为当前完成度依据。
 
-当前分支已经完成并验证案例级多候选计算、结构化结果与追溯、CSV/PDF报告、单用户网页工作流，以及安装后服务和浏览器验收。唯一事实来源和逐模块证据见[MVP交付计划与进度](./docs/superpowers/plans/2026-09-01-mvp-delivery-plan.md)。
+当前分支已经完成并验证案例级多候选计算、结构化结果与追溯、CSV/PDF报告和单用户网页工作流；安装后运行和最终验收状态以[MVP交付计划与进度](./docs/superpowers/plans/2026-09-01-mvp-delivery-plan.md)为准。该文件是模块状态和剩余任务的唯一事实来源。
 
 FuelEU结果仍是航次级按比例分配估算，不代表正式年度合规余额或真实年度罚款；系统不输出采购建议或独立物理生命周期WtW减排。逐字段自定义燃料因子已在Python/JSON/API层支持并要求证据，网页高级自定义模式提供最小输入适配：普通非甲烷燃料默认隐藏Cslip等设备字段，CH4/N2O可由用户明确勾选“按0估算”，气体路径可显式选择甲烷滑移是否适用，适用时才填写Cslip和滑移因子；生物燃料可在未证明资格时使用BIO_E估算，EU ETS合格生物质比例仍按0处理；未证明RFNBO资格时页面锁定普通WtT输入，避免直接套用RFNBO奖励。自定义路径和候选身份由页面会话内稳定 ID 管理，最终字段、单位和证据完整性仍由后端校验。
 
