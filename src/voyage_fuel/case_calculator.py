@@ -159,6 +159,7 @@ def _component_trace(component) -> FactorResolutionTrace:
         factor_status=factor.factor_status,
         factor=factor,
         source_ids=tuple(dict.fromkeys(e.source_id for e in factor.source_evidence)),
+        eligible_biomass_fraction=component.eligible_biomass_fraction,
     )
 
 

@@ -404,9 +404,12 @@ def decision_case_to_csv(result: DecisionCaseResult, display_config: DisplayConf
             "lcv": ("lcv_mj_per_g", "MJ/g"), "wtT": ("wt_t_g_per_mj", "g/MJ"),
             "cfCO2": ("cf_co2_g_per_g", "g/g"), "cfCH4": ("cf_ch4_g_per_g", "g/g"),
             "cfN2O": ("cf_n2o_g_per_g", "g/g"), "rwd": ("rwd", "fraction"),
+            "E": ("e_g_per_mj", "g/MJ"), "eu": ("eu_g_per_mj", "g/MJ"),
             "cslip": ("cslip_percent", "%"), "csfCO2": ("csf_co2_g_per_g", "g/g"),
             "csfCH4": ("csf_ch4_g_per_g", "g/g"), "csfN2O": ("csf_n2o_g_per_g", "g/g"),
             "methaneSlipApplicable": ("methane_slip_applicable", "boolean"),
+            # Keep the existing factor_field label stable; the value comes
+            # from the component trace rather than the path capability flag.
             "eligibleBiomassFraction": ("biomass_eligible", "fraction"),
         }
         for item in evidence:
@@ -414,9 +417,11 @@ def decision_case_to_csv(result: DecisionCaseResult, display_config: DisplayConf
             if mapped is None:
                 continue
             field_name, field_unit = mapped
-            value = getattr(factor, field_name, None)
-            if item is not None and item.field_name == "eligibleBiomassFraction":
-                value = "1" if getattr(factor, "biomass_eligible", False) else "0"
+            value = (
+                getattr(trace, "eligible_biomass_fraction", None)
+                if item is not None and item.field_name == "eligibleBiomassFraction"
+                else getattr(factor, field_name, None)
+            )
             if value is None:
                 continue
             row = _case_base(result, "factor_evidence")
@@ -707,9 +712,10 @@ def decision_case_to_pdf(
             "lcv": getattr(factor, "lcv_mj_per_g", None), "wtT": getattr(factor, "wt_t_g_per_mj", None),
             "cfCO2": getattr(factor, "cf_co2_g_per_g", None), "cfCH4": getattr(factor, "cf_ch4_g_per_g", None),
             "cfN2O": getattr(factor, "cf_n2o_g_per_g", None), "rwd": getattr(factor, "rwd", None),
+            "E": getattr(factor, "e_g_per_mj", None), "eu": getattr(factor, "eu_g_per_mj", None),
             "cslip": getattr(factor, "cslip_percent", None),
             "methaneSlipApplicable": getattr(factor, "methane_slip_applicable", None),
-            "eligibleBiomassFraction": Decimal("1") if getattr(factor, "biomass_eligible", False) else Decimal("0"),
+            "eligibleBiomassFraction": getattr(trace, "eligible_biomass_fraction", Decimal("0")),
         }
         evidence = "; ".join(
             f"{item.field_name}/{item.source_id}/{item.source_type}/{item.unit}/{item.verification_status}/{value(field_values.get(item.field_name), 'factor')}"

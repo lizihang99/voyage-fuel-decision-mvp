@@ -51,6 +51,9 @@ class FuelFactor:
     wt_t_mode: Optional[str] = None
     factor_level: Optional[str] = None
     biomass_eligible: bool = False
+    # Formula inputs retained for auditable custom BIO_E/RFNBO_E reports.
+    e_g_per_mj: Optional[Decimal] = None
+    eu_g_per_mj: Optional[Decimal] = None
 
     def __post_init__(self) -> None:
         for field_name in (
@@ -67,6 +70,10 @@ class FuelFactor:
             object.__setattr__(self, field_name, as_decimal(getattr(self, field_name)))
         if self.cslip_percent is not None:
             object.__setattr__(self, "cslip_percent", as_decimal(self.cslip_percent))
+        if self.e_g_per_mj is not None:
+            object.__setattr__(self, "e_g_per_mj", as_decimal(self.e_g_per_mj))
+        if self.eu_g_per_mj is not None:
+            object.__setattr__(self, "eu_g_per_mj", as_decimal(self.eu_g_per_mj))
         if not self.path_id:
             raise ValueError("path_id is required")
         if self.lcv_mj_per_g <= ZERO:

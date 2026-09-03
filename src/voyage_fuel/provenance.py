@@ -41,6 +41,11 @@ class FactorResolutionTrace:
     factor_status: str
     factor: object
     source_ids: tuple[str, ...] = ()
+    eligible_biomass_fraction: Decimal = Decimal("0")
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "source_ids", tuple(self.source_ids))
+        object.__setattr__(self, "eligible_biomass_fraction", Decimal(str(self.eligible_biomass_fraction)))
 
 
 @dataclass(frozen=True)

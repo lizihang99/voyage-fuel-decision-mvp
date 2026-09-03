@@ -100,6 +100,14 @@ class WebPageContractTests(unittest.TestCase):
         ):
             self.assertIn(field, source)
 
+    def test_page_evidence_panel_exposes_field_metadata_and_values(self):
+        source = self.client.get("/static/app.js").text
+        for field in (
+            "item.source_type", "item.unit", "item.verification_status",
+            "factor.e_g_per_mj", "factor.eu_g_per_mj", "trace.eligible_biomass_fraction",
+        ):
+            self.assertIn(field, source)
+
     def test_baseline_advanced_editor_exposes_same_custom_factor_contract(self):
         html = self.client.get("/").text
         source = self.client.get("/static/app.js").text

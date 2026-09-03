@@ -124,11 +124,14 @@ def resolve_custom_factor(payload: Mapping[str, Any], report_year: int | None = 
             raise _blocked("rwd=2 is only valid for qualified RFNBO from 2025 through 2030")
 
     required = ["lcv", "cfCO2", "cfCH4", "cfN2O", "cslip", "methaneSlipApplicable", "rwd"]
+    formula_e: Decimal | None = None
+    formula_eu: Decimal | None = None
     if mode in {"STATIC", "CERTIFIED"}:
         wt_t = _decimal(payload, "wtT")
         required.append("wtT")
     elif mode == "BIO_E":
         e_value = _decimal(payload, "E")
+        formula_e = e_value
         if cf_co2 is None:
             raise _blocked("cfCO2 is required for BIO_E")
         wt_t = e_value - cf_co2 / lcv
@@ -136,6 +139,8 @@ def resolve_custom_factor(payload: Mapping[str, Any], report_year: int | None = 
     else:
         e_value = _decimal(payload, "E")
         eu_value = _decimal(payload, "eu")
+        formula_e = e_value
+        formula_eu = eu_value
         if e_value > MAX_RFNBO_E:
             raise ValueError(f"RFNBO_E_EXCEEDS_LIMIT: {path_id}")
         wt_t = e_value - eu_value
@@ -188,4 +193,6 @@ def resolve_custom_factor(payload: Mapping[str, Any], report_year: int | None = 
         wt_t_mode=mode,
         factor_level="CUSTOM",
         biomass_eligible=(mode == "BIO_E"),
+        e_g_per_mj=formula_e,
+        eu_g_per_mj=formula_eu,
     )

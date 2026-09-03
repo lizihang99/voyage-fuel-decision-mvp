@@ -232,6 +232,103 @@ class CaseReportTests(unittest.TestCase):
         for fragment in ("methaneSlipApplicable", "eligibleBiomassFraction", "SRC-methaneSlipApplicable", "VERIFIED", "boolean", "fraction"):
             self.assertIn(fragment.casefold(), pdf_text.casefold())
 
+    def test_custom_bio_e_report_preserves_e_evidence_value(self):
+        units = {
+            "lcv": "MJ/gFuel", "E": "gCO2eq/MJ", "cfCO2": "gGHG/gFuel",
+            "cfCH4": "gGHG/gFuel", "cfN2O": "gGHG/gFuel", "cslip": "%",
+            "methaneSlipApplicable": "boolean", "rwd": "ratio", "eligibleBiomassFraction": "fraction",
+        }
+        values = {"lcv": "0.037", "E": "14.9", "cfCO2": "2.834", "cfCH4": "0.00005", "cfN2O": "0.00018", "cslip": "NA", "methaneSlipApplicable": False, "rwd": "1", "eligibleBiomassFraction": "0"}
+        evidence = {
+            field: [{"sourceId": f"SRC-{field}", "sourceType": "TEST", "unit": unit, "verificationStatus": "VERIFIED"}]
+            for field, unit in units.items()
+        }
+        payload = {
+            "reportYear": 2026, "departurePort": "CNSHG", "arrivalPort": "NLRTM",
+            "adjacentValidPortOfCallConfirmed": True, "currency": "EUR",
+            "baseline": {"pathId": "MDO", "massTonnes": "100", "pricePerTonne": "700"},
+            "euaPricePerTCO2e": "80",
+            "candidates": [{
+                "candidateId": "bio-e", "pricePerTonne": "900", "specifiedBlendRatios": ["0.2"],
+                "pathId": "CUSTOM_BIO_E", "custom": True, "equipmentId": "BIO_ENGINE",
+                "lcv": values["lcv"], "wtTMode": "BIO_E", "E": values["E"],
+                "cfCO2": values["cfCO2"], "cfCH4": values["cfCH4"], "cfN2O": values["cfN2O"],
+                "cslip": values["cslip"], "methaneSlipApplicable": values["methaneSlipApplicable"],
+                "rwd": values["rwd"], "eligibleBiomassFraction": values["eligibleBiomassFraction"],
+                "qualificationStatus": "ASSUMED_ELIGIBLE", "sourceEvidence": evidence,
+            }],
+        }
+        result = calculate_decision_case(parse_decision_case(payload).request)
+        rows = list(csv.DictReader(io.StringIO(decision_case_to_csv(result))))
+        e_rows = [row for row in rows if row["record_type"] == "factor_evidence" and row["requested_path_id"] == "CUSTOM_BIO_E" and row["evidence_field"] == "E"]
+        self.assertEqual(len(e_rows), 1)
+        self.assertEqual(e_rows[0]["factor_value"], "14.9")
+        from pypdf import PdfReader
+        pdf_text = "\n".join(page.extract_text() or "" for page in PdfReader(io.BytesIO(decision_case_to_pdf(result))).pages)
+        self.assertIn("SRC-E", pdf_text)
+        self.assertIn("14.9", pdf_text)
+
+    def test_custom_rfnbo_e_report_preserves_e_and_eu_evidence_values(self):
+        units = {
+            "lcv": "MJ/gFuel", "E": "gCO2eq/MJ", "eu": "gCO2eq/MJ",
+            "cfCO2": "gGHG/gFuel", "cfCH4": "gGHG/gFuel", "cfN2O": "gGHG/gFuel",
+            "cslip": "%", "methaneSlipApplicable": "boolean", "rwd": "ratio",
+            "eligibleBiomassFraction": "fraction",
+        }
+        evidence = {
+            field: [{"sourceId": f"SRC-{field}", "sourceType": "TEST", "unit": unit, "verificationStatus": "VERIFIED"}]
+            for field, unit in units.items()
+        }
+        payload = {
+            "reportYear": 2026, "departurePort": "CNSHG", "arrivalPort": "NLRTM",
+            "adjacentValidPortOfCallConfirmed": True, "currency": "EUR",
+            "baseline": {"pathId": "MDO", "massTonnes": "100", "pricePerTonne": "700"},
+            "euaPricePerTCO2e": "80",
+            "candidates": [{
+                "candidateId": "rfnbo-e", "pricePerTonne": "900", "specifiedBlendRatios": ["0.2"],
+                "pathId": "CUSTOM_RFNBO_E", "custom": True, "equipmentId": "RFNBO_ENGINE",
+                "lcv": "0.04", "wtTMode": "RFNBO_E", "E": "28.2", "eu": "20",
+                "cfCO2": "3", "cfCH4": "0", "cfN2O": "0", "cslip": "NA",
+                "methaneSlipApplicable": False, "rwd": "2", "eligibleBiomassFraction": "0",
+                "qualificationStatus": "ASSUMED_ELIGIBLE", "sourceEvidence": evidence,
+            }],
+        }
+        result = calculate_decision_case(parse_decision_case(payload).request)
+        rows = list(csv.DictReader(io.StringIO(decision_case_to_csv(result))))
+        factor_rows = [row for row in rows if row["record_type"] == "factor_evidence" and row["requested_path_id"] == "CUSTOM_RFNBO_E"]
+        values = {row["evidence_field"]: row["factor_value"] for row in factor_rows}
+        self.assertEqual(values.get("E"), "28.2")
+        self.assertEqual(values.get("eu"), "20")
+        from pypdf import PdfReader
+        pdf_text = "\n".join(page.extract_text() or "" for page in PdfReader(io.BytesIO(decision_case_to_pdf(result))).pages)
+        self.assertIn("SRC-eu", pdf_text)
+        self.assertIn("20", pdf_text)
+
+    def test_report_uses_actual_component_biomass_fraction(self):
+        request = DecisionCaseInput(
+            report_year=2026,
+            departure_port="CNSHG",
+            arrival_port="NLRTM",
+            adjacent_valid_port_of_call_confirmed=True,
+            currency="EUR",
+            baseline_component=FuelComponent(get_builtin_factor("MGO"), Decimal("700")),
+            baseline_mass_tonnes=Decimal("100"),
+            eua_price_per_tco2e=Decimal("80"),
+            candidates=(CandidateInput(
+                candidate_id="uco-default",
+                component=FuelComponent(get_builtin_factor("UCO_FAME"), Decimal("1000")),
+                specified_blend_ratios=(Decimal("0.2"),),
+            ),),
+        )
+        result = calculate_decision_case(request)
+        rows = list(csv.DictReader(io.StringIO(decision_case_to_csv(result))))
+        uco_rows = [row for row in rows if row["record_type"] == "factor_evidence" and row["requested_path_id"] == "UCO_FAME" and row["evidence_field"] == "eligibleBiomassFraction"]
+        self.assertEqual(len(uco_rows), 1)
+        self.assertEqual(uco_rows[0]["factor_value"], "0")
+        from pypdf import PdfReader
+        pdf_text = "\n".join(page.extract_text() or "" for page in PdfReader(io.BytesIO(decision_case_to_pdf(result))).pages)
+        self.assertIn("eligibleBiomassFraction", pdf_text)
+
     def test_currency_columns_for_penalty_and_recommendation_values(self):
         rows = list(csv.DictReader(io.StringIO(decision_case_to_csv(self.make_result()))))
         penalties = [row for row in rows if row["record_type"] == "scenario" and row["metric_name"] == "fueleu_indicative_penalty_eur"]

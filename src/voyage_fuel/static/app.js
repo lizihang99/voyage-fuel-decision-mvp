@@ -588,6 +588,26 @@
     $("thresholds-content").innerHTML = '<p class="empty-state">暂无约束阈值。</p>';
     $("calculation-basis").innerHTML = '<p class="empty-state">暂无计算依据。</p>';
   }
+  function factorEvidenceValue(factor, trace, fieldName) {
+    const values = {
+      lcv: factor.lcv_mj_per_g,
+      wtT: factor.wt_t_g_per_mj,
+      E: factor.e_g_per_mj,
+      eu: factor.eu_g_per_mj,
+      cfCO2: factor.cf_co2_g_per_g,
+      cfCH4: factor.cf_ch4_g_per_g,
+      cfN2O: factor.cf_n2o_g_per_g,
+      cslip: factor.cslip_percent,
+      methaneSlipApplicable: factor.methane_slip_applicable,
+      rwd: factor.rwd,
+      eligibleBiomassFraction: trace.eligible_biomass_fraction,
+      csfCO2: factor.csf_co2_g_per_g,
+      csfCH4: factor.csf_ch4_g_per_g,
+      csfN2O: factor.csf_n2o_g_per_g,
+    };
+    return text(values[fieldName]);
+  }
+
   function renderResults(result) {
     const baseline = result.baseline_scenario;
     $("result-run-status").textContent = baseline ? "已完成 · 原始结果保留" : "存在阻断问题";
@@ -630,7 +650,7 @@
     $("conditional-recommendations").innerHTML = `<h3>条件式建议</h3>${(result.recommendations || []).map((rec) => `<div class="recommendation ${rec.status === "UNAVAILABLE" ? "unavailable" : ""}"><strong>${esc(rec.status)}</strong><span>${esc(rec.condition)} · ${esc(rec.reason)}${rec.scenario_id ? ` · 场景 ${esc(rec.scenario_id)}` : ""}</span><small>假设: ${esc((rec.assumptions || []).join(", "))}</small></div>`).join("") || '<p class="empty-state">暂无建议。</p>'}`;
     const provenance = result.provenance || {};
     const evidence = [["计算规范版本", provenance.calculation_spec_version], ["燃料因子版本", provenance.fuel_factor_version], ["港口规则版本", provenance.port_rule_version], ["EU ETS 边界理由", provenance.eu_ets_reason], ["FuelEU 边界理由", provenance.fuel_eu_reason], ["ETS effective rate", provenance.eu_ets_effective_rate], ["来源 ID", (provenance.source_ids || []).join("; ")]];
-    (provenance.factor_resolutions || []).forEach((trace) => { const factor = trace.factor || {}; const evidenceText = (factor.source_evidence || []).map((item) => `${item.field_name}:${item.source_id}`).join("; "); evidence.push([`因子回溯 · ${trace.requested_path_id}`, `${trace.resolved_path_id} · ${trace.resolution_reason} · 因子模式 ${factor.wt_t_mode} · 因子状态 ${trace.factor_status} · 资格 ${factor.qualification_status} · 设备 ${factor.equipment_id} · ${evidenceText}`]); });
+    (provenance.factor_resolutions || []).forEach((trace) => { const factor = trace.factor || {}; const evidenceText = (factor.source_evidence || []).map((item) => `${item.field_name}:${item.source_id}/${item.source_type}/${item.unit}/${item.verification_status}/${factorEvidenceValue(factor, trace, item.field_name)}`).join("; "); evidence.push([`因子回溯 · ${trace.requested_path_id}`, `${trace.resolved_path_id} · ${trace.resolution_reason} · 因子模式 ${factor.wt_t_mode} · 因子状态 ${trace.factor_status} · 资格 ${factor.qualification_status} · 设备 ${factor.equipment_id} · ${evidenceText}`]); });
     $("calculation-basis").innerHTML = evidence.map(([label, value]) => `<dl class="evidence-item"><dt>${label}</dt><dd>${esc(text(value))}</dd></dl>`).join("");
     const candidateThresholds = (result.candidate_results || []).map((candidate) => {
       const constraints = candidate.voyage_result && candidate.voyage_result.constraints;
