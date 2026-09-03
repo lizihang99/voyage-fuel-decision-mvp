@@ -58,19 +58,20 @@
 
 ## Current Verified Baseline
 
-基线日期：2026-09-02。
+基线日期：2026-09-03。
 
 基线分支：`python-calculation-kernel`。
 
-当前已验证提交：`7fd6924 feat: add minimal advanced custom fuel form`。
+当前已验证提交：`d0d8e01 docs: record final MVP acceptance`（代码修复：`7bed200 fix: close factor provenance audit gaps`）。
 
 验证结果：
 
 ```text
-Python unittest: 150 passed
+Python unittest: 185 passed
 Node port tests: 29 passed
 Playwright E2E: 12 passed (included in the repository discovery run)
 Python compileall: passed
+JavaScript syntax check: passed
 git diff --check: passed
 ```
 
