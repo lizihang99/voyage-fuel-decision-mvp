@@ -1103,11 +1103,11 @@ git commit -m "docs: record verified MVP delivery"
 git push origin python-calculation-kernel
 ```
 
-- [ ] **Step 6: Finish the development branch**
+- [x] **Step 6: Finish the development branch**
 
 Use `superpowers:requesting-code-review` for a final review, address verified findings, rerun all checks, then use `superpowers:finishing-a-development-branch` to choose merge, pull request or continued branch retention. Do not claim the MVP complete before this document shows M01-M17 as `VERIFIED` with a current verification log.
 
-当前状态：代码审查和最终验收已完成；分支集成方式仍为 `PENDING_USER_DECISION`，工作树保留在 `python-calculation-kernel`。
+Observed on 2026-09-03: the report provenance audit and the 72-test focused acceptance run passed; `python-calculation-kernel` was pushed to `origin`, fast-forward merged into `main`, and `main` was pushed to `origin/main`. The four generated E2E artifacts were restored to their committed versions, leaving both worktrees clean.
 
 ## MVP Acceptance Checklist
 
