@@ -1,7 +1,12 @@
 import csv
+import io
 import json
 import unittest
 from decimal import Decimal
+from pathlib import Path
+
+from fastapi.testclient import TestClient
+from pypdf import PdfReader
 
 from voyage_fuel.case_calculator import calculate_decision_case
 from voyage_fuel.case_comparison import metric_delta
@@ -14,6 +19,7 @@ from voyage_fuel.ports import calculate_scope_rates
 from voyage_fuel.reports import decision_case_to_csv
 from voyage_fuel.formatting import DisplayConfig
 from voyage_fuel.calculator import calculate_voyage
+from voyage_fuel.web import app
 
 
 def _component(path_id: str, price: str | None = "600", **kwargs) -> FuelComponent:
@@ -52,6 +58,108 @@ def _synthetic_factor(path_id: str, *, wt_t: str, co2: str = "0", ch4: str = "0"
 
 
 class SpecificationMatrixTests(unittest.TestCase):
+    @staticmethod
+    def _custom_factor(mode="STATIC", *, qualification="NOT_DEMONSTRATED", rwd="1", cf_co2="3", cslip="NA"):
+        fields = {
+            "lcv": "MJ/gFuel", "wtT": "gCO2eq/MJ", "cfCO2": "gGHG/gFuel",
+            "cfCH4": "gGHG/gFuel", "cfN2O": "gGHG/gFuel", "cslip": "%",
+            "methaneSlipApplicable": "boolean", "rwd": "ratio", "eligibleBiomassFraction": "fraction",
+        }
+        evidence = {key: [{"sourceId": f"SRC-{key}", "sourceType": "TEST", "unit": unit, "verificationStatus": "VERIFIED"}]
+                    for key, unit in fields.items()}
+        return {
+            "pathId": "CUSTOM_FACTOR", "custom": True, "equipmentId": "CUSTOM_ENGINE",
+            "lcv": "0.04", "wtTMode": mode, "wtT": "10", "cfCO2": cf_co2,
+            "cfCH4": "0", "cfN2O": "0", "cslip": cslip, "methaneSlipApplicable": False,
+            "rwd": rwd, "eligibleBiomassFraction": "0", "qualificationStatus": qualification,
+            "sourceEvidence": evidence,
+        }
+
+    @staticmethod
+    def _case_payload(*, candidates=None, baseline=None, year=2026):
+        return {
+            "reportYear": year, "departurePort": "CNSHG", "arrivalPort": "NLRTM",
+            "adjacentValidPortOfCallConfirmed": True, "currency": "EUR",
+            "baseline": baseline or {"pathId": "MDO", "massTonnes": "100", "pricePerTonne": "700"},
+            "euaPricePerTCO2e": "80", "candidates": candidates if candidates is not None else [{"candidateId": "uco", "pathId": "UCO_FAME", "pricePerTonne": "1000", "specifiedBlendRatios": ["0.2"]}],
+        }
+
+    def test_case_economics_b0_can_be_lowest_and_dominated_switch_is_absent(self):
+        request = self._case_payload(candidates=[
+            {"candidateId": "expensive", "pathId": "HFO", "pricePerTonne": "2000", "specifiedBlendRatios": ["1"], "maxBlendRatio": "1", "allowsPureUse": True},
+        ])
+        parsed = parse_decision_case(request)
+        result = calculate_decision_case(parsed.request, parsed.issues)
+        self.assertEqual(next(r for r in result.recommendations if r.recommendation_id == "CURRENT_MODEL_COST_MIN").scenario_id, "B0")
+        switch_request = self._case_payload(candidates=[
+            {"candidateId": "uco", "pathId": "UCO_FAME", "pricePerTonne": "1000", "specifiedBlendRatios": ["0.2"], "maxBlendRatio": "0.3", "allowsPureUse": True},
+            {"candidateId": "lng", "pathId": "LNG_OTTO_MEDIUM_SPEED", "pricePerTonne": "3000", "specifiedBlendRatios": ["0.1", "0.5"], "maxBlendRatio": "0.5", "allowsPureUse": True},
+        ])
+        switch_result = calculate_decision_case(parse_decision_case(switch_request).request)
+        self.assertTrue(all(p.to_candidate_id != "lng" for p in switch_result.economics.switch_points))
+
+    def test_factor_qualification_and_special_input_guards_keep_structured_issues(self):
+        cases = (
+            (self._custom_factor("RFNBO_E", qualification="NOT_DEMONSTRATED", rwd="2"), "MISSING_REQUIRED_FACTOR", 2026),
+            (self._custom_factor("RFNBO_E", qualification="ASSUMED_ELIGIBLE", rwd="2"), "MISSING_REQUIRED_FACTOR", 2024),
+            (self._custom_factor("BIO_E", qualification="ASSUMED_ELIGIBLE", cf_co2="NA"), "MISSING_REQUIRED_FACTOR", 2026),
+            (self._custom_factor(cslip="101"), "INVALID_CSLIP", 2026),
+        )
+        for custom, code, year in cases:
+            parsed = parse_decision_case(self._case_payload(year=year, candidates=[{"candidateId": "custom", **custom}]))
+            self.assertTrue(parsed.issues, custom)
+            self.assertEqual(parsed.issues[0].code, code)
+
+    def test_non_biomass_factor_cannot_claim_biomass_zero_rating(self):
+        parsed = parse_decision_case(self._case_payload(candidates=[{"candidateId": "mdo", "pathId": "MDO", "eligibleBiomassFraction": "1"}]))
+        self.assertTrue(parsed.issues)
+        self.assertEqual(parsed.issues[0].code, "MISSING_REQUIRED_FACTOR")
+
+    def test_target_no_solution_retains_independent_maximum_improvement_boundary(self):
+        high = FuelComponent(get_builtin_factor("HFO"), Decimal("1000"))
+        result = calculate_voyage(VoyageInput(2026, "CNSHG", "NLRTM", _component("MDO"), Decimal("100"), high, None))
+        self.assertEqual(result.constraints.target_status, "TARGET_NO_SOLUTION")
+        self.assertEqual(result.constraints.x_max_improvement, Decimal("0"))
+
+    def test_empty_candidates_and_2024_ets_exclusion_are_structured(self):
+        parsed = parse_decision_case(self._case_payload(candidates=[]))
+        self.assertEqual(parsed.issues[0].field, "candidates")
+        self.assertTrue(parsed.issues[0].blocking)
+        parsed_ets = parse_decision_case(self._case_payload(year=2024))
+        result = decision_case_result_to_dict(calculate_decision_case(parsed_ets.request, parsed_ets.issues))
+        ets = result["scenarios"][0]["result"]["eu_ets"]
+        self.assertEqual(ets["included_gases"], ["CO2"])
+        self.assertIn("CH4", ets["excluded_from_ets_surrender"])
+
+    def test_factor_output_and_csv_expose_metadata_constraints_and_economics(self):
+        custom = self._custom_factor()
+        payload = self._case_payload(baseline={**custom, "massTonnes": "100", "pricePerTonne": "700"})
+        parsed_custom = parse_decision_case(payload)
+        result = decision_case_result_to_dict(calculate_decision_case(parsed_custom.request, parsed_custom.issues))
+        factor = result["provenance"]["factor_resolutions"][0]["factor"]
+        self.assertEqual(factor["equipment_id"], "CUSTOM_ENGINE")
+        self.assertTrue(factor["source_evidence"])
+        parsed = parse_decision_case(self._case_payload())
+        case_result = calculate_decision_case(parsed.request, parsed.issues)
+        rows = list(csv.DictReader(io.StringIO(decision_case_to_csv(case_result))))
+        self.assertIn("constraints", {r["record_type"] for r in rows})
+        self.assertIn("economics", {r["record_type"] for r in rows})
+
+    def test_web_baseline_custom_input_and_boundary_language_are_public_contracts(self):
+        payload = self._case_payload(baseline={**self._custom_factor(), "massTonnes": "100", "pricePerTonne": "700"})
+        response = TestClient(app).post("/api/calculate", json=payload)
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual(body["provenance"]["factor_resolutions"][0]["factor"]["equipment_id"], "CUSTOM_ENGINE")
+        scenarios = [s for c in body["candidate_results"] for s in (c["voyage_result"]["scenarios"] if c["voyage_result"] else [])]
+        self.assertTrue(all(s["execution_status"] == "EXECUTION_CONDITIONS_PENDING" for s in scenarios))
+        root = TestClient(app).get("/").text
+        readme = (Path(__file__).parents[1] / "README.md").read_text(encoding="utf-8")
+        pdf = PdfReader(io.BytesIO(__import__('voyage_fuel.reports', fromlist=['decision_case_to_pdf']).decision_case_to_pdf(calculate_decision_case(parse_decision_case(self._case_payload()).request)) ))
+        pdf_text = "\n".join(page.extract_text() or "" for page in pdf.pages)
+        for text in (root, pdf_text, readme):
+            for fragment in ("voyage-level", "not a formal annual penalty", "not a procurement recommendation", "independent physical lifecycle WtW reduction", "EXECUTION_CONDITIONS_PENDING"):
+                self.assertIn(fragment.casefold(), text.casefold())
     def test_ets_year_gas_and_surrender_matrix(self):
         factor = _synthetic_factor("GWP_MATRIX", wt_t="0", co2="1", ch4="0.000001", n2o="0.000001")
         amount = [FuelAmount(FuelComponent(factor, Decimal("80")), Decimal("1"))]
