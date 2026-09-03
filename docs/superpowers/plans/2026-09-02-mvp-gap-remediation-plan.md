@@ -446,15 +446,15 @@ git commit -m "docs: make MVP runtime and boundaries reproducible"
 - Tests exercise public JSON/API and result objects wherever a contract-level test is possible.
 - Final status is VERIFIED only when every M01-M17 completion condition has current code, focused tests, one final full run and final review.
 
-- [ ] Step 1: Add missing specification-matrix cases
+- [x] Step 1: Add missing specification-matrix cases
 
 覆盖所有审计反例：B0 低于所有候选、被支配的跨候选交点、自定义 RFNBO 不匹配、2024 年 rwd=2、BIO_E 缺 cfCO2、Cslip 错误码、非生物零额、目标无解最大改善、空候选、ETS 排除气体映射、设备和逐字段证据、CSV 约束/经济记录、页面/PDF 精度一致性和基准高级自定义。
 
-- [ ] Step 2: Run each focused suite after the corresponding task
+- [x] Step 2: Run each focused suite after the corresponding task
 
 使用各任务命令进行短回归；小改动后不重复运行完整仓库套件，完整套件只在最终验收阶段运行一次。
 
-- [ ] Step 3: Run the final full acceptance once
+- [x] Step 3: Run the final full acceptance once
 
 ~~~powershell
 $env:PYTHONPATH='src'
@@ -467,11 +467,11 @@ git diff --check
 
 预期证据：Python 完整通过且包含 E2E、Node 29 项、compileall、JavaScript 语法检查和 diff-check 均通过。若失败，先修复相应任务并运行聚焦测试，再重新执行最终命令。
 
-- [ ] Step 4: Perform final code review and status update
+- [x] Step 4: Perform final code review and status update
 
 使用 superpowers:requesting-code-review，处理已确认问题，重新运行受影响的聚焦套件和最终验收命令，再使用 superpowers:finishing-a-development-branch 选择合并方式。只根据实际证据更新 M01-M17；所有排除项保持 OUT_OF_SCOPE。
 
-- [ ] Step 5: Commit the final acceptance record
+- [x] Step 5: Commit the final acceptance record
 
 ~~~powershell
 git add tests/test_spec_matrix.py tests/test_regressions.py docs/superpowers/plans/2026-09-01-mvp-delivery-plan.md
