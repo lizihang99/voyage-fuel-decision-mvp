@@ -62,12 +62,12 @@
 
 基线分支：`python-calculation-kernel`。
 
-当前已验证提交：`d0d8e01 docs: record final MVP acceptance`（代码修复：`7bed200 fix: close factor provenance audit gaps`）。
+当前已验证提交：`571f6ae fix: close report provenance audit gaps`。
 
 验证结果：
 
 ```text
-Python unittest: 185 passed
+Python unittest: 189 passed
 Node port tests: 29 passed
 Playwright E2E: 12 passed (included in the repository discovery run)
 Python compileall: passed
@@ -101,13 +101,13 @@ git diff --check
 | M10 | 结构化状态、错误、追溯和版本 | `VERIFIED` | `provenance.py`；`test_provenance.py`；任务5聚焦审查通过 | 报告和网页呈现归M13-M15 | 结果逐项满足计算规格第13、14、17节 |
 | M11 | 相对B0变化和条件式建议 | `VERIFIED` | `case_comparison.py`；`test_case_comparison.py` | 页面和报告呈现归M13-M15 | 原始Decimal差值、零基线、条件式结论和临界点关联测试通过 |
 | M12 | JSON/API输入输出契约 | `VERIFIED` | `json_io.py`、`web.py`；`test_case_json_io.py`；`test_web_api.py` | 无；后续页面和报告仅消费同一结果契约 | 案例级JSON、结构化422错误和API集成测试通过 |
-| M13 | CSV完整报告 | `VERIFIED` | `formatting.py`；`reports.py`；`test_case_reports.py` | - | Case、港口、场景、建议、临界点、因子依据和问题记录均固定导出；原始Decimal、单位、币种、版本和来源保持可审计 |
-| M14 | PDF完整报告和共享显示配置 | `VERIFIED` | `reports.py`；Task 8 报告测试与渲染；Task 12 安装后 PDF 13页渲染、文本和边界审计 | 无 | PDF满足MVP设计第14节并通过渲染检查 |
-| M15 | 单用户网页工作流 | `VERIFIED` | `web.py`、`index.html`、`app.js`；内置燃料 desktop/mobile flow；高级自定义最小输入与 RFNBO 保护 E2E | 无；正式年度模式仍属范围外 | 用户可在浏览器完成内置路径或高级自定义燃料的一次航次案例 |
-| M16 | 完整测试矩阵和端到端验收 | `VERIFIED` | Task 7 反例矩阵 20/20；最新完整验收 Python unittest discover 185；Node port tests 29；compileall；`node --check`；`git diff --check` | 无 | 计算规格第16节和网页主流程全部自动验证 |
+| M13 | CSV完整报告 | `VERIFIED` | `formatting.py`；`reports.py`；`test_case_reports.py`；571f6ae 回归测试 | - | Case、港口、场景、建议、临界点、因子依据和问题记录均固定导出；原始Decimal、单位、币种、版本、`E/eu` 证据值和实际生物质比例保持可审计 |
+| M14 | PDF完整报告和共享显示配置 | `VERIFIED` | `reports.py`；Task 8 报告测试与渲染；Task 12 安装后 PDF 13页渲染、文本和边界审计；571f6ae 回归测试 | 无 | PDF满足MVP设计第14节并通过渲染检查，包含自定义 `BIO_E/RFNBO_E` 公式证据值和实际生物质比例 |
+| M15 | 单用户网页工作流 | `VERIFIED` | `web.py`、`index.html`、`app.js`；内置燃料 desktop/mobile flow；高级自定义最小输入与 RFNBO 保护 E2E；网页证据字段聚焦测试 | 无；正式年度模式仍属范围外 | 用户可在浏览器完成内置路径或高级自定义燃料的一次航次案例，并查看字段级来源类型、单位、核验状态和值 |
+| M16 | 完整测试矩阵和端到端验收 | `VERIFIED` | Task 7 反例矩阵 20/20；最新完整验收 Python unittest discover 189；Node port tests 29；compileall；`node --check`；`git diff --check` | 无 | 计算规格第16节和网页主流程全部自动验证 |
 | M17 | 安装、运行和依赖声明 | `VERIFIED` | `pyproject.toml`；2026-09-03 临时 Python 3.12 venv 安装 `.[dev]`；安装后 `voyage-fuel-web` `/health`、fixture API、CSV/PDF 实测 | 无 | 干净环境按README命令可启动并通过健康检查 |
 
-总体判断：计划内的案例级计算、约束与经济比较、结构化结果、CSV/PDF、单用户网页、安装后运行链路和本轮审查修复均已通过聚焦验证及最新完整验收。产品边界仍保持航次级 FuelEU 估算、执行条件待确认和明确排除项。逐字段自定义燃料因子已经在 Python/JSON/API 层完成，网页现已提供最小输入的高级自定义因子表单：普通非甲烷路径默认隐藏 Cslip 等设备字段，零值采用需要用户确认的估算选项，气体路径可明确选择甲烷滑移适用性，生物燃料未证明资格时仍可使用 BIO_E 估算，未证明 RFNBO 资格时锁定为普通 WtT 输入；页面使用稳定会话 ID 生成自定义路径和候选身份，后端仍负责最终证据和字段校验。
+总体判断：计划内的案例级计算、约束与经济比较、结构化结果、CSV/PDF、单用户网页、安装后运行链路和本轮报告审计修复均已通过聚焦验证及最新完整验收。产品边界仍保持航次级 FuelEU 估算、执行条件待确认和明确排除项。逐字段自定义燃料因子已经在 Python/JSON/API 层完成，网页现已提供最小输入的高级自定义因子表单和完整证据摘要；CSV/PDF 同时保留自定义 `BIO_E` 的 `E`、`RFNBO_E` 的 `E/eu` 证据值，以及实际 `eligibleBiomassFraction`。剩余的浏览器运行时证据值断言属于低优先级测试增强，不构成本轮已复现的 MVP 功能缺口。
 
 ---
 
@@ -1107,6 +1107,8 @@ git push origin python-calculation-kernel
 
 Use `superpowers:requesting-code-review` for a final review, address verified findings, rerun all checks, then use `superpowers:finishing-a-development-branch` to choose merge, pull request or continued branch retention. Do not claim the MVP complete before this document shows M01-M17 as `VERIFIED` with a current verification log.
 
+当前状态：代码审查和最终验收已完成；分支集成方式仍为 `PENDING_USER_DECISION`，工作树保留在 `python-calculation-kernel`。
+
 ## MVP Acceptance Checklist
 
 - [x] A user can enter 2024-2030, two valid ports and confirm adjacent valid `Port of Call`.
@@ -1174,6 +1176,7 @@ Use `superpowers:requesting-code-review` for a final review, address verified fi
 | 2026-09-03 | `9072dc1` + Task 6 documentation changes | Web/API/E2E focused suite 32；README boundary/runtime contract test；temporary Python 3.12 venv `.[dev]` install；installed CLI `/health`；fixture API 12 scenarios/0 case issues；CSV non-empty；PDF `%PDF-` signature；`node --check`；`git diff --check` | Complete web result contract, baseline advanced custom input, reproducible runtime instructions and boundary language verified; Task 7 final matrix remained |
 | 2026-09-03 | `48e3481` | Task 7 focused matrix 20/20；最终 Python unittest discover 170；Node port tests 29；compileall；`node --check`；`git diff --check` | Counterexample fixtures strengthened after review; final acceptance evidence recorded; generated E2E artifacts remain uncommitted |
 | 2026-09-03 | `7bed200` | Python factor/report/JSON focused suite 48；最终 Python unittest discover 185；Node port tests 29；compileall；`node --check`；`git diff --check` | 旧版 JSON 入口传递 report year；CSV/PDF 保留 source type、field name、unit、status、value；内置目录区分 FIXED/ESTIMATED 并补齐 eligibleBiomassFraction；最新生产代码已完成完整验收 |
+| 2026-09-03 | `571f6ae` | 报告/自定义因子/JSON/追踪聚焦 62；网页契约聚焦 20；最终 Python unittest discover 189；Node port tests 29；compileall；`node --check`；`git diff --check`；独立代码审查无正确性发现 | CSV/PDF 保留自定义 `BIO_E` 的 `E`、`RFNBO_E` 的 `E/eu` 证据值；报告使用实际 `FuelComponent.eligible_biomass_fraction`；网页证据面板展示字段、来源类型、单位、核验状态和值；当前 MVP gap 已关闭 |
 
 Future entries must record evidence after it has been run. Do not add expected pass counts as if they were observed results.
 
@@ -1181,7 +1184,7 @@ Future entries must record evidence after it has been run. Do not add expected p
 
 ### 2026-09-03 Final Acceptance Update
 
-Task 7 反例矩阵已在 `48e3481` 通过（20/20）。代码审查发现的旧版 JSON 年份传递、CSV/PDF 逐字段证据和内置证据状态语义问题已在 `7bed200` 修复；修复后的聚焦套件48项及完整验收 Python 185、Node 29、`compileall`、`node --check` 和 `git diff --check` 均通过。M01-M17 当前满足 MVP 交付条件。工作树中四个 E2E 生成工件仍为未提交的本地输出。
+Task 7 反例矩阵已在 `48e3481` 通过（20/20）。代码审查发现的旧版 JSON 年份传递、CSV/PDF 逐字段证据和内置证据状态语义问题已在 `7bed200` 修复；后续独立审计发现并在 `571f6ae` 修复了自定义 `E/eu` 证据值丢失、实际生物质比例误报和网页证据摘要不完整。修复后的聚焦套件和完整验收 Python 189、Node 29、`compileall`、`node --check` 和 `git diff --check` 均通过。M01-M17 当前满足 MVP 交付条件；分支集成方式仍待用户决定。工作树中四个 E2E 生成工件仍为未提交的本地输出。
 
 - Spec coverage: tasks cover the MVP design's product shape, input, calculation, multi-candidate comparison, status, traceability, exports, webpage and acceptance requirements.
 - Boundary coverage: annual FuelEU, real penalties and physical WtW remain explicit exclusions.
