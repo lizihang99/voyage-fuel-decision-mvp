@@ -11,12 +11,56 @@
 
   const $ = (id) => document.getElementById(id);
   const text = (value, fallback = "-") => value === null || value === undefined || value === "" ? fallback : String(value);
-  const number = (value, places) => {
+  function formatDecimalStringScaled(value, decimals, power10 = 0) {
     if (value === null || value === undefined || value === "") return "-";
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed.toFixed(places) : String(value);
-  };
-  const percent = (value) => value === null || value === undefined ? "-" : `${number(Number(value) * 100, state.display.ratio)}%`;
+    const raw = String(value).trim();
+    const match = raw.match(/^([+-]?)(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/);
+    if (!match) return raw;
+    const sign = match[1] === "-" ? "-" : "";
+    const digits = `${match[2]}${match[3] || ""}`;
+    const exponent = Number.parseInt(match[4] || "0", 10) + power10;
+    const decimalPosition = match[2].length + exponent;
+    const shift = decimalPosition - digits.length + decimals;
+    let scaled;
+    if (shift >= 0) {
+      scaled = BigInt(`${digits}${"0".repeat(shift)}`);
+    } else {
+      const divisor = 10n ** BigInt(-shift);
+      const integerPart = BigInt(digits) / divisor;
+      const remainder = BigInt(digits) % divisor;
+      scaled = integerPart + (remainder * 2n >= divisor ? 1n : 0n);
+    }
+    const scale = 10n ** BigInt(decimals);
+    let integerText;
+    if (decimals > 0) {
+      const whole = scaled / scale;
+      const fraction = String(scaled % scale).padStart(decimals, "0");
+      integerText = `${whole}.${fraction}`;
+    } else {
+      integerText = String(scaled);
+    }
+    if (sign && scaled !== 0n) return `-${integerText}`;
+    return integerText;
+  }
+  function formatDecimalString(value, decimals) { return formatDecimalStringScaled(value, decimals, 0); }
+  function formatField(value, kind, displayConfig = state.display) {
+    const config = displayConfig || state.display;
+    const places = {
+      mass: config.mass ?? config.fuel_mass_decimals ?? 3,
+      energy: config.energy ?? config.energy_decimals ?? 3,
+      ratio: config.ratio ?? config.ratio_decimals ?? 4,
+      scope: config.scope ?? config.scope_rate_decimals ?? 2,
+      intensity: config.intensity ?? config.intensity_decimals ?? 4,
+      gas: config.gas ?? config.gas_decimals ?? 6,
+      price: config.price ?? config.price_decimals ?? 2,
+      factor: config.factor ?? config.factor_decimals ?? 9,
+    }[kind] ?? 6;
+    const power10 = kind === "energy" ? -3 : (kind === "ratio" || kind === "scope" ? 2 : 0);
+    const rendered = formatDecimalStringScaled(value, places, power10);
+    return kind === "ratio" || kind === "scope" ? `${rendered}%` : rendered;
+  }
+  const number = (value, places) => formatDecimalString(value, places);
+  const percent = (value) => formatField(value, "ratio");
   const esc = (value) => String(value ?? "").replace(/[&<>\"]/g, (char) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;",
   }[char]));
@@ -175,6 +219,103 @@
     return `CUSTOM_${slug || `FUEL_${index + 1}`}`;
   }
   function isEligible(qualification) { return qualification === "ASSUMED_ELIGIBLE" || qualification === "VERIFIED_ELIGIBLE"; }
+
+  function syncBaselineCustomEditor() {
+    const custom = $("baseline-mode")?.value === "custom";
+    const editor = $("baseline-custom-editor");
+    const builtin = $("baseline-fuel-label");
+    if (editor) editor.hidden = !custom;
+    if (builtin) builtin.hidden = custom;
+    if (!editor || !custom) return;
+    const profile = fieldValue(editor, "baselineCustomProfile", "ordinary");
+    const qualification = fieldValue(editor, "baselineQualificationStatus", "NOT_DEMONSTRATED");
+    const eligible = isEligible(qualification);
+    const modeField = field(editor, "baselineWtTMode");
+    let mode = fieldValue(editor, "baselineWtTMode", "STATIC");
+    const blockedFormula = (mode === "BIO_E" && profile !== "biofuel") || (mode === "RFNBO_E" && (profile !== "rfnbo" || !eligible));
+    if (blockedFormula) {
+      mode = "STATIC";
+      if (modeField) modeField.value = mode;
+    }
+    const warning = field(editor, "baseline-rfnbo-warning");
+    if (warning) warning.hidden = !(profile === "rfnbo" && blockedFormula);
+    const qualificationLabel = editor.querySelector(".baseline-qualification-field");
+    if (qualificationLabel) qualificationLabel.hidden = profile === "ordinary";
+    editor.querySelectorAll("[data-baseline-block=wtT]").forEach((label) => { label.hidden = mode === "BIO_E" || mode === "RFNBO_E"; });
+    editor.querySelectorAll("[data-baseline-block=E]").forEach((label) => { label.hidden = mode !== "BIO_E" && mode !== "RFNBO_E"; });
+    editor.querySelectorAll("[data-baseline-block=eu]").forEach((label) => { label.hidden = mode !== "RFNBO_E"; });
+    editor.querySelectorAll("[data-baseline-block=eligibleBiomassFraction]").forEach((label) => { label.hidden = profile !== "biofuel" || !eligible; });
+    const methanePath = fieldValue(editor, "baselineCustomFuelType", "non_methane") === "gas";
+    const methaneField = field(editor, "baselineMethaneSlipApplicable");
+    if (methaneField && !methanePath) methaneField.value = "false";
+    const methane = methanePath && fieldValue(editor, "baselineMethaneSlipApplicable", "false") === "true";
+    const gasFields = editor.querySelector(".baseline-gas-fields");
+    if (gasFields) gasFields.hidden = !methanePath;
+    const cslip = field(editor, "baselineCslip");
+    if (cslip) cslip.required = methane;
+    ["baselineCsfCO2", "baselineCsfCH4", "baselineCsfN2O"].forEach((name) => { const input = field(editor, name); if (input) input.required = methane && cslip && Number(cslip.value || 0) > 0; });
+    const rwd = field(editor, "baselineRwd");
+    if (rwd) rwd.value = profile === "rfnbo" && eligible ? "2" : "1";
+    const wtT = field(editor, "baselineWtT");
+    const e = field(editor, "baselineE");
+    const eu = field(editor, "baselineEu");
+    if (wtT) wtT.required = mode === "STATIC" || mode === "CERTIFIED";
+    if (e) e.required = mode === "BIO_E" || mode === "RFNBO_E";
+    if (eu) eu.required = mode === "RFNBO_E";
+    const fraction = field(editor, "baselineEligibleBiomassFraction");
+    if (fraction) fraction.required = profile === "biofuel" && eligible;
+    syncZeroEstimate(editor, "baselineCfCH4", "baselineCfCH4ZeroEstimate");
+    syncZeroEstimate(editor, "baselineCfN2O", "baselineCfN2OZeroEstimate");
+  }
+
+  function baselineCustomPayload() {
+    const editor = $("baseline-custom-editor");
+    const profile = fieldValue(editor, "baselineCustomProfile", "ordinary");
+    const qualification = fieldValue(editor, "baselineQualificationStatus", "NOT_DEMONSTRATED");
+    const eligible = isEligible(qualification);
+    const requestedMode = fieldValue(editor, "baselineWtTMode", "STATIC");
+    const wtTMode = requestedMode === "BIO_E" && profile === "biofuel"
+      ? "BIO_E" : requestedMode === "RFNBO_E" && profile === "rfnbo" && eligible
+        ? "RFNBO_E" : requestedMode === "CERTIFIED" ? "CERTIFIED" : "STATIC";
+    const gas = fieldValue(editor, "baselineCustomFuelType", "non_methane") === "gas";
+    const methane = gas && fieldValue(editor, "baselineMethaneSlipApplicable", "false") === "true";
+    const cslip = methane ? fieldValue(editor, "baselineCslip") || "" : "NA";
+    const requiredFields = ["lcv", wtTMode === "BIO_E" || wtTMode === "RFNBO_E" ? "E" : "wtT", ...(wtTMode === "RFNBO_E" ? ["eu"] : []), "cfCO2", "cfCH4", "cfN2O", "cslip", "methaneSlipApplicable", "rwd", "eligibleBiomassFraction"];
+    if (methane && Number(cslip) > 0) requiredFields.push("csfCO2", "csfCH4", "csfN2O");
+    const baseline = {
+      custom: true,
+      pathId: "CUSTOM_BASELINE",
+      customPathId: "CUSTOM_BASELINE",
+      equipmentId: gas ? "CUSTOM_GAS" : "CUSTOM_NON_METHANE",
+      customFuelName: fieldValue(editor, "baselineCustomFuelName").trim(),
+      lcv: fieldValue(editor, "baselineLcv"),
+      wtTMode,
+      wtT: fieldValue(editor, "baselineWtT"),
+      E: fieldValue(editor, "baselineE"),
+      eu: fieldValue(editor, "baselineEu"),
+      cfCO2: fieldValue(editor, "baselineCfCO2"),
+      cfCH4: field(editor, "baselineCfCH4ZeroEstimate")?.checked ? "0" : fieldValue(editor, "baselineCfCH4"),
+      cfN2O: field(editor, "baselineCfN2OZeroEstimate")?.checked ? "0" : fieldValue(editor, "baselineCfN2O"),
+      cslip,
+      methaneSlipApplicable: methane,
+      csfCO2: fieldValue(editor, "baselineCsfCO2"),
+      csfCH4: fieldValue(editor, "baselineCsfCH4"),
+      csfN2O: fieldValue(editor, "baselineCsfN2O"),
+      rwd: profile === "rfnbo" && eligible ? "2" : "1",
+      eligibleBiomassFraction: profile === "biofuel" && eligible ? fieldValue(editor, "baselineEligibleBiomassFraction") : "0",
+      qualificationStatus: qualification,
+      sourceId: fieldValue(editor, "baselineSourceId").trim(),
+      sourceType: fieldValue(editor, "baselineSourceType", "SUPPLIER_SPEC"),
+      verificationStatus: fieldValue(editor, "baselineVerificationStatus", "ESTIMATED"),
+    };
+    baseline.sourceEvidence = evidenceRecords(baseline, [...new Set(requiredFields)]);
+    return baseline;
+  }
+
+  function readBaseline() {
+    const custom = $("baseline-mode")?.value === "custom";
+    return custom ? { ...baselineCustomPayload(), massTonnes: $("baseline-mass").value, pricePerTonne: $("baseline-price").value || null } : { pathId: $("baseline-fuel").value, massTonnes: $("baseline-mass").value, pricePerTonne: $("baseline-price").value || null };
+  }
 
   function syncZeroEstimate(row, factorName, checkboxName) {
     const input = field(row, factorName);
@@ -381,23 +522,23 @@
       customFuelType: "non_methane",
       methaneSlipApplicable: false,
       wtTMode: "STATIC",
-      lcv: "",
-      wtT: "",
+      lcv: "0.040",
+      wtT: "100",
       e: "",
       eu: "",
-      cfCO2: "",
-      cfCH4: "",
-      cfN2O: "",
+      cfCO2: "3.000",
+      cfCH4: "0",
+      cfN2O: "0",
       cfCH4ZeroEstimate: false,
       cfN2OZeroEstimate: false,
       qualificationStatus: "NOT_DEMONSTRATED",
-      eligibleBiomassFraction: "",
+      eligibleBiomassFraction: "0",
       rwd: "1",
       cslip: "NA",
       csfCO2: "",
       csfCH4: "",
       csfN2O: "",
-      sourceId: "",
+      sourceId: "UI_DEFAULT_ESTIMATE",
       sourceType: "SUPPLIER_SPEC",
       verificationStatus: "ESTIMATED",
     });
@@ -411,7 +552,7 @@
       arrivalPort: state.ports.arrival || $("arrival-port-search").value.trim(),
       adjacentValidPortOfCallConfirmed: $("adjacent-port-confirmation").checked,
       currency: $("case-currency").value,
-      baseline: { pathId: $("baseline-fuel").value, massTonnes: $("baseline-mass").value, pricePerTonne: $("baseline-price").value || null },
+      baseline: readBaseline(),
       euaPricePerTCO2e: $("eua-price").value || null,
       candidates: readCandidates(),
     };
@@ -438,8 +579,12 @@
     $("result-run-status").classList.add("muted");
     $("result-boundary-summary").textContent = "本次计算未生成结果，请先处理问题后重新提交。";
     $("overview-metrics").innerHTML = "<p class=\"empty-state\">没有可呈现的基准结果。</p>";
+    $("port-identity-details").innerHTML = "<h3>港口范围与制度身份</h3><p class=\"empty-state\">暂无港口结果。</p>";
+    $("ets-fueleu-detail").innerHTML = "<h3>基准排放与 FuelEU</h3><p class=\"empty-state\">暂无排放结果。</p>";
+    $("economics-summary").innerHTML = "<h3>案例经济结果</h3><p class=\"empty-state\">暂无案例经济结果。</p>";
     $("conditional-recommendations").innerHTML = "<h3>条件式建议</h3><p class=\"empty-state\">暂无建议。</p>";
-    $("scenario-comparison-table").querySelector("tbody").innerHTML = '<tr><td colspan="8" class="empty-state">暂无场景。</td></tr>';
+    $("scenario-comparison-table").querySelector("tbody").innerHTML = '<tr><td colspan="23" class="empty-state">暂无场景。</td></tr>';
+    $("scenario-detail-table").innerHTML = "";
     $("thresholds-content").innerHTML = '<p class="empty-state">暂无约束阈值。</p>';
     $("calculation-basis").innerHTML = '<p class="empty-state">暂无计算依据。</p>';
   }
@@ -455,29 +600,43 @@
     const ets = baseline.eu_ets || {};
     const fuelEu = baseline.fuel_eu || {};
     $("overview-metrics").innerHTML = [
-      ["基准物理能量 (GJ)", number(Number(baseline.physical_energy_mj) / 1000, state.display.energy)],
+      ["基准物理能量 (GJ)", formatField(baseline.physical_energy_mj, "energy")],
       ["基准燃料成本", number(baseline.fuel_cost, state.display.price)],
-      ["EU ETS CO2e (t)", number(ets.ets_co2e_pre_scope_t, state.display.mass)],
-      ["FuelEU GHGI (g/MJ)", number(fuelEu.ghgi_actual_g_per_mj, 4)],
-      ["FuelEU 合规余额 (t)", number(fuelEu.compliance_balance_t, state.display.mass)],
+      ["EU ETS CO2e (t)", formatField(ets.ets_co2e_pre_scope_t, "gas")],
+      ["FuelEU GHGI (g/MJ)", formatField(fuelEu.ghgi_actual_g_per_mj, "intensity")],
+      ["FuelEU 合规余额 (t)", formatField(fuelEu.compliance_balance_t, "gas")],
       ["模型成本", number(baseline.model_cost, state.display.price)],
     ].map(([label, value]) => `<div class="metric"><span class="metric-label">${label}</span><strong class="metric-value">${value}</strong></div>`).join("");
+    const voyageBasis = (result.candidate_results || []).find((item) => item.voyage_result)?.voyage_result || {};
+    const scope = voyageBasis.scope_rates || {};
+    const departure = scope.departure_port || {};
+    const arrival = scope.arrival_port || {};
+    $("port-identity-details").innerHTML = `<h3>港口范围与制度身份</h3><div class="detail-grid"><dl class="evidence-item"><dt>出发港</dt><dd>${esc(departure.port_name || result.departure_port)} · EU ETS ${esc(departure.eu_ets_identity)} · FuelEU ${esc(departure.fuel_eu_identity)}</dd></dl><dl class="evidence-item"><dt>到达港</dt><dd>${esc(arrival.port_name || result.arrival_port)} · EU ETS ${esc(arrival.eu_ets_identity)} · FuelEU ${esc(arrival.fuel_eu_identity)}</dd></dl><dl class="evidence-item"><dt>范围比例</dt><dd>EU ETS ${formatField(scope.eu_ets_effective_rate, "scope")} · FuelEU ${formatField(scope.fuel_eu_scope_rate, "scope")}</dd></dl><dl class="evidence-item"><dt>判断理由</dt><dd>EU ETS ${esc(scope.eu_ets_reason)} · FuelEU ${esc(scope.fuel_eu_reason)}</dd></dl></div>`;
+    const gases = ets.mrv_raw_by_gas || {};
+    const excluded = Object.entries(ets.excluded_from_ets_surrender || {}).filter(([, value]) => value).map(([gasName]) => gasName).join(", ") || "无";
+    $("ets-fueleu-detail").innerHTML = `<h3>基准排放与 FuelEU</h3><div class="detail-grid"><dl class="evidence-item"><dt>EU ETS 气体</dt><dd>CO2 ${formatField(gases.CO2, "gas")} · CH4 ${formatField(gases.CH4, "gas")} · N2O ${formatField(gases.N2O, "gas")}</dd></dl><dl class="evidence-item"><dt>纳入 / 排除气体</dt><dd>${esc((ets.included_gases || []).join(", "))} / ${esc(excluded)}</dd></dl><dl class="evidence-item"><dt>EUAs / EUA 成本</dt><dd>${formatField(ets.euas_required, "gas")} / ${number(ets.eua_cost, state.display.price)}</dd></dl><dl class="evidence-item"><dt>FuelEU WtT / TtW / GHGI</dt><dd>WtT ${formatField(fuelEu.wt_t_intensity_g_per_mj, "intensity")} · TtW ${formatField(fuelEu.tt_w_intensity_g_per_mj, "intensity")} · GHGI ${formatField(fuelEu.ghgi_actual_g_per_mj, "intensity")} · 目标 ${formatField(fuelEu.target_g_per_mj, "intensity")} · 余额 ${formatField(fuelEu.compliance_balance_t, "gas")} · 指示性罚款 ${number(fuelEu.indicative_penalty_eur, state.display.price)}</dd></dl></div>`;
+    const economics = result.economics || {};
+    $("economics-summary").innerHTML = `<h3>案例经济结果</h3><div class="detail-grid"><dl class="evidence-item"><dt>当前模型成本最低</dt><dd>${esc(economics.cost_min_scenario_id)}</dd></dl><dl class="evidence-item"><dt>目标最低成本</dt><dd>${esc(economics.target_min_cost_scenario_id)}</dd></dl><dl class="evidence-item"><dt>最大合规改善</dt><dd>${esc(economics.max_improvement_scenario_id)}</dd></dl><dl class="evidence-item"><dt>比较状态</dt><dd>${esc(economics.comparison_status)}</dd></dl></div><p>相对 B0 的合规改善和成本变化见场景表。</p><div id="switch-points">${(economics.switch_points || []).map((point) => `<p>切换 ${esc(point.from_scenario_id)} → ${esc(point.to_scenario_id)} · value* ${number(point.value_star, state.display.price)}</p>`).join("") || "<p>暂无切换点。</p>"}</div>`;
     const rows = result.scenarios || [];
     $("scenario-comparison-table").querySelector("tbody").innerHTML = rows.map((row) => {
       const scenario = row.result || {};
       const fuelEuResult = scenario.fuel_eu || {};
-      return `<tr><td>${esc(row.scenario_id)}</td><td>${esc(row.candidate_id || "基准")}</td><td>${esc(row.calculation_status || "")} / ${esc(scenario.execution_status || "")}</td><td class="numeric">${percent(scenario.ratio)}</td><td class="numeric">${number(scenario.model_cost, state.display.price)}</td><td class="numeric">${number(fuelEuResult.ghgi_actual_g_per_mj, 4)}</td><td class="numeric">${number(fuelEuResult.compliance_balance_t, state.display.mass)}</td><td class="numeric">${text(row.current_model_cost_rank)}</td></tr>`;
-    }).join("") || '<tr><td colspan="8" class="empty-state">暂无场景。</td></tr>';
+      const scenarioEts = scenario.eu_ets || {};
+      const scenarioGases = scenarioEts.mrv_raw_by_gas || {};
+      const scenarioExcluded = Object.entries(scenario.eu_ets?.excluded_from_ets_surrender || {}).filter(([, value]) => value).map(([gasName]) => gasName).join(", ") || "-";
+      return `<tr><td>${esc(row.scenario_id)}</td><td>${esc(row.candidate_id || "基准")}</td><td>${esc(row.calculation_status || "")} / ${esc(scenario.execution_status || "")}</td><td class="numeric">${percent(scenario.ratio)}</td><td class="numeric">${number(scenario.model_cost, state.display.price)}</td><td class="numeric">${formatField(fuelEuResult.ghgi_actual_g_per_mj, "intensity")}</td><td class="numeric">${formatField(fuelEuResult.compliance_balance_t, "gas")}</td><td class="numeric">${text(row.current_model_cost_rank)}</td><td class="numeric">B0 ${formatField(scenario.baseline_mass_tonnes, "mass")} + 候选 ${formatField(scenario.candidate_mass_tonnes, "mass")}</td><td class="numeric">${formatField(scenario.physical_energy_mj, "energy")}</td><td class="numeric">${number(scenario.fuel_cost, state.display.price)}</td><td class="numeric">${formatField(scenarioGases.CO2 || scenarioEts.raw_co2_t, "gas")}</td><td class="numeric">${formatField(scenarioGases.CH4 || scenarioEts.raw_ch4_t, "gas")}</td><td class="numeric">${formatField(scenarioGases.N2O || scenarioEts.raw_n2o_t, "gas")}</td><td>${esc((scenarioEts.included_gases || []).join(", "))}</td><td>${esc(scenarioExcluded)}</td><td class="numeric">${formatField(scenarioEts.euas_required, "gas")}</td><td class="numeric">${number(scenarioEts.eua_cost, state.display.price)}</td><td class="numeric">${formatField(fuelEuResult.wt_t_intensity_g_per_mj, "intensity")}</td><td class="numeric">${formatField(fuelEuResult.tt_w_intensity_g_per_mj, "intensity")}</td><td class="numeric">${formatField(fuelEuResult.target_g_per_mj, "intensity")}</td><td class="numeric">${number(fuelEuResult.indicative_penalty_eur, state.display.price)}</td><td class="numeric">${formatField(scenario.compliance_improvement_tco2e, "gas")}</td></tr>`;
+    }).join("") || '<tr><td colspan="23" class="empty-state">暂无场景。</td></tr>';
+    $("scenario-detail-table").innerHTML = "<p>执行状态：EXECUTION_CONDITIONS_PENDING。相对 B0 合规改善以 tCO2e 表示。</p>";
     $("conditional-recommendations").innerHTML = `<h3>条件式建议</h3>${(result.recommendations || []).map((rec) => `<div class="recommendation ${rec.status === "UNAVAILABLE" ? "unavailable" : ""}"><strong>${esc(rec.status)}</strong><span>${esc(rec.condition)} · ${esc(rec.reason)}${rec.scenario_id ? ` · 场景 ${esc(rec.scenario_id)}` : ""}</span><small>假设: ${esc((rec.assumptions || []).join(", "))}</small></div>`).join("") || '<p class="empty-state">暂无建议。</p>'}`;
     const provenance = result.provenance || {};
-    const evidence = [["计算规范版本", provenance.calculation_spec_version], ["燃料因子版本", provenance.fuel_factor_version], ["港口规则版本", provenance.port_rule_version], ["EU ETS 边界理由", provenance.eu_ets_reason], ["FuelEU 边界理由", provenance.fuel_eu_reason], ["来源 ID", (provenance.source_ids || []).join("; ")]];
-    (provenance.factor_resolutions || []).forEach((trace) => evidence.push([`因子回溯 · ${trace.requested_path_id}`, `${trace.resolved_path_id} · ${trace.resolution_reason} · ${trace.factor_status}`]));
+    const evidence = [["计算规范版本", provenance.calculation_spec_version], ["燃料因子版本", provenance.fuel_factor_version], ["港口规则版本", provenance.port_rule_version], ["EU ETS 边界理由", provenance.eu_ets_reason], ["FuelEU 边界理由", provenance.fuel_eu_reason], ["ETS effective rate", provenance.eu_ets_effective_rate], ["来源 ID", (provenance.source_ids || []).join("; ")]];
+    (provenance.factor_resolutions || []).forEach((trace) => { const factor = trace.factor || {}; const evidenceText = (factor.source_evidence || []).map((item) => `${item.field_name}:${item.source_id}`).join("; "); evidence.push([`因子回溯 · ${trace.requested_path_id}`, `${trace.resolved_path_id} · ${trace.resolution_reason} · 因子模式 ${factor.wt_t_mode} · 因子状态 ${trace.factor_status} · 资格 ${factor.qualification_status} · 设备 ${factor.equipment_id} · ${evidenceText}`]); });
     $("calculation-basis").innerHTML = evidence.map(([label, value]) => `<dl class="evidence-item"><dt>${label}</dt><dd>${esc(text(value))}</dd></dl>`).join("");
     const candidateThresholds = (result.candidate_results || []).map((candidate) => {
       const constraints = candidate.voyage_result && candidate.voyage_result.constraints;
-      return constraints ? `<tr><td>${esc(candidate.candidate_id)}</td><td>${esc(constraints.target_status)}</td><td>${percent(constraints.x_target_min_cost)}</td><td>${percent(constraints.x_max_improvement)}</td><td>${esc((constraints.warning_codes || []).join(", ") || "-")}</td></tr>` : `<tr><td>${esc(candidate.candidate_id)}</td><td colspan="4">BLOCKED · ${esc((candidate.issues || []).map((issue) => issue.code).join(", ") || "无约束结果")}</td></tr>`;
+      return constraints ? `<tr><td>${esc(candidate.candidate_id)}</td><td>${esc(constraints.target_status)}</td><td>${percent(constraints.x_budget)}</td><td>${percent(constraints.x_supply)}</td><td>${percent(constraints.x_cap)}</td><td>${percent(constraints.x_target_min_cost)}</td><td>${percent(constraints.x_max_improvement)}</td><td>${esc((constraints.warning_codes || []).join(", ") || "-")}</td></tr>` : `<tr><td>${esc(candidate.candidate_id)}</td><td colspan="7">BLOCKED · ${esc((candidate.issues || []).map((issue) => issue.code).join(", ") || "无约束结果")}</td></tr>`;
     }).join("");
-    $("thresholds-content").innerHTML = `<table><thead><tr><th>候选</th><th>目标状态</th><th>目标最低成本比例</th><th>最大改善比例</th><th>警告</th></tr></thead><tbody>${candidateThresholds || '<tr><td colspan="5">暂无约束阈值。</td></tr>'}</tbody></table>`;
+    $("thresholds-content").innerHTML = `<table><thead><tr><th>候选</th><th>目标状态</th><th>预算边界</th><th>供应量边界</th><th>最大混合比例</th><th>目标最低成本比例</th><th>最大改善比例</th><th>警告</th></tr></thead><tbody>${candidateThresholds || '<tr><td colspan="8">暂无约束阈值。</td></tr>'}</tbody></table>`;
   }
 
   async function calculate(event) {
@@ -538,6 +697,10 @@
     loadFuels().catch(() => {});
     setupLookup("departure");
     setupLookup("arrival");
+    $("baseline-mode").addEventListener("change", syncBaselineCustomEditor);
+    $("baseline-custom-editor").addEventListener("change", syncBaselineCustomEditor);
+    $("baseline-custom-editor").addEventListener("input", syncBaselineCustomEditor);
+    syncBaselineCustomEditor();
     $("add-candidate").addEventListener("click", addCandidate);
     $("candidate-collection").addEventListener("click", (event) => {
       if (event.target.closest(".remove-candidate")) {

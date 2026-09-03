@@ -38,11 +38,43 @@
 
         <fieldset>
           <legend>基准燃料</legend>
-          <div class="field-grid four">
-            <label for="baseline-fuel">燃料路径 *<select id="baseline-fuel" name="baseline.pathId" required><option value="MDO">加载燃料目录…</option></select></label>
+          <div class="field-grid four baseline-fields">
+            <label for="baseline-mode">输入模式 *<select id="baseline-mode" data-field="baselineMode" required><option value="builtin">目录燃料</option><option value="custom">高级自定义</option></select></label>
+            <label for="baseline-fuel" id="baseline-fuel-label">燃料路径 *<select id="baseline-fuel" name="baseline.pathId" required><option value="MDO">加载燃料目录…</option></select></label>
             <label for="baseline-mass">质量 (t) *<input id="baseline-mass" name="baseline.massTonnes" type="number" min="0.000001" step="any" value="100" required></label>
             <label for="baseline-price">价格 / t<input id="baseline-price" name="baseline.pricePerTonne" type="number" min="0" step="any" value="700"></label>
             <label for="eua-price">EUA 价格 / tCO2e<input id="eua-price" name="euaPricePerTCO2e" type="number" min="0" step="any" value="80"></label>
+          </div>
+          <div id="baseline-custom-editor" class="custom-editor" hidden>
+            <div class="custom-grid">
+              <label>自定义燃料名称 *<input data-field="baselineCustomFuelName" autocomplete="off"></label>
+              <label>燃料用途<select data-field="baselineCustomProfile"><option value="ordinary">普通燃料</option><option value="biofuel">生物燃料</option><option value="rfnbo">RFNBO</option></select></label>
+              <label>燃料形态<select data-field="baselineCustomFuelType"><option value="non_methane">非甲烷路径</option><option value="gas">气体路径</option></select></label>
+              <label>WtT 数据方式<select data-field="baselineWtTMode"><option value="STATIC">直接输入 WtT</option><option value="CERTIFIED">认证 WtT</option><option value="BIO_E">生物燃料 E 公式</option><option value="RFNBO_E">RFNBO E - eu 公式</option></select></label>
+            </div>
+            <div class="custom-grid">
+              <label>LCV (MJ/gFuel) *<input data-field="baselineLcv" type="number" min="0" step="any"></label>
+              <label data-baseline-block="wtT">WtT (gCO2eq/MJ) *<input data-field="baselineWtT" type="number" step="any"></label>
+              <label data-baseline-block="E" hidden>E (gCO2eq/MJ)<input data-field="baselineE" type="number" step="any"></label>
+              <label data-baseline-block="eu" hidden>eu (gCO2eq/MJ)<input data-field="baselineEu" type="number" step="any"></label>
+            </div>
+            <div class="custom-grid">
+              <label>CO2 因子 (gGHG/gFuel) *<input data-field="baselineCfCO2" type="number" step="any"></label>
+              <div class="factor-input"><label>CH4 因子 (gGHG/gFuel) *</label><input data-field="baselineCfCH4" type="number" step="any" disabled value="0"><label class="inline-check"><input data-field="baselineCfCH4ZeroEstimate" type="checkbox" checked>按 0 估算</label></div>
+              <div class="factor-input"><label>N2O 因子 (gGHG/gFuel) *</label><input data-field="baselineCfN2O" type="number" step="any" disabled value="0"><label class="inline-check"><input data-field="baselineCfN2OZeroEstimate" type="checkbox" checked>按 0 估算</label></div>
+              <label class="baseline-qualification-field" hidden>资格状态<select data-field="baselineQualificationStatus"><option value="NOT_DEMONSTRATED">未证明</option><option value="ASSUMED_ELIGIBLE">假设合格</option><option value="VERIFIED_ELIGIBLE">已核验合格</option></select></label>
+            </div>
+            <div class="custom-grid">
+              <label>来源编号 *<input data-field="baselineSourceId" placeholder="例如 SUP-123"></label>
+              <label>来源类型<select data-field="baselineSourceType"><option value="SUPPLIER_SPEC">供应商规格</option><option value="LAB_CERTIFICATE">实验室/认证</option><option value="MASS_BALANCE_CERTIFICATE">质量平衡证书</option><option value="OTHER">其他</option></select></label>
+              <label>证据状态<select data-field="baselineVerificationStatus"><option value="ESTIMATED">估算</option><option value="VERIFIED">已核验</option><option value="ASSUMED">假设</option><option value="RC">认可计算</option></select></label>
+              <label data-baseline-block="eligibleBiomassFraction" hidden>生物质质量分数<input data-field="baselineEligibleBiomassFraction" type="number" min="0" max="1" step="any" value="0"></label>
+            </div>
+            <div class="baseline-gas-fields" hidden>
+              <div class="custom-grid"><label>甲烷滑移适用<select data-field="baselineMethaneSlipApplicable"><option value="false">不适用</option><option value="true">适用</option></select></label><label>Cslip (%)<input data-field="baselineCslip" type="number" min="0" max="100" step="any"></label><label>滑移 CO2 因子<input data-field="baselineCsfCO2" type="number" step="any"></label><label>滑移 CH4 因子<input data-field="baselineCsfCH4" type="number" step="any"></label><label>滑移 N2O 因子<input data-field="baselineCsfN2O" type="number" step="any"></label></div>
+            </div>
+            <p class="custom-warning" data-field="baseline-rfnbo-warning" hidden>RFNBO 资格未确认：页面会按普通 WtT 输入，不使用 RFNBO 奖励。</p>
+            <p class="custom-warning">缺少因子、单位或来源证据时，基准方案会显示为阻断状态。</p>
           </div>
         </fieldset>
 
@@ -67,10 +99,14 @@
       </div>
       <div id="overview-panel" class="tab-panel active" role="tabpanel">
         <div id="overview-metrics" class="metric-grid"><p class="empty-state">暂无结果。</p></div>
+        <div id="port-identity-details" class="result-section"><h3>港口范围与制度身份</h3><p class="empty-state">暂无港口结果。</p></div>
+        <div id="ets-fueleu-detail" class="result-section"><h3>基准排放与 FuelEU</h3><p class="empty-state">暂无排放结果。</p></div>
+        <div id="economics-summary" class="result-section"><h3>案例经济结果</h3><p class="empty-state">暂无案例经济结果。</p><div id="switch-points"></div></div>
         <div id="conditional-recommendations" class="recommendations"><h3>条件式建议</h3><p class="empty-state">暂无建议。</p></div>
       </div>
       <div id="scenarios-panel" class="tab-panel" role="tabpanel" hidden>
-        <div class="table-scroll"><table id="scenario-comparison-table"><caption>场景比较（数值保留原始精度，显示设置仅影响展示）</caption><thead><tr><th>场景</th><th>候选燃料</th><th>状态</th><th>混合比例</th><th>模型成本</th><th>FuelEU GHGI</th><th>合规余额 (t)</th><th>排序</th></tr></thead><tbody><tr><td colspan="8" class="empty-state">暂无场景。</td></tr></tbody></table></div>
+        <div class="table-scroll"><table id="scenario-comparison-table"><caption>场景比较（数值保留原始精度，显示设置仅影响展示）</caption><thead><tr><th>场景</th><th>候选燃料</th><th>状态</th><th>混合比例</th><th>模型成本</th><th>FuelEU GHGI</th><th>合规余额 (t)</th><th>排序</th><th>燃料质量 (t)</th><th>物理能源 (GJ)</th><th>燃料成本</th><th>EU ETS CO2</th><th>EU ETS CH4</th><th>EU ETS N2O</th><th>纳入气体</th><th>排除气体</th><th>EUAs</th><th>EUA 成本</th><th>FuelEU WtT</th><th>FuelEU TtW</th><th>目标</th><th>指示性罚款</th><th>相对 B0</th></tr></thead><tbody><tr><td colspan="23" class="empty-state">暂无场景。</td></tr></tbody></table></div>
+        <div id="scenario-detail-table" class="scenario-detail-table" aria-live="polite"></div>
       </div>
       <div id="thresholds-panel" class="tab-panel" role="tabpanel" hidden>
         <div id="thresholds-content" class="table-scroll"><p class="empty-state">暂无约束阈值。</p></div>

@@ -141,6 +141,74 @@ class BrowserAppMixin:
         self.assertEqual([scenario_id for _, scenario_id in expected], [scenario_id for _, scenario_id, _ in sorted(ranked)])
 
 class MVPFlowTests(BrowserAppMixin, unittest.TestCase):
+    def test_complete_result_contract_is_visible_across_result_panels(self):
+        context, page = self.new_page()
+        try:
+            self.fill_case(page, include_rfnbo=False)
+            self.calculate(page)
+            overview = page.locator("#overview-panel").inner_text()
+            self.assertIn("Shanghai Pt", overview)
+            self.assertIn("Rotterdam", overview)
+            self.assertIn("THIRD_COUNTRY", overview)
+            self.assertIn("IN_SCOPE", overview)
+            self.assertIn("EU ETS CO2", overview)
+            self.assertIn("FuelEU WtT", overview)
+            self.assertIn("相对 B0", overview)
+
+            page.get_by_role("tab", name="Scenarios").click()
+            scenarios = page.locator("#scenarios-panel").inner_text()
+            for label in ("燃料质量", "物理能源", "燃料成本", "EU ETS CH4", "EU ETS N2O", "纳入气体", "排除气体", "EUAs", "EUA 成本", "FuelEU TtW", "指示性罚款"):
+                self.assertIn(label, scenarios)
+
+            page.get_by_role("tab", name="Thresholds").click()
+            thresholds = page.locator("#thresholds-panel").inner_text()
+            for label in ("目标", "预算", "供应量", "最大混合比例", "最大改善比例"):
+                self.assertIn(label, thresholds)
+
+            page.get_by_role("tab", name="Evidence").click()
+            evidence = page.locator("#evidence-panel").inner_text()
+            for label in ("设备", "因子模式", "因子状态", "资格", "来源 ID", "ETS effective rate"):
+                self.assertIn(label, evidence)
+            self.assertIn("EXECUTION_CONDITIONS_PENDING", overview)
+        finally:
+            context.close()
+
+    def test_baseline_advanced_custom_mode_submits_minimal_factor_payload(self):
+        context, page = self.new_page()
+        try:
+            self.choose_port(page, "#departure-port-search", "CNSHG")
+            self.choose_port(page, "#arrival-port-search", "NLRTM")
+            page.locator("#case-currency").select_option("EUR")
+            page.locator("#baseline-mode").select_option("custom")
+            editor = page.locator("#baseline-custom-editor")
+            self.assertTrue(editor.is_visible())
+            editor.locator('[data-field="baselineCustomFuelName"]').fill("Baseline Custom Fuel")
+            editor.locator('[data-field="baselineLcv"]').fill("0.04")
+            editor.locator('[data-field="baselineWtT"]').fill("10")
+            editor.locator('[data-field="baselineCfCO2"]').fill("3")
+            editor.locator('[data-field="baselineCfCH4ZeroEstimate"]').check()
+            editor.locator('[data-field="baselineCfN2OZeroEstimate"]').check()
+            editor.locator('[data-field="baselineSourceId"]').fill("BASE-SUP-1")
+            page.locator("#baseline-mass").fill("100")
+            page.locator("#baseline-price").fill("700")
+            page.locator("#eua-price").fill("80")
+            self.fill_candidate(page, 0, candidate_id="uco", path_id="UCO_FAME", price="1000", ratio="0.2")
+            with page.expect_response(lambda response: response.url.endswith("/api/calculate") and response.request.method == "POST") as response_info:
+                page.locator("#calculate-command").click()
+            response = response_info.value
+            self.assertEqual(response.status, 200)
+            request_payload = json.loads(response.request.post_data)
+            baseline = request_payload["baseline"]
+            self.assertTrue(baseline["custom"])
+            self.assertTrue(baseline["pathId"].startswith("CUSTOM_BASELINE"))
+            self.assertEqual(baseline["equipmentId"], "CUSTOM_NON_METHANE")
+            self.assertEqual(baseline["cslip"], "NA")
+            self.assertEqual(baseline["cfCH4"], "0")
+            self.assertEqual(baseline["cfN2O"], "0")
+            self.assertEqual(baseline["sourceEvidence"]["lcv"][0]["sourceId"], "BASE-SUP-1")
+        finally:
+            context.close()
+
     def test_custom_fuel_form_builds_minimal_backend_factor_payload(self):
         context, page = self.new_page()
         try:

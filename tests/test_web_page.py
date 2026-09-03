@@ -83,6 +83,36 @@ class WebPageContractTests(unittest.TestCase):
         self.assertIn("RFNBO 资格未确认", html + source)
         self.assertIn("certified-warning", source)
 
+    def test_page_declares_complete_result_contract_and_decimal_string_formatter(self):
+        html = self.client.get("/").text
+        source = self.client.get("/static/app.js").text
+        for element_id in (
+            "port-identity-details", "scenario-detail-table", "ets-fueleu-detail",
+            "economics-summary", "switch-points", "baseline-mode", "baseline-custom-editor",
+        ):
+            self.assertRegex(html, rf'id=[\"\']{re.escape(element_id)}[\"\']')
+        for field in (
+            "formatDecimalString", "formatField", "physical_energy_mj", "fuel_cost",
+            "raw_co2_t", "raw_ch4_t", "raw_n2o_t", "included_gases",
+            "excluded_from_ets_surrender", "wt_t_intensity_g_per_mj", "tt_w_intensity_g_per_mj",
+            "target_g_per_mj", "indicative_penalty_eur", "compliance_improvement_tco2e",
+            "equipment_id", "source_evidence", "EXECUTION_CONDITIONS_PENDING",
+        ):
+            self.assertIn(field, source)
+
+    def test_baseline_advanced_editor_exposes_same_custom_factor_contract(self):
+        html = self.client.get("/").text
+        source = self.client.get("/static/app.js").text
+        for field in (
+            'data-field="baselineMode"', 'data-field="baselineCustomFuelName"',
+            'data-field="baselineLcv"', 'data-field="baselineWtT"',
+            'data-field="baselineCfCO2"', 'data-field="baselineCfCH4"',
+            'data-field="baselineCfN2O"', 'data-field="baselineSourceId"',
+            'data-field="baselineSourceType"', 'data-field="baselineVerificationStatus"',
+        ):
+            self.assertIn(field, html + source)
+        self.assertIn("baselineCustom", source)
+
 
 if __name__ == "__main__":
     unittest.main()
