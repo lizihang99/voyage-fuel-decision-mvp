@@ -24,8 +24,8 @@ class DisplayPrecisionTests(BrowserAppMixin, unittest.TestCase):
             rows_after = self.scenario_rows(page)
             self.assertNotEqual(before, after)
             self.assertEqual(
-                [(row[0], row[7]) for row in rows_before],
-                [(row[0], row[7]) for row in rows_after],
+                [(row[0], row[10]) for row in rows_before],
+                [(row[0], row[10]) for row in rows_after],
             )
             self.assert_cost_ranking(page, raw)
             self.assertEqual([row["scenario_id"] for row in raw["scenarios"][:3]], ["B0", "uco-quote-1@0.2", "uco-quote-1@0.3"])

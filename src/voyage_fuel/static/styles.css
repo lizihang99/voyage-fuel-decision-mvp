@@ -20,4 +20,16 @@ label { display: flex; flex-direction: column; gap: 5px; color: var(--muted); fo
 .result-section { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 14px; }
 .detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .scenario-detail-table { margin-top: 12px; color: var(--muted); font-size: 12px; }
+.decision-list { display: grid; gap: 12px; }
+.decision-item { border: 1px solid var(--line); padding: 12px; background: #fbfcfc; }
+.decision-item > strong, .decision-item > span, .decision-item > small { display: block; }
+.decision-item > span { margin-top: 3px; color: var(--muted); }
+.decision-item > small { margin-top: 10px; color: var(--muted); }
+.decision-item.unavailable { color: var(--muted); }
+.decision-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+.decision-metrics dl { margin: 0; padding-top: 8px; border-top: 1px solid var(--line); }
+.decision-metrics dt { color: var(--muted); font-size: 12px; }
+.decision-metrics dd { margin: 3px 0 0; font-variant-numeric: tabular-nums; }
 @media (max-width: 620px) { .detail-grid { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .decision-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .decision-metrics { grid-template-columns: 1fr 1fr; } }

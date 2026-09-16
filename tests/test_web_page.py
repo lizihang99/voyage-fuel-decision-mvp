@@ -20,7 +20,8 @@ class WebPageContractTests(unittest.TestCase):
             "adjacent-port-confirmation", "case-currency", "baseline-fuel",
             "baseline-mass", "baseline-price", "eua-price", "candidate-collection",
             "add-candidate", "calculate-command", "result-boundary-summary",
-            "scenario-comparison-table", "conditional-recommendations",
+            "scenario-comparison-table", "new-energy-decision-summary",
+            "conditional-recommendations",
             "calculation-basis", "display-precision", "export-csv", "export-pdf",
         ):
             self.assertRegex(html, rf'id=["\']{re.escape(element_id)}["\']')
@@ -98,6 +99,17 @@ class WebPageContractTests(unittest.TestCase):
             "target_g_per_mj", "indicative_penalty_eur", "compliance_improvement_tco2e",
             "equipment_id", "source_evidence", "EXECUTION_CONDITIONS_PENDING",
         ):
+            self.assertIn(field, source)
+
+    def test_new_energy_decision_summary_contract_is_present(self):
+        html = self.client.get("/").text
+        source = self.client.get("/static/app.js").text
+        for label in (
+            "新能源决策摘要", "新增燃料成本", "EU ETS 成本节省",
+            "净成本变化", "推荐新能源用量", "推荐混兑比例",
+        ):
+            self.assertIn(label, html + source)
+        for field in ("decision_summary", "scenario_deltas", "function renderNewEnergyDecisionSummary"):
             self.assertIn(field, source)
 
     def test_page_evidence_panel_exposes_field_metadata_and_values(self):

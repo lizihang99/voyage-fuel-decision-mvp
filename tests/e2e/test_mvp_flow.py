@@ -131,7 +131,7 @@ class BrowserAppMixin:
 
     def assert_cost_ranking(self, page, raw_result):
         rows = self.scenario_rows(page)
-        ranked = [(int(row[7]), row[0], float(row[4].replace(",", ""))) for row in rows if row[7].isdigit()]
+        ranked = [(int(row[10]), row[0], float(row[4].replace(",", ""))) for row in rows if row[10].isdigit()]
         self.assertGreaterEqual(len(ranked), 3)
         self.assertEqual([rank for rank, _, _ in sorted(ranked)], list(range(1, len(ranked) + 1)))
         expected = sorted(
@@ -154,6 +154,8 @@ class MVPFlowTests(BrowserAppMixin, unittest.TestCase):
             self.assertIn("EU ETS CO2", overview)
             self.assertIn("FuelEU WtT", overview)
             self.assertIn("相对 B0", overview)
+            for label in ("新能源决策摘要", "新增燃料成本", "EU ETS 成本节省", "净成本变化", "推荐新能源用量", "推荐混兑比例"):
+                self.assertIn(label, overview)
 
             page.get_by_role("tab", name="Scenarios").click()
             scenarios = page.locator("#scenarios-panel").inner_text()
@@ -504,8 +506,8 @@ class MVPFlowTests(BrowserAppMixin, unittest.TestCase):
             page.wait_for_timeout(100)
             scenario_rows_after_precision = self.scenario_rows(page)
             self.assertEqual(
-                [(row[0], row[7]) for row in scenario_rows_before_precision],
-                [(row[0], row[7]) for row in scenario_rows_after_precision],
+                [(row[0], row[10]) for row in scenario_rows_before_precision],
+                [(row[0], row[10]) for row in scenario_rows_after_precision],
             )
             self.assert_cost_ranking(page, raw_before)
             api_after = page.request.post(self.base_url + "/api/calculate", data=page.evaluate("""() => ({
