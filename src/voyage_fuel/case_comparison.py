@@ -13,6 +13,7 @@ from .contracts import (
     CaseValueSwitchPoint,
     CandidateResult,
     ConditionalRecommendation,
+    DecisionSummary,
     MetricDelta,
 )
 from .models import ScenarioResult
@@ -220,6 +221,37 @@ def build_case_economics(
         target_min_cost_scenario_id=target_min.scenario_id if target_min else None,
         max_improvement_scenario_id=max_improvement.scenario_id if max_improvement else None,
         switch_points=calculate_case_value_switch_points(scenarios, exact_coefficients),
+    )
+
+
+def build_decision_summary(
+    scenarios: tuple[CaseScenario, ...],
+    economics: CaseEconomicsResult | None,
+) -> DecisionSummary | None:
+    """Project business metrics from already-calculated case results."""
+    if not scenarios or economics is None:
+        return None
+    business_metrics = (
+        "fuel_cost",
+        "eua_cost",
+        "model_cost",
+        "fueleu_ghgi_actual_g_per_mj",
+        "fueleu_compliance_balance_t",
+        "fueleu_indicative_penalty_eur",
+    )
+    return DecisionSummary(
+        baseline_scenario_id="B0",
+        cost_min_scenario_id=economics.cost_min_scenario_id,
+        target_min_cost_scenario_id=economics.target_min_cost_scenario_id,
+        max_improvement_scenario_id=economics.max_improvement_scenario_id,
+        scenario_deltas={
+            scenario.scenario_id: {
+                metric: scenario.deltas[metric]
+                for metric in business_metrics
+                if metric in scenario.deltas
+            }
+            for scenario in scenarios
+        },
     )
 
 

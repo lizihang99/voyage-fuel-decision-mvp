@@ -1,3 +1,4 @@
+import io
 import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -136,6 +137,24 @@ class WebApiTests(unittest.TestCase):
         self.assertIn("attachment", response.headers.get("content-disposition", ""))
         self.assertTrue(response.content.startswith(b"%PDF"))
         self.assertGreater(len(response.content), 1000)
+
+    def test_export_pdf_preserves_unknown_port_error_without_a_baseline(self):
+        from pypdf import PdfReader
+        payload = minimum_payload()
+        payload["departurePort"] = "ZZZZZ"
+        with TestClient(app, raise_server_exceptions=False) as client:
+            response = client.post("/api/export/pdf", json=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["content-type"], "application/pdf")
+        text = "\n".join(page.extract_text() or "" for page in PdfReader(
+            io.BytesIO(response.content)
+        ).pages)
+        self.assertIn("PORT_NOT_FOUND", text)
+        self.assertIn("ZZZZZ", text)
+        summary = text.split("New energy decision summary", 1)[1].split(
+            "Scenario comparison (fuel mass and energy)", 1
+        )[0]
+        self.assertNotIn("BASELINE", summary)
 
     def test_export_endpoints_preserve_structured_case_errors(self):
         payload = minimum_payload()

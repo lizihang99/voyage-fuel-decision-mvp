@@ -61,6 +61,13 @@
   }
   const number = (value, places) => formatDecimalString(value, places);
   const percent = (value) => formatField(value, "ratio");
+  function negateDecimalString(value) {
+    if (value === null || value === undefined || value === "") return null;
+    const raw = String(value).trim();
+    if (raw.startsWith("-")) return raw.slice(1);
+    if (raw.startsWith("+")) return `-${raw.slice(1)}`;
+    return `-${raw}`;
+  }
   const esc = (value) => String(value ?? "").replace(/[&<>\"]/g, (char) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;",
   }[char]));
@@ -581,12 +588,60 @@
     $("overview-metrics").innerHTML = "<p class=\"empty-state\">没有可呈现的基准结果。</p>";
     $("port-identity-details").innerHTML = "<h3>港口范围与制度身份</h3><p class=\"empty-state\">暂无港口结果。</p>";
     $("ets-fueleu-detail").innerHTML = "<h3>基准排放与 FuelEU</h3><p class=\"empty-state\">暂无排放结果。</p>";
+    $("new-energy-decision-summary").innerHTML = "<h3>新能源决策摘要</h3><p class=\"empty-state\">暂无新能源决策结果。</p>";
     $("economics-summary").innerHTML = "<h3>案例经济结果</h3><p class=\"empty-state\">暂无案例经济结果。</p>";
     $("conditional-recommendations").innerHTML = "<h3>条件式建议</h3><p class=\"empty-state\">暂无建议。</p>";
-    $("scenario-comparison-table").querySelector("tbody").innerHTML = '<tr><td colspan="23" class="empty-state">暂无场景。</td></tr>';
+    $("scenario-comparison-table").querySelector("tbody").innerHTML = '<tr><td colspan="26" class="empty-state">暂无场景。</td></tr>';
     $("scenario-detail-table").innerHTML = "";
     $("thresholds-content").innerHTML = '<p class="empty-state">暂无约束阈值。</p>';
     $("calculation-basis").innerHTML = '<p class="empty-state">暂无计算依据。</p>';
+  }
+  function scenarioMap(result) {
+    return new Map((result.scenarios || []).map((row) => [row.scenario_id, row]));
+  }
+  function deltaValue(row, metric) {
+    return row?.deltas?.[metric]?.delta ?? null;
+  }
+  function renderNewEnergyDecisionSummary(result) {
+    const summary = result.decision_summary;
+    if (!summary) {
+      $("new-energy-decision-summary").innerHTML = "<h3>新能源决策摘要</h3><p class=\"empty-state\">暂无新能源决策结果。</p>";
+      return;
+    }
+    const scenarioDeltas = summary.scenario_deltas || {};
+    const rows = scenarioMap(result);
+    const recommendations = [
+      ["当前模型最低成本", summary.cost_min_scenario_id, "CURRENT_MODEL_COST_MIN"],
+      ["FuelEU 目标下最低成本", summary.target_min_cost_scenario_id, "TARGET_MIN_COST"],
+      ["最大合规改善", summary.max_improvement_scenario_id, "MAX_COMPLIANCE_IMPROVEMENT"],
+    ];
+    const recommendationByScenario = new Map((result.recommendations || []).filter((item) => item.scenario_id).map((item) => [item.scenario_id, item]));
+    const blocks = recommendations.map(([label, scenarioId, type]) => {
+      const row = scenarioId ? rows.get(scenarioId) : null;
+      const recommendation = scenarioId ? recommendationByScenario.get(scenarioId) : (result.recommendations || []).find((item) => item.recommendation_id === type || item.recommendation_id.startsWith(`${type}:`));
+      if (!row) {
+        return `<div class="decision-item unavailable"><strong>${label}</strong><span>暂无可用方案 · ${esc(recommendation?.reason || "后端未提供可用场景")}</span><small>假设: ${esc((recommendation?.assumptions || []).join(", ") || "-")}</small></div>`;
+      }
+      const scenario = row.result || {};
+      const deltas = scenarioDeltas[row.scenario_id] || row.deltas || {};
+      const fuelCostDelta = deltas.fuel_cost?.delta ?? deltaValue(row, "fuel_cost");
+      const euaCostDelta = deltas.eua_cost?.delta ?? deltaValue(row, "eua_cost");
+      const modelCostDelta = deltas.model_cost?.delta ?? deltaValue(row, "model_cost");
+      return `<div class="decision-item">
+        <strong>${label}</strong><span>场景 ${esc(row.scenario_id)} · ${esc(row.candidate_id || "基准")}</span>
+        <div class="decision-metrics">
+          <dl><dt>推荐新能源用量</dt><dd>${formatField(scenario.candidate_mass_tonnes, "mass")}</dd></dl>
+          <dl><dt>推荐混兑比例</dt><dd>${percent(scenario.ratio)}</dd></dl>
+          <dl><dt>新增燃料成本</dt><dd>${number(fuelCostDelta, state.display.price)}</dd></dl>
+          <dl><dt>EU ETS 成本节省</dt><dd>${number(negateDecimalString(euaCostDelta), state.display.price)}</dd></dl>
+          <dl><dt>净成本变化</dt><dd>${number(modelCostDelta, state.display.price)}</dd></dl>
+          <dl><dt>FuelEU GHGI 变化</dt><dd>${formatField(deltas.fueleu_ghgi_actual_g_per_mj?.delta ?? deltaValue(row, "fueleu_ghgi_actual_g_per_mj"), "intensity")}</dd></dl>
+          <dl><dt>FuelEU 余额变化</dt><dd>${formatField(deltas.fueleu_compliance_balance_t?.delta ?? deltaValue(row, "fueleu_compliance_balance_t"), "gas")}</dd></dl>
+        </div>
+        <small>执行状态: EXECUTION_CONDITIONS_PENDING</small>
+      </div>`;
+    }).join("");
+    $("new-energy-decision-summary").innerHTML = `<h3>新能源决策摘要</h3><p class="boundary-note">以下结果复用现有场景计算，FuelEU 金额为航次级指示性估算，不构成年度罚款或采购结论。</p><div class="decision-list">${blocks}</div>`;
   }
   function factorEvidenceValue(factor, trace, fieldName) {
     const values = {
@@ -637,6 +692,7 @@
     $("ets-fueleu-detail").innerHTML = `<h3>基准排放与 FuelEU</h3><div class="detail-grid"><dl class="evidence-item"><dt>EU ETS 气体</dt><dd>CO2 ${formatField(gases.CO2, "gas")} · CH4 ${formatField(gases.CH4, "gas")} · N2O ${formatField(gases.N2O, "gas")}</dd></dl><dl class="evidence-item"><dt>纳入 / 排除气体</dt><dd>${esc((ets.included_gases || []).join(", "))} / ${esc(excluded)}</dd></dl><dl class="evidence-item"><dt>EUAs / EUA 成本</dt><dd>${formatField(ets.euas_required, "gas")} / ${number(ets.eua_cost, state.display.price)}</dd></dl><dl class="evidence-item"><dt>FuelEU WtT / TtW / GHGI</dt><dd>WtT ${formatField(fuelEu.wt_t_intensity_g_per_mj, "intensity")} · TtW ${formatField(fuelEu.tt_w_intensity_g_per_mj, "intensity")} · GHGI ${formatField(fuelEu.ghgi_actual_g_per_mj, "intensity")} · 目标 ${formatField(fuelEu.target_g_per_mj, "intensity")} · 余额 ${formatField(fuelEu.compliance_balance_t, "gas")} · 指示性罚款 ${number(fuelEu.indicative_penalty_eur, state.display.price)}</dd></dl></div>`;
     const economics = result.economics || {};
     $("economics-summary").innerHTML = `<h3>案例经济结果</h3><div class="detail-grid"><dl class="evidence-item"><dt>当前模型成本最低</dt><dd>${esc(economics.cost_min_scenario_id)}</dd></dl><dl class="evidence-item"><dt>目标最低成本</dt><dd>${esc(economics.target_min_cost_scenario_id)}</dd></dl><dl class="evidence-item"><dt>最大合规改善</dt><dd>${esc(economics.max_improvement_scenario_id)}</dd></dl><dl class="evidence-item"><dt>比较状态</dt><dd>${esc(economics.comparison_status)}</dd></dl></div><p>相对 B0 的合规改善和成本变化见场景表。</p><div id="switch-points">${(economics.switch_points || []).map((point) => `<p>切换 ${esc(point.from_scenario_id)} → ${esc(point.to_scenario_id)} · value* ${number(point.value_star, state.display.price)}</p>`).join("") || "<p>暂无切换点。</p>"}</div>`;
+    renderNewEnergyDecisionSummary(result);
     const rows = result.scenarios || [];
     $("scenario-comparison-table").querySelector("tbody").innerHTML = rows.map((row) => {
       const scenario = row.result || {};
@@ -644,8 +700,8 @@
       const scenarioEts = scenario.eu_ets || {};
       const scenarioGases = scenarioEts.mrv_raw_by_gas || {};
       const scenarioExcluded = Object.entries(scenario.eu_ets?.excluded_from_ets_surrender || {}).filter(([, value]) => value).map(([gasName]) => gasName).join(", ") || "-";
-      return `<tr><td>${esc(row.scenario_id)}</td><td>${esc(row.candidate_id || "基准")}</td><td>${esc(row.calculation_status || "")} / ${esc(scenario.execution_status || "")}</td><td class="numeric">${percent(scenario.ratio)}</td><td class="numeric">${number(scenario.model_cost, state.display.price)}</td><td class="numeric">${formatField(fuelEuResult.ghgi_actual_g_per_mj, "intensity")}</td><td class="numeric">${formatField(fuelEuResult.compliance_balance_t, "gas")}</td><td class="numeric">${text(row.current_model_cost_rank)}</td><td class="numeric">B0 ${formatField(scenario.baseline_mass_tonnes, "mass")} + 候选 ${formatField(scenario.candidate_mass_tonnes, "mass")}</td><td class="numeric">${formatField(scenario.physical_energy_mj, "energy")}</td><td class="numeric">${number(scenario.fuel_cost, state.display.price)}</td><td class="numeric">${formatField(scenarioGases.CO2 || scenarioEts.raw_co2_t, "gas")}</td><td class="numeric">${formatField(scenarioGases.CH4 || scenarioEts.raw_ch4_t, "gas")}</td><td class="numeric">${formatField(scenarioGases.N2O || scenarioEts.raw_n2o_t, "gas")}</td><td>${esc((scenarioEts.included_gases || []).join(", "))}</td><td>${esc(scenarioExcluded)}</td><td class="numeric">${formatField(scenarioEts.euas_required, "gas")}</td><td class="numeric">${number(scenarioEts.eua_cost, state.display.price)}</td><td class="numeric">${formatField(fuelEuResult.wt_t_intensity_g_per_mj, "intensity")}</td><td class="numeric">${formatField(fuelEuResult.tt_w_intensity_g_per_mj, "intensity")}</td><td class="numeric">${formatField(fuelEuResult.target_g_per_mj, "intensity")}</td><td class="numeric">${number(fuelEuResult.indicative_penalty_eur, state.display.price)}</td><td class="numeric">${formatField(scenario.compliance_improvement_tco2e, "gas")}</td></tr>`;
-    }).join("") || '<tr><td colspan="23" class="empty-state">暂无场景。</td></tr>';
+      return `<tr><td>${esc(row.scenario_id)}</td><td>${esc(row.candidate_id || "基准")}</td><td>${esc(row.calculation_status || "")} / ${esc(scenario.execution_status || "")}</td><td class="numeric">${percent(scenario.ratio)}</td><td class="numeric">${number(scenario.model_cost, state.display.price)}</td><td class="numeric">${number(deltaValue(row, "fuel_cost"), state.display.price)}</td><td class="numeric">${number(negateDecimalString(deltaValue(row, "eua_cost")), state.display.price)}</td><td class="numeric">${number(deltaValue(row, "model_cost"), state.display.price)}</td><td class="numeric">${formatField(fuelEuResult.ghgi_actual_g_per_mj, "intensity")}</td><td class="numeric">${formatField(fuelEuResult.compliance_balance_t, "gas")}</td><td class="numeric">${text(row.current_model_cost_rank)}</td><td class="numeric">B0 ${formatField(scenario.baseline_mass_tonnes, "mass")} + 候选 ${formatField(scenario.candidate_mass_tonnes, "mass")}</td><td class="numeric">${formatField(scenario.physical_energy_mj, "energy")}</td><td class="numeric">${number(scenario.fuel_cost, state.display.price)}</td><td class="numeric">${formatField(scenarioGases.CO2 || scenarioEts.raw_co2_t, "gas")}</td><td class="numeric">${formatField(scenarioGases.CH4 || scenarioEts.raw_ch4_t, "gas")}</td><td class="numeric">${formatField(scenarioGases.N2O || scenarioEts.raw_n2o_t, "gas")}</td><td>${esc((scenarioEts.included_gases || []).join(", "))}</td><td>${esc(scenarioExcluded)}</td><td class="numeric">${formatField(scenarioEts.euas_required, "gas")}</td><td class="numeric">${number(scenarioEts.eua_cost, state.display.price)}</td><td class="numeric">${formatField(fuelEuResult.wt_t_intensity_g_per_mj, "intensity")}</td><td class="numeric">${formatField(fuelEuResult.tt_w_intensity_g_per_mj, "intensity")}</td><td class="numeric">${formatField(fuelEuResult.target_g_per_mj, "intensity")}</td><td class="numeric">${number(fuelEuResult.indicative_penalty_eur, state.display.price)}</td><td class="numeric">${formatField(scenario.compliance_improvement_tco2e, "gas")}</td></tr>`;
+    }).join("") || '<tr><td colspan="26" class="empty-state">暂无场景。</td></tr>';
     $("scenario-detail-table").innerHTML = "<p>执行状态：EXECUTION_CONDITIONS_PENDING。相对 B0 合规改善以 tCO2e 表示。</p>";
     $("conditional-recommendations").innerHTML = `<h3>条件式建议</h3>${(result.recommendations || []).map((rec) => `<div class="recommendation ${rec.status === "UNAVAILABLE" ? "unavailable" : ""}"><strong>${esc(rec.status)}</strong><span>${esc(rec.condition)} · ${esc(rec.reason)}${rec.scenario_id ? ` · 场景 ${esc(rec.scenario_id)}` : ""}</span><small>假设: ${esc((rec.assumptions || []).join(", "))}</small></div>`).join("") || '<p class="empty-state">暂无建议。</p>'}`;
     const provenance = result.provenance || {};

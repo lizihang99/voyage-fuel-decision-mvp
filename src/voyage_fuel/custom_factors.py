@@ -29,6 +29,13 @@ def _decimal(payload: Mapping[str, Any], name: str, *, allow_na: bool = False) -
         raise _blocked(f"invalid decimal field {name}") from exc
 
 
+def _emission_factor(payload: Mapping[str, Any], name: str, *, allow_na: bool = False) -> Decimal | None:
+    value = _decimal(payload, name, allow_na=allow_na)
+    if value is not None and (not value.is_finite() or value < ZERO):
+        raise ValueError(f"INVALID_EMISSION_FACTOR: {name} must be finite and non-negative")
+    return value
+
+
 def _evidence_records(payload: Mapping[str, Any], required: tuple[str, ...]) -> tuple[tuple[EvidenceRecord, ...], bool]:
     raw = payload.get("sourceEvidence")
     if not isinstance(raw, Mapping):
@@ -103,9 +110,9 @@ def resolve_custom_factor(payload: Mapping[str, Any], report_year: int | None = 
     lcv = _decimal(payload, "lcv")
     if lcv <= ZERO:
         raise _blocked("lcv must be positive")
-    cf_co2 = _decimal(payload, "cfCO2", allow_na=True)
-    cf_ch4 = _decimal(payload, "cfCH4", allow_na=True)
-    cf_n2o = _decimal(payload, "cfN2O", allow_na=True)
+    cf_co2 = _emission_factor(payload, "cfCO2", allow_na=True)
+    cf_ch4 = _emission_factor(payload, "cfCH4", allow_na=True)
+    cf_n2o = _emission_factor(payload, "cfN2O", allow_na=True)
     cslip = _decimal(payload, "cslip", allow_na=True)
     if cslip is not None and not ZERO <= cslip <= Decimal("100"):
         raise ValueError(f"INVALID_CSLIP: {path_id}")
@@ -149,9 +156,9 @@ def resolve_custom_factor(payload: Mapping[str, Any], report_year: int | None = 
         raise _blocked("WtT formula did not produce a value")
 
     if cslip is not None and cslip > ZERO:
-        csf_co2 = _decimal(payload, "csfCO2")
-        csf_ch4 = _decimal(payload, "csfCH4")
-        csf_n2o = _decimal(payload, "csfN2O")
+        csf_co2 = _emission_factor(payload, "csfCO2")
+        csf_ch4 = _emission_factor(payload, "csfCH4")
+        csf_n2o = _emission_factor(payload, "csfN2O")
         required.extend(("csfCO2", "csfCH4", "csfN2O"))
     else:
         csf_co2 = csf_ch4 = csf_n2o = ZERO

@@ -1,0 +1,147 @@
+{
+  "timestamp_utc": "2026-09-16T08:10:52.994153+00:00",
+  "head": "d1f10155906f3bb85281a8905da1a99b18c30d43",
+  "working_tree": [
+    " M docs/superpowers/plans/2026-09-16-new-energy-decision-layer.md",
+    " M src/voyage_fuel/custom_factors.py",
+    " M src/voyage_fuel/reports.py",
+    " M src/voyage_fuel/static/app.js",
+    " M tests/e2e/test_mvp_flow.py",
+    " M tests/test_case_reports.py",
+    " M tests/test_custom_factors.py",
+    " M tests/test_web_api.py",
+    "?? docs/validation/new-energy-cross-validation-results.json",
+    "?? docs/validation/new-energy-cross-validation.md",
+    "?? tools/validation/new_energy_matrix.py",
+    "?? tools/validation/new_energy_reference.py",
+    "?? tools/validation/run_new_energy_cross_validation.py",
+    "?? tools/validation/test_new_energy_cross_validation.py",
+    "?? tools/validation/test_new_energy_matrix.py",
+    "?? tools/validation/test_new_energy_surfaces.py"
+  ],
+  "python": "3.12.14",
+  "packages": {
+    "scipy": "1.16.2",
+    "numpy": "2.3.3",
+    "pypdf": "6.17.0",
+    "playwright": "1.63.0"
+  },
+  "passed": true,
+  "tests_run": 27,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "coverage": {
+    "single_candidate_synthetic_cases": 319,
+    "expanded_single_candidate_categories": {
+      "price_reversal": 7,
+      "carbon_price_reversal": 6,
+      "energy_density": 25,
+      "voyage_scale": 6,
+      "blend_endpoints": 7,
+      "target_boundary": 15,
+      "simultaneous_constraints": 8,
+      "zero_constraint": 6,
+      "year_scope": 21,
+      "methane_year": 15,
+      "reward_denominator": 8,
+      "target_topology": 9,
+      "missing_prices": 6,
+      "seeded_combinations": 120
+    },
+    "fixed_seed_multi_candidate_portfolios": 50,
+    "expanded_portfolio_sizes": [
+      2,
+      3,
+      5,
+      8
+    ],
+    "expanded_portfolios_checked_in_reverse_order": 40,
+    "relationship_checks": {
+      "voyage_scales": 4,
+      "price_scales": 3,
+      "constraint_relaxation_steps": 10
+    },
+    "api_boundary_inputs": {
+      "invalid_candidate": 10,
+      "invalid_case": 6,
+      "missing_prices": 3
+    },
+    "hand_multi_candidate_orderings": 3,
+    "builtin_snapshot_cases": 1,
+    "hand_surface_cases": 6,
+    "surface_viewport_widths": [
+      1440,
+      390
+    ],
+    "mutated_outputs_detected": [
+      "wrong_winner",
+      "wrong_quantity",
+      "wrong_cost",
+      "wrong_savings_sign",
+      "negative_ratio_tie",
+      "wrong_missing_price_reason",
+      "wrong_not_applicable_reason"
+    ]
+  },
+  "tolerances": {
+    "exact_absolute": "1e-20",
+    "highs_objective_absolute": "1e-5",
+    "highs_excludes_exact_only_boundaries": [
+      "C-LP-17",
+      "C-LP-18"
+    ],
+    "expanded_highs_categories": [
+      "price_reversal",
+      "carbon_price_reversal",
+      "energy_density",
+      "simultaneous_constraints",
+      "year_scope",
+      "target_topology"
+    ],
+    "surface_hand_values": "literal displayed values; CSV exact decimal"
+  },
+  "limitations": [
+    "Synthetic arithmetic fixtures; not real-voyage acceptance or a factor/legal audit.",
+    "Exact vertices and HiGHS share reference coefficients, calibrated with separate hand literals.",
+    "Mutation checks corrupt returned result objects; they do not rewrite the production algorithms.",
+    "Surface checks cover six hand cases, not every synthetic input or every catalogue fuel.",
+    "No annual FuelEU settlement, biomass qualification, RFNBO qualification or port classification audit."
+  ],
+  "sha256": {
+    "src/voyage_fuel/__init__.py": "262f26bbbe1502dfd814419310a0cb9065ec4b88d6af2a7e8a52c7862754987f",
+    "src/voyage_fuel/calculator.py": "b20fb19461b32384a1ea95c16f519a1f7fce35673092caf4308d7f7f4be8c473",
+    "src/voyage_fuel/case_calculator.py": "40e1f595675b33177b2319b79e1262fd70bc34390903deec07d603ead3d29299",
+    "src/voyage_fuel/case_comparison.py": "7c2856ca4e52241b8e9f32d5256dc534301c3b2bcaa89dda81b4149510444128",
+    "src/voyage_fuel/constraints.py": "114c05478ed494a61c14c427cc969ec07c1ae6de003c71483105a6082d39f880",
+    "src/voyage_fuel/contracts.py": "c5289313ec65b2d6f18ce559497f1e002ea1e50a47de8041e709bd93fffe725c",
+    "src/voyage_fuel/custom_factors.py": "ab9e1ceb07a8c2bd87e96b3ffe6a2e345544581f4422c6d865dcd641bcd8eaea",
+    "src/voyage_fuel/economics.py": "00c5528890971bc749755dd561890e2f651ae988162ec6367e12c2a67b10d9e7",
+    "src/voyage_fuel/emissions.py": "bc5d0c7e8081575a2695e518228695f693232a27e000f8703fb558ddc7a66f90",
+    "src/voyage_fuel/energy.py": "90f055a350a8eba9c7484062c11436a4158ebb389b188219b2533e1d2dd841d8",
+    "src/voyage_fuel/factors.py": "7b28987ee0d57e5344be9f6158c04e7e838d09b8e3e4b1cde20cd4cefc469d4d",
+    "src/voyage_fuel/formatting.py": "b936a88a1787999d6c23c7f143a1c2fb6c1cb84ce265014c5731921662ee8e26",
+    "src/voyage_fuel/issues.py": "061d8c73158f01c5f780909a0f095f58ab58d56261a55fac2bce0e7405596471",
+    "src/voyage_fuel/json_io.py": "081fc1dc114823c554ad46e97f20ee13236c908c69a592c2c2b6351066c1a1f6",
+    "src/voyage_fuel/models.py": "eac0e9161f8937e0df267cba87877bd69dce97224486a7353de7b03bb183c2ed",
+    "src/voyage_fuel/numerics.py": "1bb2ef97941eb802c953de4012ef3b7996eec1d4252348f4305bd4428eeb81c4",
+    "src/voyage_fuel/ports.py": "9aec756b1342e03c246f1cb21568723b750387780dccbae72f67bf801e30c474",
+    "src/voyage_fuel/provenance.py": "35f27da819d5eb987a834f0e0b2e8533d40c821490eb61f400f261409ed2f7ae",
+    "src/voyage_fuel/reports.py": "99515578f114a0cc9a823b2136a66851459f3e1537a76713dd1eca839984a0af",
+    "src/voyage_fuel/web.py": "38adbe8df105424cbaf6078ea003461a0efe5ea410d3b9033c4658065b554ffe",
+    "src/voyage_fuel/data/UNLOCODE_2025-1_港口制度身份清单.csv": "1edf5c35333fe86cd836c1a8c82dbda7fe8730438a15ee42ec63f7a0a0724211",
+    "src/voyage_fuel/static/app.js": "87f03a27ea0c874c0aa5e2c72069308645fc4eae5b29c445ab15a78f0461ea33",
+    "src/voyage_fuel/templates/index.html": "1ab6c4f62c4c4df5b60527fa1ab32bc092514853f7cbd24f5e140886af2b8a20",
+    "tests/e2e/test_mvp_flow.py": "7ab1a4880f61ce79f7038da516672499b7696709887c889c52011d132601582c",
+    "tools/validation/c_layer_inputs.py": "bee7eea3aca1c71bd5082a89f357b45d0da85d4900b9e3d4a7fc54c7ff98c32d",
+    "tools/validation/c_layer_oracle.py": "338057b1697ef50afe9f173a15153a3aacf303892cc7aca333c44dc0ebf1ebe0",
+    "tools/validation/test_c_layer_oracle.py": "7578ed4abca140c1ddaef5fe43633f55a56a5ece75f920ea4223f0134dfbf1a2",
+    "tools/validation/new_energy_reference.py": "fd8dcacacbeebdb7b79025ccac3f41629cb097d8ee22ee9335a461457c5608ae",
+    "tools/validation/test_new_energy_cross_validation.py": "bbedcbfbde2e082f866303820331d030e3382073e4041f9f1a541ee84f701df2",
+    "tools/validation/test_new_energy_surfaces.py": "5c7a94ac18e73278f1f0d076f54a584e78a631be4908bd442003b41ed8d352f5",
+    "tools/validation/run_new_energy_cross_validation.py": "066b8aa3d8979eb7a54be6b9df5979ac6fe4156b216f88ad33e88d601ba657f4",
+    "tools/validation/new_energy_matrix.py": "44241663dd6488dc2f20ce544d6e8f7aeb70d0729f8ac427edacb728d6c0b67b",
+    "tools/validation/test_new_energy_matrix.py": "015c40a08b66eb7fa2f5130fd9cc988e0d9ad23bd8c6e2afda234e057f1282fb"
+  },
+  "test_output": "test_already_compliant_worsening_cheap_candidate (test_c_layer_oracle.OracleTests.test_already_compliant_worsening_cheap_candidate) ... ok\ntest_budget_boundary (test_c_layer_oracle.OracleTests.test_budget_boundary) ... ok\ntest_envelope_ignores_dominated_intersection (test_c_layer_oracle.OracleTests.test_envelope_ignores_dominated_intersection) ... ok\ntest_extremely_close_switches_remain_distinct (test_c_layer_oracle.OracleTests.test_extremely_close_switches_remain_distinct) ... ok\ntest_fractional_reward_objective (test_c_layer_oracle.OracleTests.test_fractional_reward_objective) ... ok\ntest_minimum_target_half (test_c_layer_oracle.OracleTests.test_minimum_target_half) ... ok\ntest_shared_b0_does_not_require_unused_candidate_price (test_c_layer_oracle.OracleTests.test_shared_b0_does_not_require_unused_candidate_price) ... ok\ntest_supply_boundary (test_c_layer_oracle.OracleTests.test_supply_boundary) ... ok\ntest_cross_checks_detect_wrong_algorithm_outputs (test_new_energy_cross_validation.NewEnergyCrossValidationTests.test_cross_checks_detect_wrong_algorithm_outputs) ... ok\ntest_cross_checks_reject_infeasible_ties_and_wrong_unavailable_reasons (test_new_energy_cross_validation.NewEnergyCrossValidationTests.test_cross_checks_reject_infeasible_ties_and_wrong_unavailable_reasons) ... ok\ntest_csv_business_amounts_match_independent_values (test_new_energy_cross_validation.NewEnergyCrossValidationTests.test_csv_business_amounts_match_independent_values) ... ok\ntest_exact_and_highs_objectives_agree_away_from_subprecision_boundaries (test_new_energy_cross_validation.NewEnergyCrossValidationTests.test_exact_and_highs_objectives_agree_away_from_subprecision_boundaries) ... ok\ntest_existing_builtin_snapshot_is_cross_checked_without_resolving_expected_factors (test_new_energy_cross_validation.NewEnergyCrossValidationTests.test_existing_builtin_snapshot_is_cross_checked_without_resolving_expected_factors) ... ok\ntest_fixed_seed_multi_candidate_portfolios_match_independent_optima (test_new_energy_cross_validation.NewEnergyCrossValidationTests.test_fixed_seed_multi_candidate_portfolios_match_independent_optima) ... ok\ntest_multiple_candidates_are_compared_globally (test_new_energy_cross_validation.NewEnergyCrossValidationTests.test_multiple_candidates_are_compared_globally) ... ok\ntest_reference_is_calibrated_to_literal_hand_calculation (test_new_energy_cross_validation.NewEnergyCrossValidationTests.test_reference_is_calibrated_to_literal_hand_calculation) ... ok\ntest_sixty_synthetic_cases_match_independent_optima_and_ledgers (test_new_energy_cross_validation.NewEnergyCrossValidationTests.test_sixty_synthetic_cases_match_independent_optima_and_ledgers) ... ok\ntest_api_invalid_candidate_is_isolated_from_valid_decisions (test_new_energy_matrix.ExpandedDecisionTests.test_api_invalid_candidate_is_isolated_from_valid_decisions) ... ok\ntest_api_missing_prices_retain_physical_results_and_explain_limits (test_new_energy_matrix.ExpandedDecisionTests.test_api_missing_prices_retain_physical_results_and_explain_limits) ... ok\ntest_api_rejects_case_wide_invalid_inputs (test_new_energy_matrix.ExpandedDecisionTests.test_api_rejects_case_wide_invalid_inputs) ... ok\ntest_budget_and_supply_relaxation_cannot_worsen_objective (test_new_energy_matrix.ExpandedDecisionTests.test_budget_and_supply_relaxation_cannot_worsen_objective) ... ok\ntest_expanded_type_matrix_against_independent_reference (test_new_energy_matrix.ExpandedDecisionTests.test_expanded_type_matrix_against_independent_reference) ... ok\ntest_portfolios_of_two_three_five_and_eight_candidates (test_new_energy_matrix.ExpandedDecisionTests.test_portfolios_of_two_three_five_and_eight_candidates) ... ok\ntest_price_scaling_preserves_choices_and_physical_results (test_new_energy_matrix.ExpandedDecisionTests.test_price_scaling_preserves_choices_and_physical_results) ... ok\ntest_reference_highs_for_expanded_well_scaled_cases (test_new_energy_matrix.ExpandedDecisionTests.test_reference_highs_for_expanded_well_scaled_cases) ... ok\ntest_voyage_scaling_preserves_optimal_ratios (test_new_energy_matrix.ExpandedDecisionTests.test_voyage_scaling_preserves_optimal_ratios) ... ok\ntest_page_api_csv_and_pdf_match_hand_calculated_decisions (test_new_energy_surfaces.NewEnergySurfaceTests.test_page_api_csv_and_pdf_match_hand_calculated_decisions) ... ok\n\n----------------------------------------------------------------------\nRan 27 tests in 133.586s\n\nOK\n"
+}

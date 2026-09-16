@@ -12,6 +12,7 @@ from voyage_fuel.contracts import CandidateInput, DecisionCaseInput, Issue, Pars
 from voyage_fuel.factors import get_builtin_factor
 from voyage_fuel.models import FuelComponent, FuelFactor
 from voyage_fuel.json_io import parse_decision_case
+from voyage_fuel.json_io import decision_case_result_to_dict
 
 
 def _component(path_id: str, price: str | None, *, qualification: str | None = None) -> FuelComponent:
@@ -108,6 +109,18 @@ class CaseCalculatorTests(unittest.TestCase):
         self.assertIsNotNone(candidate.voyage_result.scenarios[0].eu_ets)
         self.assertIsNotNone(candidate.voyage_result.scenarios[0].fuel_eu)
         self.assertEqual(candidate.voyage_result.economics.comparison_status, "CALCULABLE")
+
+    def test_decision_case_json_keeps_existing_fields_and_adds_summary(self):
+        result = calculate_decision_case(_case(
+            CandidateInput("uco-1", _component("UCO_FAME", "1000"), specified_blend_ratios=(Decimal("0.2"),)),
+        ))
+
+        serialized = decision_case_result_to_dict(result)
+        self.assertIn("scenarios", serialized)
+        self.assertIn("recommendations", serialized)
+        self.assertIn("economics", serialized)
+        self.assertIn("decision_summary", serialized)
+        self.assertEqual(serialized["decision_summary"]["baseline_scenario_id"], "B0")
 
     def test_invalid_port_blocks_case_before_candidate_results(self):
         request = DecisionCaseInput(

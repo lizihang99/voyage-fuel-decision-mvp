@@ -7,7 +7,7 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
-from .contracts import DecisionCaseResult
+from .contracts import CaseScenario, DecisionCaseResult
 from .formatting import DisplayConfig, format_for_display
 from .models import ScenarioResult, VoyageResult
 
@@ -212,6 +212,7 @@ CASE_CSV_COLUMNS = (
     "equipment_id", "wt_t_mode", "factor_level",
     "comparison_status",
     "cost_min_scenario_id", "target_min_cost_scenario_id", "max_improvement_scenario_id",
+    "decision_type", "recommended_quantity_tonnes", "recommended_blend_ratio",
     "pc_break_even", "pe_break_even", "pe_break_even_status", "comparison_value",
     "cost_min_ratio", "cost_sorted_ratios",
     "max_blend_ratio", "candidate_supply_tonnes", "incremental_budget", "x_budget", "x_supply",
@@ -298,6 +299,64 @@ def _case_metric_rows(result: DecisionCaseResult) -> list[dict[str, str]]:
     return rows
 
 
+def _decision_summary_selections(result: DecisionCaseResult) -> list[tuple[str, CaseScenario]]:
+    """Keep each recommendation role even when several select the same scenario."""
+    summary = result.decision_summary
+    scenarios = {row.scenario_id: row for row in result.scenarios}
+    baseline_id = summary.baseline_scenario_id if summary else "B0"
+    selections = [("BASELINE", scenarios[baseline_id])] if baseline_id in scenarios else []
+    if summary is not None:
+        selections.extend(
+            (recommendation.recommendation_id, scenarios[recommendation.scenario_id])
+            for recommendation in result.recommendations
+            if recommendation.scenario_id in scenarios
+        )
+    return selections
+
+
+def _decision_summary_rows(result: DecisionCaseResult) -> list[dict[str, str]]:
+    summary = result.decision_summary
+    if summary is None:
+        return []
+    rows: list[dict[str, str]] = []
+    metrics = (
+        ("fuel_cost_delta", "fuel_cost", "case_currency", False),
+        ("eua_cost_savings", "eua_cost", "case_currency", True),
+        ("model_cost_delta", "model_cost", "case_currency", False),
+        ("fueleu_ghgi_delta", "fueleu_ghgi_actual_g_per_mj", "gCO2e/MJ", False),
+        ("fueleu_balance_delta", "fueleu_compliance_balance_t", "tCO2e", False),
+        ("fueleu_penalty_delta", "fueleu_indicative_penalty_eur", "EUR", False),
+    )
+    for decision_type, scenario in _decision_summary_selections(result):
+        scenario_id = scenario.scenario_id
+        deltas = summary.scenario_deltas.get(scenario_id, {})
+        for metric_name, source_metric, unit, negate in metrics:
+            delta = deltas.get(source_metric)
+            row = _case_base(result, "decision_summary")
+            row.update({
+                "candidate_id": _text(scenario.candidate_id),
+                "scenario_id": scenario_id,
+                "decision_type": decision_type,
+                "recommended_quantity_tonnes": _text(scenario.result.candidate_mass_tonnes),
+                "recommended_blend_ratio": _text(scenario.result.ratio),
+                "metric_name": metric_name,
+                "absolute": _text(delta.absolute if delta else None),
+                "delta": _text(
+                    delta.delta.copy_negate() if delta and negate and delta.delta
+                    else delta.delta if delta else None
+                ),
+                "percent_delta": _text(
+                    delta.percent_delta.copy_negate() if delta and negate and delta.percent_delta
+                    else delta.percent_delta if delta else None
+                ),
+                "reason_code": _text(delta.reason_code if delta else None),
+                "unit": unit,
+                "value_currency": result.currency if unit == "case_currency" else "",
+            })
+            rows.append(row)
+    return rows
+
+
 def decision_case_to_csv(result: DecisionCaseResult, display_config: DisplayConfig | None = None) -> str:
     """Serialize a completed decision case without invoking calculation code.
 
@@ -337,6 +396,7 @@ def decision_case_to_csv(result: DecisionCaseResult, display_config: DisplayConf
         })
         rows.append(row)
     rows.extend(_case_metric_rows(result))
+    rows.extend(_decision_summary_rows(result))
     for candidate in result.candidate_results:
         row = _case_base(result, "constraints")
         row["candidate_id"] = candidate.candidate_id
@@ -597,6 +657,44 @@ def decision_case_to_pdf(
     if len(recommendation_rows) == 1:
         recommendation_rows.append(["-", "-", "-", "-", "No recommendation available"])
     story.append(make_table(recommendation_rows, [38 * mm, 38 * mm, 22 * mm, 32 * mm, 40 * mm], small=True))
+
+    story.append(Paragraph("New energy decision summary", styles["ReportHeading"]))
+    decision_rows = [[
+        "Decision type", "Candidate", "Recommended quantity (t)", "Blend ratio",
+        "Additional fuel cost", "EU ETS cost saving", "Net cost change",
+        "FuelEU GHGI change", "FuelEU balance change",
+    ]]
+    summary = result.decision_summary
+    for decision_type, scenario in _decision_summary_selections(result):
+        scenario_id = scenario.scenario_id
+        deltas = summary.scenario_deltas.get(scenario_id, {}) if summary else {}
+        fuel_cost = deltas.get("fuel_cost")
+        eua_cost = deltas.get("eua_cost")
+        model_cost = deltas.get("model_cost")
+        ghgi = deltas.get("fueleu_ghgi_actual_g_per_mj")
+        balance = deltas.get("fueleu_compliance_balance_t")
+        decision_rows.append([
+            decision_type, scenario.candidate_id or "B0",
+            value(scenario.result.candidate_mass_tonnes, "fuel_mass"),
+            value(scenario.result.ratio, "ratio"),
+            value(fuel_cost.delta if fuel_cost else None, "price"),
+            value(-eua_cost.delta if eua_cost and eua_cost.delta is not None else None, "price"),
+            value(model_cost.delta if model_cost else None, "price"),
+            value(ghgi.delta if ghgi else None, "intensity"),
+            value(balance.delta if balance else None, "gas"),
+        ])
+    if len(decision_rows) == 1:
+        decision_rows.append(["-", "-", "-", "-", "-", "-", "-", "-", "-"])
+    story.append(make_table(
+        decision_rows,
+        [34*mm, 24*mm, 28*mm, 22*mm, 28*mm, 28*mm, 28*mm, 28*mm, 28*mm],
+        small=True,
+    ))
+    story.append(Paragraph(
+        "FuelEU values are voyage-level indicators; recommendation status remains conditional and "
+        "EXECUTION_CONDITIONS_PENDING.",
+        styles["ReportBody"],
+    ))
 
     story.append(Paragraph("Scenario comparison (fuel mass and energy)", styles["ReportHeading"]))
     scenario_rows = [[

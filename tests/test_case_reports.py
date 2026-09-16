@@ -7,7 +7,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from voyage_fuel.case_calculator import calculate_decision_case
-from voyage_fuel.contracts import CandidateInput, DecisionCaseInput, Issue
+from voyage_fuel.contracts import CandidateInput, DecisionCaseInput, Issue, MetricDelta
 from voyage_fuel.factors import get_builtin_factor
 from voyage_fuel.json_io import decision_case_result_to_dict, parse_decision_case
 from voyage_fuel.models import FuelComponent
@@ -17,7 +17,7 @@ from voyage_fuel.reports import decision_case_to_pdf, write_decision_case_pdf
 
 
 class CaseReportTests(unittest.TestCase):
-    def make_result(self):
+    def make_result(self, candidate_price="1000"):
         request = DecisionCaseInput(
             report_year=2026,
             departure_port="CNSHG",
@@ -29,7 +29,7 @@ class CaseReportTests(unittest.TestCase):
             eua_price_per_tco2e=Decimal("80"),
             candidates=(CandidateInput(
                 candidate_id="uco",
-                component=FuelComponent(get_builtin_factor("UCO_FAME"), Decimal("1000"), eligible_biomass_fraction=Decimal("1"), qualification_status="ASSUMED_ELIGIBLE"),
+                component=FuelComponent(get_builtin_factor("UCO_FAME"), Decimal(candidate_price), eligible_biomass_fraction=Decimal("1"), qualification_status="ASSUMED_ELIGIBLE"),
                 specified_blend_ratios=(Decimal("0.20"),),
                 max_blend_ratio=Decimal("0.30"),
                 allows_pure_use=True,
@@ -159,6 +159,106 @@ class CaseReportTests(unittest.TestCase):
         self.assertTrue(any(row["ets_effective_rate"] for row in scenario_rows))
         self.assertTrue(any(row["ets_excluded_gases"] for row in scenario_rows))
         self.assertTrue(any(row["zero_rating_status"] for row in scenario_rows))
+
+    def test_case_csv_contains_new_energy_decision_summary_rows(self):
+        rows = list(csv.DictReader(io.StringIO(decision_case_to_csv(self.make_result()))))
+        summary_rows = [row for row in rows if row["record_type"] == "decision_summary"]
+        self.assertGreaterEqual(len(summary_rows), 2)
+        self.assertTrue({
+            "fuel_cost_delta", "eua_cost_savings", "model_cost_delta",
+            "fueleu_ghgi_delta", "fueleu_balance_delta",
+        }.issubset({row["metric_name"] for row in summary_rows}))
+        self.assertTrue(any(row["scenario_id"] == "B0" for row in summary_rows))
+        self.assertTrue(any(row["recommended_quantity_tonnes"] for row in summary_rows if row["scenario_id"] != "B0"))
+
+    def test_pdf_contains_new_energy_decision_summary(self):
+        from pypdf import PdfReader
+        text = "\n".join(page.extract_text() or "" for page in PdfReader(
+            io.BytesIO(decision_case_to_pdf(self.make_result()))
+        ).pages)
+        for fragment in (
+            "New energy decision summary", "Additional fuel cost",
+            "EU ETS cost saving", "Net cost change", "Recommended quantity",
+            "Blend ratio",
+        ):
+            self.assertIn(fragment.casefold(), text.casefold(), fragment)
+
+    def test_csv_summary_preserves_recommendation_roles_sharing_a_scenario(self):
+        for candidate_price, cost_min in (("1000", "B0"), ("200", "uco@0.3")):
+            with self.subTest(candidate_price=candidate_price):
+                result = self.make_result(candidate_price)
+                self.assertEqual(result.decision_summary.cost_min_scenario_id, cost_min)
+                rows = list(csv.DictReader(io.StringIO(decision_case_to_csv(result))))
+                summary_rows = [row for row in rows if row["record_type"] == "decision_summary"]
+                expected = [("BASELINE", "B0")] + [
+                    (item.recommendation_id, item.scenario_id)
+                    for item in result.recommendations if item.scenario_id is not None
+                ]
+                self.assertCountEqual(
+                    [(row["decision_type"], row["scenario_id"])
+                     for row in summary_rows if row["metric_name"] == "model_cost_delta"],
+                    expected,
+                )
+                self.assertEqual(len(summary_rows), len(expected) * 6)
+
+    def test_pdf_summary_preserves_recommendation_roles_sharing_a_scenario(self):
+        from pypdf import PdfReader
+        for candidate_price in ("1000", "200"):
+            with self.subTest(candidate_price=candidate_price):
+                result = self.make_result(candidate_price)
+                text = "\n".join(page.extract_text() or "" for page in PdfReader(
+                    io.BytesIO(decision_case_to_pdf(result))
+                ).pages)
+                summary = text.split("New energy decision summary", 1)[1].split(
+                    "Scenario comparison (fuel mass and energy)", 1
+                )[0]
+                compact = "".join(summary.split())
+                for role in (
+                    "BASELINE", "CURRENT_MODEL_COST_MIN",
+                    "TARGET_MIN_COST:uco", "MAX_COMPLIANCE_IMPROVEMENT:uco",
+                ):
+                    self.assertIn(role, compact)
+
+    def test_csv_savings_amount_and_percentage_share_direction(self):
+        result = self.make_result()
+        rows = list(csv.DictReader(io.StringIO(decision_case_to_csv(result))))
+        saving = next(
+            row for row in rows if row["record_type"] == "decision_summary"
+            and row["metric_name"] == "eua_cost_savings" and row["scenario_id"] != "B0"
+        )
+        cost = next(
+            row for row in rows if row["record_type"] == "scenario"
+            and row["metric_name"] == "eua_cost" and row["scenario_id"] == saving["scenario_id"]
+        )
+        self.assertGreater(Decimal(saving["delta"]), 0)
+        self.assertGreater(Decimal(saving["percent_delta"]), 0)
+        self.assertEqual(Decimal(saving["delta"]), Decimal(cost["delta"]).copy_negate())
+        self.assertEqual(Decimal(saving["percent_delta"]), Decimal(cost["percent_delta"]).copy_negate())
+        self.assertEqual(saving["absolute"], cost["absolute"])
+
+    def test_csv_savings_preserves_zero_and_missing_value_semantics(self):
+        result = self.make_result()
+        cases = (
+            (MetricDelta(Decimal("110"), Decimal("10"), Decimal("10")), "-10", "-10"),
+            (MetricDelta(Decimal("100"), Decimal("0"), Decimal("0")), "0", "0"),
+            (MetricDelta(Decimal("0"), Decimal("0"), None, "ZERO_BASELINE"), "0", ""),
+            (MetricDelta(None, None, None), "", ""),
+        )
+        for metric, expected_delta, expected_percent in cases:
+            with self.subTest(metric=metric):
+                summary = replace(result.decision_summary, scenario_deltas={
+                    **result.decision_summary.scenario_deltas,
+                    "B0": {**result.decision_summary.scenario_deltas["B0"], "eua_cost": metric},
+                })
+                rows = list(csv.DictReader(io.StringIO(
+                    decision_case_to_csv(replace(result, decision_summary=summary))
+                )))
+                saving = next(row for row in rows if row["record_type"] == "decision_summary"
+                              and row["decision_type"] == "BASELINE"
+                              and row["metric_name"] == "eua_cost_savings")
+                self.assertEqual(saving["delta"], expected_delta)
+                self.assertEqual(saving["percent_delta"], expected_percent)
+                self.assertEqual(saving["reason_code"], metric.reason_code or "")
 
     def test_display_config_does_not_change_raw_result_or_csv(self):
         result = self.make_result()
