@@ -160,6 +160,29 @@ class CaseReportTests(unittest.TestCase):
         self.assertTrue(any(row["ets_excluded_gases"] for row in scenario_rows))
         self.assertTrue(any(row["zero_rating_status"] for row in scenario_rows))
 
+    def test_case_csv_contains_new_energy_decision_summary_rows(self):
+        rows = list(csv.DictReader(io.StringIO(decision_case_to_csv(self.make_result()))))
+        summary_rows = [row for row in rows if row["record_type"] == "decision_summary"]
+        self.assertGreaterEqual(len(summary_rows), 2)
+        self.assertTrue({
+            "fuel_cost_delta", "eua_cost_savings", "model_cost_delta",
+            "fueleu_ghgi_delta", "fueleu_balance_delta",
+        }.issubset({row["metric_name"] for row in summary_rows}))
+        self.assertTrue(any(row["scenario_id"] == "B0" for row in summary_rows))
+        self.assertTrue(any(row["recommended_quantity_tonnes"] for row in summary_rows if row["scenario_id"] != "B0"))
+
+    def test_pdf_contains_new_energy_decision_summary(self):
+        from pypdf import PdfReader
+        text = "\n".join(page.extract_text() or "" for page in PdfReader(
+            io.BytesIO(decision_case_to_pdf(self.make_result()))
+        ).pages)
+        for fragment in (
+            "New energy decision summary", "Additional fuel cost",
+            "EU ETS cost saving", "Net cost change", "Recommended quantity",
+            "Blend ratio",
+        ):
+            self.assertIn(fragment.casefold(), text.casefold(), fragment)
+
     def test_display_config_does_not_change_raw_result_or_csv(self):
         result = self.make_result()
         before = json.dumps(decision_case_result_to_dict(result), sort_keys=True)
