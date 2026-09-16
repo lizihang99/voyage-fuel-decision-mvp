@@ -1178,6 +1178,7 @@ Observed on 2026-09-03: the report provenance audit and the 72-test focused acce
 | 2026-09-03 | `7bed200` | Python factor/report/JSON focused suite 48；最终 Python unittest discover 185；Node port tests 29；compileall；`node --check`；`git diff --check` | 旧版 JSON 入口传递 report year；CSV/PDF 保留 source type、field name、unit、status、value；内置目录区分 FIXED/ESTIMATED 并补齐 eligibleBiomassFraction；最新生产代码已完成完整验收 |
 | 2026-09-03 | `571f6ae` | 报告/自定义因子/JSON/追踪聚焦 62；网页契约聚焦 20；最终 Python unittest discover 189；Node port tests 29；compileall；`node --check`；`git diff --check`；独立代码审查无正确性发现 | CSV/PDF 保留自定义 `BIO_E` 的 `E`、`RFNBO_E` 的 `E/eu` 证据值；报告使用实际 `FuelComponent.eligible_biomass_fraction`；网页证据面板展示字段、来源类型、单位、核验状态和值；当前 MVP gap 已关闭 |
 | 2026-09-04 | working tree | 外部验证锚点测试 2；EU ETS/FuelEU/能源聚焦测试合计 11；JSON 格式检查；Python `py_compile`；`git diff --check` | E1-E4 跨项目实验输入和手工期望值已固化到 `tests/fixtures/external-validation-vectors.json`，通过真实 JSON 边界重放；未修改生产计算逻辑，也未重复重型全量测试 |
+| 2026-09-16 | `3af47c3` | C 层修复聚焦测试 39；合并前 Python 核心测试 195；Node port tests 29；compileall；`node --check`；`git diff --check`；Playwright E2E 14（修复分支与合并后 main 各跑一轮） | D1/D2/D3 C 层正确性修复经 PR #1 合入 `main`；C 层 107 项独立实验仅剩 `C-LP-17` 的 `SOLVER_PRECISION_LIMIT`，产品结果与精确参考一致 |
 
 Future entries must record evidence after it has been run. Do not add expected pass counts as if they were observed results.
 
@@ -1185,7 +1186,7 @@ Future entries must record evidence after it has been run. Do not add expected p
 
 ### 2026-09-03 Final Acceptance Update
 
-Task 7 反例矩阵已在 `48e3481` 通过（20/20）。代码审查发现的旧版 JSON 年份传递、CSV/PDF 逐字段证据和内置证据状态语义问题已在 `7bed200` 修复；后续独立审计发现并在 `571f6ae` 修复了自定义 `E/eu` 证据值丢失、实际生物质比例误报和网页证据摘要不完整。修复后的聚焦套件和完整验收 Python 189、Node 29、`compileall`、`node --check` 和 `git diff --check` 均通过。M01-M17 当前满足 MVP 交付条件；分支集成方式仍待用户决定。工作树中四个 E2E 生成工件仍为未提交的本地输出。
+Task 7 反例矩阵已在 `48e3481` 通过（20/20）。代码审查发现的旧版 JSON 年份传递、CSV/PDF 逐字段证据和内置证据状态语义问题已在 `7bed200` 修复；后续独立审计发现并在 `571f6ae` 修复了自定义 `E/eu` 证据值丢失、实际生物质比例误报和网页证据摘要不完整。修复后的聚焦套件和完整验收 Python 189、Node 29、`compileall`、`node --check` 和 `git diff --check` 均通过。2026-09-16 的 C 层修复已通过 PR #1（合并提交 `3af47c3`）合入 `main`，合并后在 `main` 复测 Python 核心测试 195、Node 29 和 Playwright E2E 14 均通过。M01-M17 当前满足 MVP 交付条件。
 
 - Spec coverage: tasks cover the MVP design's product shape, input, calculation, multi-candidate comparison, status, traceability, exports, webpage and acceptance requirements.
 - Boundary coverage: annual FuelEU, real penalties and physical WtW remain explicit exclusions.
