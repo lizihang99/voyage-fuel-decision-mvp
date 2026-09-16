@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from decimal import Decimal
 from itertools import combinations
+from fractions import Fraction
+from .numerics import decimal_ratio
 
 from .contracts import (
     CaseEconomicsResult,
@@ -19,7 +21,6 @@ from .models import ScenarioResult
 HUNDRED = Decimal("100")
 ZERO = Decimal("0")
 ONE = Decimal("1")
-INTERSECTION_TOLERANCE = Decimal("1e-30")
 
 
 def metric_delta(value: Decimal | None, baseline: Decimal | None) -> MetricDelta:
@@ -130,6 +131,7 @@ def _case_adjusted_cost(row: CaseScenario, value: Decimal) -> Decimal:
 
 def calculate_case_value_switch_points(
     scenarios: tuple[CaseScenario, ...],
+    exact_coefficients: dict[str, tuple[Fraction, Fraction]] | None = None,
 ) -> tuple[CaseValueSwitchPoint, ...]:
     """Return only lower-envelope switches across all case scenarios."""
     eligible = tuple(
@@ -140,11 +142,17 @@ def calculate_case_value_switch_points(
     )
     if len(eligible) < 2:
         return ()
+    def coefficients(row):
+        if exact_coefficients and row.scenario_id in exact_coefficients:
+            return exact_coefficients[row.scenario_id]
+        return Fraction(row.result.model_cost), Fraction(row.result.compliance_improvement_tco2e)
 
-    intersections: set[Decimal] = set()
+    intersections: set[Fraction] = set()
     for left, right in combinations(eligible, 2):
-        slope_delta = left.result.compliance_improvement_tco2e - right.result.compliance_improvement_tco2e
-        cost_delta = left.result.model_cost - right.result.model_cost
+        left_cost, left_improvement = coefficients(left)
+        right_cost, right_improvement = coefficients(right)
+        slope_delta = left_improvement - right_improvement
+        cost_delta = left_cost - right_cost
         if slope_delta == ZERO:
             continue
         value = cost_delta / slope_delta
@@ -153,22 +161,19 @@ def calculate_case_value_switch_points(
     if not intersections:
         return ()
 
-    ordered_raw = sorted(intersections)
-    ordered: list[Decimal] = []
-    for value in ordered_raw:
-        if ordered and abs(value - ordered[-1]) <= INTERSECTION_TOLERANCE:
-            continue
-        ordered.append(value)
+    ordered = sorted(intersections)
     transitions: list[CaseValueSwitchPoint] = []
 
-    def winner(value: Decimal) -> CaseScenario:
-        return min(eligible, key=lambda row: (_case_adjusted_cost(row, value), row.scenario_id))
+    def winner(value: Fraction) -> CaseScenario:
+        return min(eligible, key=lambda row: (
+            coefficients(row)[0] - value * coefficients(row)[1],
+            row.scenario_id))
 
     for index, value in enumerate(ordered):
-        previous = ZERO if index == 0 else ordered[index - 1]
+        previous = Fraction(0) if index == 0 else ordered[index - 1]
         following = None if index + 1 == len(ordered) else ordered[index + 1]
-        left_probe = (previous + value) / Decimal("2") if index else ZERO
-        right_probe = value + ONE if following is None else (value + following) / Decimal("2")
+        left_probe = (previous + value) / 2 if index else Fraction(0)
+        right_probe = value + 1 if following is None else (value + following) / 2
         left_winner = winner(left_probe)
         right_winner = winner(right_probe)
         if left_winner.scenario_id == right_winner.scenario_id:
@@ -178,13 +183,14 @@ def calculate_case_value_switch_points(
             to_scenario_id=right_winner.scenario_id,
             from_candidate_id=left_winner.candidate_id,
             to_candidate_id=right_winner.candidate_id,
-            value_star=value,
+            value_star=decimal_ratio(value),
         ))
     return tuple(transitions)
 
 
 def build_case_economics(
     scenarios: tuple[CaseScenario, ...],
+    exact_coefficients: dict[str, tuple[Fraction, Fraction]] | None = None,
 ) -> CaseEconomicsResult:
     """Summarize cross-candidate winners without recalculating scenarios."""
     priced = tuple(
@@ -213,7 +219,7 @@ def build_case_economics(
         cost_min_scenario_id=cost_min.scenario_id if cost_min else None,
         target_min_cost_scenario_id=target_min.scenario_id if target_min else None,
         max_improvement_scenario_id=max_improvement.scenario_id if max_improvement else None,
-        switch_points=calculate_case_value_switch_points(scenarios),
+        switch_points=calculate_case_value_switch_points(scenarios, exact_coefficients),
     )
 
 
@@ -270,6 +276,9 @@ def _candidate_recommendation(
     scenario = _scenario_for_ratio(scenarios, candidate.candidate_id, ratio)
     if scenario is None or scenario.result.constraint_status != "FEASIBLE":
         return _unavailable(recommendation_id, condition, "SCENARIO_UNAVAILABLE", *_candidate_assumptions(candidate))
+    balance = scenario.result.fuel_eu.compliance_balance_g
+    if balance is None or balance < ZERO:
+        return _unavailable(recommendation_id, condition, "TARGET_NOT_SATISFIED", *_candidate_assumptions(candidate))
     return ConditionalRecommendation(
         recommendation_id=recommendation_id,
         condition=condition,
@@ -307,6 +316,7 @@ def _maximum_compliance_improvement_recommendation(
 def build_recommendations(
     scenarios: tuple[CaseScenario, ...],
     candidates: tuple[CandidateResult, ...],
+    exact_coefficients: dict[str, tuple[Fraction, Fraction]] | None = None,
 ) -> tuple[ConditionalRecommendation, ...]:
     """Build conditional result records from existing constraints and economics."""
     recommendations: list[ConditionalRecommendation] = []
@@ -344,7 +354,7 @@ def build_recommendations(
             candidate, scenarios, constraints.x_max_improvement, constraints.target_status,
         ))
 
-    switches = calculate_case_value_switch_points(scenarios)
+    switches = calculate_case_value_switch_points(scenarios, exact_coefficients)
     for index, point in enumerate(switches, start=1):
         prefix = point.to_candidate_id or point.from_candidate_id or "B0"
         recommendations.append(ConditionalRecommendation(

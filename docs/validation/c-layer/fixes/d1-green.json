@@ -1,0 +1,14 @@
+{
+  "command": [
+    "C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+    "-m",
+    "unittest",
+    "tests.test_c_layer_fixes",
+    "tests.test_constraints",
+    "-v"
+  ],
+  "returncode": 0,
+  "stdout": "",
+  "stderr": "test_baseline_exactly_at_target_worsening_candidate_keeps_zero (tests.test_c_layer_fixes.TargetIntervalFixTests.test_baseline_exactly_at_target_worsening_candidate_keeps_zero) ... ok\ntest_case_target_recommendation_is_compliant (tests.test_c_layer_fixes.TargetIntervalFixTests.test_case_target_recommendation_is_compliant) ... ok\ntest_cheaper_worsening_candidate_has_target_upper_bound (tests.test_c_layer_fixes.TargetIntervalFixTests.test_cheaper_worsening_candidate_has_target_upper_bound) ... ok\ntest_existing_constraint_cap_inside_target_interval_wins (tests.test_c_layer_fixes.TargetIntervalFixTests.test_existing_constraint_cap_inside_target_interval_wins) ... ok\ntest_more_expensive_worsening_candidate_keeps_b0 (tests.test_c_layer_fixes.TargetIntervalFixTests.test_more_expensive_worsening_candidate_keeps_b0) ... ok\ntest_recommendation_defensively_rejects_noncompliant_stale_ratio (tests.test_c_layer_fixes.TargetIntervalFixTests.test_recommendation_defensively_rejects_noncompliant_stale_ratio) ... ok\ntest_report_contains_target_upper_optimum (tests.test_c_layer_fixes.TargetIntervalFixTests.test_report_contains_target_upper_optimum) ... ok\ntest_budget_without_prices_is_warning_and_supply_still_applies (tests.test_constraints.ConstraintTests.test_budget_without_prices_is_warning_and_supply_still_applies) ... ok\ntest_fueleu_not_applicable_does_not_search_target (tests.test_constraints.ConstraintTests.test_fueleu_not_applicable_does_not_search_target) ... ok\ntest_target_is_unreachable_when_cap_is_below_minimum (tests.test_constraints.ConstraintTests.test_target_is_unreachable_when_cap_is_below_minimum) ... ok\ntest_target_no_solution_still_reports_maximum_improvement_boundary (tests.test_constraints.ConstraintTests.test_target_no_solution_still_reports_maximum_improvement_boundary) ... ok\ntest_vector_g_constraint_bounds (tests.test_constraints.ConstraintTests.test_vector_g_constraint_bounds) ... ok\n\n----------------------------------------------------------------------\nRan 12 tests in 0.282s\n\nOK\n",
+  "timestamp": "2026-09-07T08:31:56.882110+00:00"
+}

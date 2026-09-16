@@ -1,0 +1,14 @@
+{
+  "command": [
+    "C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+    "-m",
+    "unittest",
+    "tests.test_c_layer_fixes.TargetIntervalFixTests.test_priced_cheaper_candidate_does_not_emit_forbidden_b100",
+    "tests.test_c_layer_fixes.TargetIntervalFixTests.test_case_recommendations_never_reference_forbidden_b100",
+    "-v"
+  ],
+  "returncode": 0,
+  "stdout": "",
+  "stderr": "test_priced_cheaper_candidate_does_not_emit_forbidden_b100 (tests.test_c_layer_fixes.TargetIntervalFixTests.test_priced_cheaper_candidate_does_not_emit_forbidden_b100) ... ok\ntest_case_recommendations_never_reference_forbidden_b100 (tests.test_c_layer_fixes.TargetIntervalFixTests.test_case_recommendations_never_reference_forbidden_b100) ... ok\n\n----------------------------------------------------------------------\nRan 2 tests in 0.216s\n\nOK\n",
+  "timestamp": "2026-09-07T08:47:45.332839+00:00"
+}
