@@ -177,6 +177,43 @@ class CaseComparisonTests(unittest.TestCase):
             self.assertEqual(recommendation.status, "UNAVAILABLE")
             self.assertIn("PRICE_REQUIRED_FOR_COMPARISON", recommendation.assumptions)
 
+    def test_decision_summary_projects_business_deltas_and_winners(self):
+        result = calculate_decision_case(_case(
+            CandidateInput(
+                "uco", _component("UCO_FAME", "1000"),
+                specified_blend_ratios=(Decimal("0.2"),),
+                max_blend_ratio=Decimal("0.3"), allows_pure_use=True,
+            ),
+        ))
+
+        summary = result.decision_summary
+        self.assertIsNotNone(summary)
+        assert summary is not None
+        self.assertEqual(summary.baseline_scenario_id, "B0")
+        self.assertEqual(summary.cost_min_scenario_id, result.economics.cost_min_scenario_id)
+        self.assertEqual(summary.target_min_cost_scenario_id, result.economics.target_min_cost_scenario_id)
+        self.assertEqual(summary.max_improvement_scenario_id, result.economics.max_improvement_scenario_id)
+
+        uco = next(row for row in result.scenarios if row.scenario_id == "uco@0.2")
+        for metric in (
+            "fuel_cost",
+            "eua_cost",
+            "model_cost",
+            "fueleu_ghgi_actual_g_per_mj",
+            "fueleu_compliance_balance_t",
+            "fueleu_indicative_penalty_eur",
+        ):
+            self.assertEqual(summary.scenario_deltas["uco@0.2"][metric], uco.deltas[metric])
+
+    def test_blocked_case_has_no_decision_summary(self):
+        result = calculate_decision_case(_case(
+            CandidateInput("uco", _component("UCO_FAME", "1000")),
+        ))
+        self.assertIsNotNone(result.decision_summary)
+
+        blocked = calculate_decision_case(None, initial_issues=())
+        self.assertIsNone(blocked.decision_summary)
+
     def test_unreachable_target_keeps_feasible_maximum_compliance_improvement_conditional(self):
         result = calculate_decision_case(_case(
             CandidateInput(

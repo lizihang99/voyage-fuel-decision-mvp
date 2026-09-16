@@ -177,6 +177,17 @@ class CaseEconomicsResult:
 
 
 @dataclass(frozen=True)
+class DecisionSummary:
+    """Business-facing projection of existing case scenarios and winners."""
+
+    baseline_scenario_id: str
+    cost_min_scenario_id: str | None
+    target_min_cost_scenario_id: str | None
+    max_improvement_scenario_id: str | None
+    scenario_deltas: Mapping[str, Mapping[str, MetricDelta]]
+
+
+@dataclass(frozen=True)
 class DecisionCaseResult:
     report_year: int
     departure_port: str
@@ -189,3 +200,4 @@ class DecisionCaseResult:
     issues: tuple[Issue, ...]
     provenance: object | None = None
     economics: CaseEconomicsResult | None = None
+    decision_summary: DecisionSummary | None = None

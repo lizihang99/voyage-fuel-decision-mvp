@@ -16,7 +16,12 @@ from .contracts import (
 )
 from .issues import issue_from_exception
 from .models import ScenarioResult, VoyageInput
-from .case_comparison import build_case_economics, build_case_scenarios, build_recommendations
+from .case_comparison import (
+    build_case_economics,
+    build_case_scenarios,
+    build_decision_summary,
+    build_recommendations,
+)
 from .economics import exact_economic_coefficients
 from .ports import calculate_scope_rates
 from .provenance import FactorResolutionTrace, ResultProvenance, deduplicate_source_ids
@@ -365,6 +370,7 @@ def calculate_decision_case(
             coefficients["B0" if ratio == 0 else candidate_input.scenario_id(ratio)] = pair
     recommendations = build_recommendations(scenarios, candidate_results, coefficients)
     economics = build_case_economics(scenarios, coefficients)
+    decision_summary = build_decision_summary(scenarios, economics)
     provenance = _result_provenance(request)
     return DecisionCaseResult(
         report_year=request.report_year,
@@ -378,6 +384,7 @@ def calculate_decision_case(
         issues=(*case_issue_list, *candidate_issues),
         provenance=provenance,
         economics=economics,
+        decision_summary=decision_summary,
     )
 
 
