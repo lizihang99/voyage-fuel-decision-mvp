@@ -1,0 +1,148 @@
+[
+  {
+    "id": "E1",
+    "description": "2024 HFO, one side in the EEA",
+    "payload": {
+      "reportYear": 2024,
+      "departurePort": "CNSHG",
+      "arrivalPort": "NLRTM",
+      "baseline": {
+        "pathId": "HFO",
+        "massTonnes": "100",
+        "pricePerTonne": "600"
+      },
+      "candidate": {
+        "pathId": "HFO",
+        "pricePerTonne": "600"
+      },
+      "euaPricePerTCO2e": "80"
+    },
+    "scenarioRatio": "0",
+    "expected": {
+      "baselineEnergyMJ": "4050000",
+      "physicalEnergyMJ": "4050000",
+      "rawCO2T": "311.4",
+      "rawCH4T": "0.005",
+      "rawN2OT": "0.018",
+      "includedGases": ["CO2"],
+      "EUAs": "62.28",
+      "EUACost": "4982.4",
+      "fuelEUStatus": "NOT_YET_APPLICABLE"
+    }
+  },
+  {
+    "id": "E2",
+    "description": "2025 MDO, one side in the EEA",
+    "payload": {
+      "reportYear": 2025,
+      "departurePort": "CNSHG",
+      "arrivalPort": "NLRTM",
+      "baseline": {
+        "pathId": "MDO",
+        "massTonnes": "100",
+        "pricePerTonne": "600"
+      },
+      "candidate": {
+        "pathId": "MDO",
+        "pricePerTonne": "600"
+      },
+      "euaPricePerTCO2e": "80"
+    },
+    "scenarioRatio": "0",
+    "expected": {
+      "baselineEnergyMJ": "4270000",
+      "physicalEnergyMJ": "4270000",
+      "rawCO2T": "320.6",
+      "rawCH4T": "0.005",
+      "rawN2OT": "0.018",
+      "includedGases": ["CO2"],
+      "EUAs": "112.21",
+      "EUACost": "8976.8",
+      "fuelEUStatus": "DEFICIT_ESTIMATE",
+      "GHGI": "90.767447306791569086651053864",
+      "target": "89.3368",
+      "complianceBalanceT": "-3.054432",
+      "indicativePenaltyEUR": "1969.825359391999965766047306918"
+    }
+  },
+  {
+    "id": "E3",
+    "description": "2026 MDO/LNG Otto medium-speed blend",
+    "payload": {
+      "reportYear": 2026,
+      "departurePort": "CNSHG",
+      "arrivalPort": "NLRTM",
+      "baseline": {
+        "pathId": "MDO",
+        "massTonnes": "100",
+        "pricePerTonne": "600"
+      },
+      "candidate": {
+        "pathId": "LNG_OTTO_MEDIUM_SPEED",
+        "pricePerTonne": "850"
+      },
+      "euaPricePerTCO2e": "80",
+      "specifiedBlendRatios": ["0.30"],
+      "maxBlendRatio": "0.30"
+    },
+    "scenarioRatio": "0.30",
+    "expected": {
+      "baselineEnergyMJ": "4270000",
+      "physicalEnergyMJ": "4270000",
+      "rawCO2T": "291.265772075302554908112953832",
+      "rawCH4T": "0.893331465710443747198565665621",
+      "rawN2OT": "0.0151179244733303451367099955",
+      "includedGases": ["CO2", "CH4", "N2O"],
+      "EUAs": "160.14265155031376064545047064",
+      "EUACost": "12811.4121240251008516360376513",
+      "fuelEUStatus": "DEFICIT_ESTIMATE",
+      "GHGI": "90.2509669654863290004482294935",
+      "target": "89.3368",
+      "complianceBalanceT": "-1.95174647131331241595696996862",
+      "indicativePenaltyEUR": "1265.89861329935854529148044472"
+    }
+  },
+  {
+    "id": "E4",
+    "description": "Unqualified E_DIESEL falls back to MDO",
+    "payload": {
+      "reportYear": 2025,
+      "departurePort": "CNSHG",
+      "arrivalPort": "NLRTM",
+      "baseline": {
+        "pathId": "MDO",
+        "massTonnes": "100",
+        "pricePerTonne": "600"
+      },
+      "candidate": {
+        "pathId": "E_DIESEL",
+        "pricePerTonne": "1000"
+      },
+      "euaPricePerTCO2e": "80",
+      "specifiedBlendRatios": ["1"],
+      "maxBlendRatio": "1",
+      "candidateAllowsPureUse": true
+    },
+    "scenarioRatio": "1",
+    "expected": {
+      "baselineEnergyMJ": "4270000",
+      "physicalEnergyMJ": "4270000",
+      "rawCO2T": "320.6",
+      "rawCH4T": "0.005",
+      "rawN2OT": "0.018",
+      "includedGases": ["CO2"],
+      "EUAs": "112.21",
+      "EUACost": "8976.8",
+      "fuelEUStatus": "DEFICIT_ESTIMATE",
+      "GHGI": "90.767447306791569086651053864",
+      "target": "89.3368",
+      "complianceBalanceT": "-3.054432",
+      "indicativePenaltyEUR": "1969.825359391999965766047306918"
+    },
+    "expectedCandidateFactor": {
+      "pathId": "MDO",
+      "requestedPathId": "E_DIESEL",
+      "resolutionReason": "RFNBO_QUALIFICATION_NOT_DEMONSTRATED"
+    }
+  }
+]

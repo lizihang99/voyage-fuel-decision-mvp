@@ -1177,6 +1177,7 @@ Observed on 2026-09-03: the report provenance audit and the 72-test focused acce
 | 2026-09-03 | `48e3481` | Task 7 focused matrix 20/20；最终 Python unittest discover 170；Node port tests 29；compileall；`node --check`；`git diff --check` | Counterexample fixtures strengthened after review; final acceptance evidence recorded; generated E2E artifacts remain uncommitted |
 | 2026-09-03 | `7bed200` | Python factor/report/JSON focused suite 48；最终 Python unittest discover 185；Node port tests 29；compileall；`node --check`；`git diff --check` | 旧版 JSON 入口传递 report year；CSV/PDF 保留 source type、field name、unit、status、value；内置目录区分 FIXED/ESTIMATED 并补齐 eligibleBiomassFraction；最新生产代码已完成完整验收 |
 | 2026-09-03 | `571f6ae` | 报告/自定义因子/JSON/追踪聚焦 62；网页契约聚焦 20；最终 Python unittest discover 189；Node port tests 29；compileall；`node --check`；`git diff --check`；独立代码审查无正确性发现 | CSV/PDF 保留自定义 `BIO_E` 的 `E`、`RFNBO_E` 的 `E/eu` 证据值；报告使用实际 `FuelComponent.eligible_biomass_fraction`；网页证据面板展示字段、来源类型、单位、核验状态和值；当前 MVP gap 已关闭 |
+| 2026-09-04 | working tree | 外部验证锚点测试 2；EU ETS/FuelEU/能源聚焦测试合计 11；JSON 格式检查；Python `py_compile`；`git diff --check` | E1-E4 跨项目实验输入和手工期望值已固化到 `tests/fixtures/external-validation-vectors.json`，通过真实 JSON 边界重放；未修改生产计算逻辑，也未重复重型全量测试 |
 
 Future entries must record evidence after it has been run. Do not add expected pass counts as if they were observed results.
 

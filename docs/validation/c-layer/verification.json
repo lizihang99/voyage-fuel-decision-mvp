@@ -1,0 +1,47 @@
+{
+  "timestamp_utc": "2026-09-07T08:21:33.490493+00:00",
+  "checks": {
+    "inputs_hash_matches": true,
+    "production_hashes_match": true,
+    "experiment_hashes_match": true,
+    "experiment_count_107": true,
+    "31_features_indexed": true,
+    "recorded_differences_not_hidden": true
+  },
+  "results_sha256": "c1358b9bcde398b157c33611258f83bf344adb36e1a1ff78414bf3cf06861ee2",
+  "executions": [
+    {
+      "command": [
+        "C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/validation",
+        "-p",
+        "test_c_layer_oracle.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "test_already_compliant_worsening_cheap_candidate (test_c_layer_oracle.OracleTests.test_already_compliant_worsening_cheap_candidate) ... ok\ntest_budget_boundary (test_c_layer_oracle.OracleTests.test_budget_boundary) ... ok\ntest_envelope_ignores_dominated_intersection (test_c_layer_oracle.OracleTests.test_envelope_ignores_dominated_intersection) ... ok\ntest_extremely_close_switches_remain_distinct (test_c_layer_oracle.OracleTests.test_extremely_close_switches_remain_distinct) ... ok\ntest_fractional_reward_objective (test_c_layer_oracle.OracleTests.test_fractional_reward_objective) ... ok\ntest_minimum_target_half (test_c_layer_oracle.OracleTests.test_minimum_target_half) ... ok\ntest_shared_b0_does_not_require_unused_candidate_price (test_c_layer_oracle.OracleTests.test_shared_b0_does_not_require_unused_candidate_price) ... ok\ntest_supply_boundary (test_c_layer_oracle.OracleTests.test_supply_boundary) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 0.008s\n\nOK\n"
+    },
+    {
+      "command": [
+        "C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+        "-m",
+        "unittest",
+        "tests.test_constraints",
+        "tests.test_economics",
+        "tests.test_case_comparison",
+        "tests.test_case_calculator",
+        "-v"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "test_budget_without_prices_is_warning_and_supply_still_applies (tests.test_constraints.ConstraintTests.test_budget_without_prices_is_warning_and_supply_still_applies) ... ok\ntest_fueleu_not_applicable_does_not_search_target (tests.test_constraints.ConstraintTests.test_fueleu_not_applicable_does_not_search_target) ... ok\ntest_target_is_unreachable_when_cap_is_below_minimum (tests.test_constraints.ConstraintTests.test_target_is_unreachable_when_cap_is_below_minimum) ... ok\ntest_target_no_solution_still_reports_maximum_improvement_boundary (tests.test_constraints.ConstraintTests.test_target_no_solution_still_reports_maximum_improvement_boundary) ... ok\ntest_vector_g_constraint_bounds (tests.test_constraints.ConstraintTests.test_vector_g_constraint_bounds) ... ok\ntest_eua_threshold_classifies_degenerate_cases (tests.test_economics.EconomicsTests.test_eua_threshold_classifies_degenerate_cases) ... ok\ntest_missing_price_hides_economic_thresholds (tests.test_economics.EconomicsTests.test_missing_price_hides_economic_thresholds) ... ok\ntest_vector_g_break_even_prices (tests.test_economics.EconomicsTests.test_vector_g_break_even_prices) ... ok\ntest_voyage_exposes_compliance_value_without_changing_cost_order (tests.test_economics.EconomicsTests.test_voyage_exposes_compliance_value_without_changing_cost_order) ... ok\ntest_current_model_cost_minimum_can_be_b0 (tests.test_case_comparison.CaseComparisonTests.test_current_model_cost_minimum_can_be_b0) ... ok\ntest_current_model_cost_ranking_only_contains_feasible_comparable_candidates (tests.test_case_comparison.CaseComparisonTests.test_current_model_cost_ranking_only_contains_feasible_comparable_candidates) ... ok\ntest_global_switch_points_remove_dominated_candidate_intersections (tests.test_case_comparison.CaseComparisonTests.test_global_switch_points_remove_dominated_candidate_intersections) ... ok\ntest_missing_prices_keep_feasible_maximum_compliance_improvement_conditional (tests.test_case_comparison.CaseComparisonTests.test_missing_prices_keep_feasible_maximum_compliance_improvement_conditional) ... ok\ntest_missing_prices_leave_calculable_scenarios_and_unavailable_cost_recommendations (tests.test_case_comparison.CaseComparisonTests.test_missing_prices_leave_calculable_scenarios_and_unavailable_cost_recommendations) ... ok\ntest_price_missing_unreachable_target_min_cost_keeps_both_limitations (tests.test_case_comparison.CaseComparisonTests.test_price_missing_unreachable_target_min_cost_keeps_both_limitations) ... ok\ntest_projection_keeps_absolute_results_and_unrounded_decimal_deltas (tests.test_case_comparison.CaseComparisonTests.test_projection_keeps_absolute_results_and_unrounded_decimal_deltas) ... ok\ntest_recommendations_retain_target_status_and_switch_side_ids (tests.test_case_comparison.CaseComparisonTests.test_recommendations_retain_target_status_and_switch_side_ids) ... ok\ntest_unreachable_target_keeps_feasible_maximum_compliance_improvement_conditional (tests.test_case_comparison.CaseComparisonTests.test_unreachable_target_keeps_feasible_maximum_compliance_improvement_conditional) ... ok\ntest_zero_baseline_metric_has_explicit_reason_without_division (tests.test_case_comparison.CaseComparisonTests.test_zero_baseline_metric_has_explicit_reason_without_division) ... ok\ntest_inconsistent_candidate_b0_blocks_the_entire_case (tests.test_case_calculator.CaseCalculatorTests.test_inconsistent_candidate_b0_blocks_the_entire_case) ... ok\ntest_invalid_candidate_is_projected_without_blocking_valid_candidate (tests.test_case_calculator.CaseCalculatorTests.test_invalid_candidate_is_projected_without_blocking_valid_candidate) ... ok\ntest_invalid_port_blocks_case_before_candidate_results (tests.test_case_calculator.CaseCalculatorTests.test_invalid_port_blocks_case_before_candidate_results) ... ok\ntest_malformed_methane_factor_blocks_only_that_candidate (tests.test_case_calculator.CaseCalculatorTests.test_malformed_methane_factor_blocks_only_that_candidate) ... ok\ntest_missing_prices_keep_candidate_calculable_with_domain_results (tests.test_case_calculator.CaseCalculatorTests.test_missing_prices_keep_candidate_calculable_with_domain_results) ... ok\ntest_preserves_candidate_order_and_deduplicates_shared_b0 (tests.test_case_calculator.CaseCalculatorTests.test_preserves_candidate_order_and_deduplicates_shared_b0) ... ok\n\n----------------------------------------------------------------------\nRan 25 tests in 2.672s\n\nOK\n"
+    }
+  ],
+  "success": true,
+  "meaning": "Artifact and focused-test verification only; experiment differences remain unfixed."
+}
