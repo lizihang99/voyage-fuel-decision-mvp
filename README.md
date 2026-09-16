@@ -63,6 +63,7 @@ $env:PYTHONPATH = "src"
 3. [燃料因子库规范](./燃料因子库规范.md)：已经固定的37条燃料路径、因子值、资格分支和默认估算参数；
 4. [MVP设计](./docs/superpowers/specs/2026-08-07-voyage-fuel-decision-mvp-design.md)：把产品边界展开为开发功能和验收范围；
 5. [MVP计算规格](./docs/superpowers/specs/2026-08-07-voyage-fuel-decision-calculation-spec.md)：固定计算公式、单位、边界、状态、输出和测试向量。
+6. [外部计算验证矩阵](./docs/validation/external-validation-matrix.md)：记录公开项目功能上限、交叉实验和已解释差异。
 
 发生冲突时：产品能力和表达以《项目目标与总体架构》为准；港口身份和比例以《港口比例功能说明》为准；燃料路径、因子值、资格和证据以《燃料因子库规范》为准；计算单位、公式、状态、输出和测试契约以《MVP计算规格》为准。研究文档和核对记录用于追溯依据，不覆盖上述现行契约。
 
@@ -82,7 +83,8 @@ P0-P1/
 │  ├─ superpowers/specs/2026-08-07-voyage-fuel-decision-mvp-design.md
 │  ├─ superpowers/specs/2026-08-07-voyage-fuel-decision-calculation-spec.md
 │  ├─ research/航程范围与覆盖规则调研.md
-│  └─ 核对记录/燃料因子核对记录.md
+│  ├─ 核对记录/燃料因子核对记录.md
+│  └─ validation/external-validation-matrix.md
 └─ 官方参考资料/
    ├─ 港口基础数据/
    ├─ 航程范围规则/

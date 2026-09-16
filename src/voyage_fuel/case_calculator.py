@@ -17,6 +17,7 @@ from .contracts import (
 from .issues import issue_from_exception
 from .models import ScenarioResult, VoyageInput
 from .case_comparison import build_case_economics, build_case_scenarios, build_recommendations
+from .economics import exact_economic_coefficients
 from .ports import calculate_scope_rates
 from .provenance import FactorResolutionTrace, ResultProvenance, deduplicate_source_ids
 
@@ -349,8 +350,21 @@ def calculate_decision_case(
             results.extend(projected_invalid)
     candidate_results = tuple(results)
     scenarios = build_case_scenarios(baseline, candidate_results)
-    recommendations = build_recommendations(scenarios, candidate_results)
-    economics = build_case_economics(scenarios)
+    coefficients = {}
+    candidate_inputs = {c.candidate_id: c for c in request.candidates}
+    for result in candidate_results:
+        if result.voyage_result is None:
+            continue
+        voyage = result.voyage_result
+        candidate_input = candidate_inputs[result.candidate_id]
+        local = exact_economic_coefficients(
+            request.report_year, request.baseline_component, candidate_input.component,
+            voyage.scope_rates, request.eua_price_per_tco2e, voyage.baseline_energy_mj,
+            [s.ratio for s in voyage.scenarios])
+        for ratio, pair in local.items():
+            coefficients["B0" if ratio == 0 else candidate_input.scenario_id(ratio)] = pair
+    recommendations = build_recommendations(scenarios, candidate_results, coefficients)
+    economics = build_case_economics(scenarios, coefficients)
     provenance = _result_provenance(request)
     return DecisionCaseResult(
         report_year=request.report_year,

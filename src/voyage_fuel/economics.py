@@ -3,9 +3,11 @@
 from dataclasses import replace
 from decimal import Decimal
 from itertools import combinations
+from fractions import Fraction
 from typing import Optional, Sequence
 
 from .constraints import _unit_ets_tco2e
+from .numerics import decimal_ratio, exact_unit_n_d
 from .models import (
     EuaBreakEvenResult,
     EconomicsResult,
@@ -19,7 +21,6 @@ from .models import (
 ZERO = Decimal("0")
 ONE = Decimal("1")
 TONNES_TO_GRAMS = Decimal("1000000")
-INTERSECTION_TOLERANCE = Decimal("1e-30")
 
 
 def calculate_candidate_break_even_price(
@@ -86,16 +87,21 @@ def _adjusted_cost(scenario: ScenarioResult, value: Optional[Decimal]) -> Option
     return scenario.model_cost - value * improvement
 
 
-def _winner(lines: Sequence[tuple[Decimal, Decimal, Decimal]], value: Decimal) -> tuple[Decimal, Decimal, Decimal]:
+def _winner(
+    lines: Sequence[tuple[Decimal, Fraction, Fraction]], value: Fraction,
+) -> tuple[Decimal, Fraction, Fraction]:
     return min(lines, key=lambda line: (line[1] - value * line[2], line[0]))
 
 
 def calculate_value_switch_points(
     scenarios: Sequence[ScenarioResult],
+    exact_coefficients: Optional[dict[Decimal, tuple[Fraction, Fraction]]] = None,
 ) -> tuple[ValueSwitchPoint, ...]:
     """Return only intersections where the global lower envelope changes winner."""
     lines = [
-        (scenario.ratio, scenario.model_cost, scenario.compliance_improvement_tco2e)
+        (scenario.ratio, *(exact_coefficients[scenario.ratio]
+                          if exact_coefficients and scenario.ratio in exact_coefficients else
+                          (Fraction(scenario.model_cost), Fraction(scenario.compliance_improvement_tco2e))))
         for scenario in scenarios
         if scenario.constraint_status == "FEASIBLE"
         and scenario.model_cost is not None
@@ -103,7 +109,7 @@ def calculate_value_switch_points(
     ]
     if len(lines) < 2:
         return ()
-    intersections: dict[Decimal, set[tuple[Decimal, Decimal]]] = {}
+    intersections: dict[Fraction, set[tuple[Decimal, Decimal]]] = {}
     for left, right in combinations(lines, 2):
         slope_delta = left[2] - right[2]
         cost_delta = left[1] - right[1]
@@ -115,26 +121,52 @@ def calculate_value_switch_points(
         intersections.setdefault(value, set()).add((left[0], right[0]))
     if not intersections:
         return ()
-    ordered_raw = sorted(intersections)
-    ordered: list[Decimal] = []
-    for value in ordered_raw:
-        if ordered and abs(value - ordered[-1]) <= INTERSECTION_TOLERANCE:
-            continue
-        ordered.append(value)
+    ordered = sorted(intersections)
     transitions: list[ValueSwitchPoint] = []
     for index, value in enumerate(ordered):
-        previous = ZERO if index == 0 else ordered[index - 1]
+        previous = Fraction(0) if index == 0 else ordered[index - 1]
         following = None if index + 1 == len(ordered) else ordered[index + 1]
-        left_probe = (previous + value) / Decimal("2") if index else ZERO
-        right_probe = value + ONE if following is None else (value + following) / Decimal("2")
+        left_probe = (previous + value) / 2 if index else Fraction(0)
+        right_probe = value + 1 if following is None else (value + following) / 2
         left_winner = _winner(lines, left_probe)[0]
         right_winner = _winner(lines, right_probe)[0]
         if left_winner == right_winner:
             continue
         # A tie at the intersection can involve more than two lines. Pick the
         # actual envelope winners on either side, then report the switch once.
-        transitions.append(ValueSwitchPoint(left_winner, right_winner, value))
+        transitions.append(ValueSwitchPoint(left_winner, right_winner, decimal_ratio(value)))
     return tuple(transitions)
+
+
+def exact_economic_coefficients(
+    report_year: int, baseline: FuelComponent, candidate: FuelComponent,
+    scope: ScopeRates, eua_price: Optional[Decimal], energy_mj: Decimal,
+    ratios: Sequence[Decimal],
+) -> dict[Decimal, tuple[Fraction, Fraction]]:
+    """Preserve shared-model collinearity before projecting amounts to Decimal.
+
+Rounding each scenario's cost/improvement independently can manufacture tiny
+winning intervals in an exactly collinear set. Derive the lines from common
+inputs; standalone comparison functions still compare supplied coefficients.
+"""
+    if (baseline.price_per_tonne is None or candidate.price_per_tonne is None or eua_price is None
+            or report_year == 2024 or not scope.fuel_eu_scope_rate):
+        return {}
+    lb, lc = Fraction(baseline.factor.lcv_mj_per_g), Fraction(candidate.factor.lcv_mj_per_g)
+    nb, db = exact_unit_n_d(baseline)
+    nc, dc = exact_unit_n_d(candidate)
+    pe, k = Fraction(eua_price), Fraction(scope.eu_ets_effective_rate)
+    kb = Fraction(baseline.price_per_tonne) + pe * k * Fraction(_unit_ets_tco2e(report_year, baseline, scope))
+    kc = Fraction(candidate.price_per_tonne) + pe * k * Fraction(_unit_ets_tco2e(report_year, candidate, scope))
+    energy = Fraction(energy_mj)
+    result = {}
+    for ratio in ratios:
+        x = Fraction(ratio)
+        mass = energy / ((1 - x) * lb + x * lc) / 1000000
+        ghgi = ((1 - x) * nb + x * nc) / ((1 - x) * db + x * dc)
+        improvement = (nb / db - ghgi) * energy * Fraction(scope.fuel_eu_scope_rate) / 1000000
+        result[ratio] = (mass * ((1 - x) * kb + x * kc), improvement)
+    return result
 
 
 def build_economics(
@@ -192,6 +224,8 @@ def build_economics(
         comparison_value=comparison_value,
         cost_min_ratio=cost_min_ratio,
         cost_sorted_ratios=sorted_ratios,
-        switch_points=calculate_value_switch_points(enriched_tuple),
+        switch_points=calculate_value_switch_points(enriched_tuple, exact_economic_coefficients(
+            report_year, baseline, candidate, scope, eua_price_per_tco2e,
+            baseline_scenario.physical_energy_mj, [s.ratio for s in enriched_tuple])),
         warning_codes=tuple(dict.fromkeys(warnings)),
     ), enriched_tuple

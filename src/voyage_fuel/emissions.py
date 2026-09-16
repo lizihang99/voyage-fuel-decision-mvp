@@ -2,8 +2,10 @@
 
 from decimal import Decimal
 from typing import Optional, Sequence
+from fractions import Fraction
 
 from .models import EtsResult, FuelAmount, FuelEuResult, ScopeRates
+from .numerics import decimal_ratio, exact_unit_n_d
 
 
 GRAMS_PER_TONNE = Decimal("1000000")
@@ -171,13 +173,29 @@ def calculate_fueleu(
         )
     if denominator_rwd <= Decimal("0"):
         raise ValueError("FuelEU denominator must be positive")
-    wt_t_intensity = wt_t_numerator / denominator_rwd
-    tt_w_intensity = tt_w_numerator / denominator_rwd
-    ghgi = wt_t_intensity + tt_w_intensity
+    # Exact residual avoids catastrophic cancellation at GHGI == target.
+    # Values are projected to Decimal only after deciding sign from the
+    # rational input factors and emitted component masses.
+    exact_energy = exact_n = exact_d = exact_wtt = Fraction(0)
+    for amount in amounts:
+        mass = Fraction(amount.mass_tonnes) * 1000000
+        n, d = exact_unit_n_d(amount.component)
+        lcv = Fraction(amount.component.factor.lcv_mj_per_g)
+        exact_energy += mass * lcv
+        exact_n += mass * n
+        exact_d += mass * d
+        exact_wtt += mass * lcv * Fraction(amount.component.factor.wt_t_g_per_mj)
+    physical_energy = decimal_ratio(exact_energy)
+    scoped_energy = decimal_ratio(exact_energy * Fraction(scope))
+    denominator_rwd = decimal_ratio(exact_d)
+    wt_t_intensity = decimal_ratio(exact_wtt / exact_d)
+    tt_w_intensity = decimal_ratio((exact_n - exact_wtt) / exact_d)
+    ghgi = decimal_ratio(exact_n / exact_d)
     target = _fueleu_target(year)
     if target is None:
         raise ValueError(f"Unsupported FuelEU year: {year}")
-    balance_g = (target - ghgi) * scoped_energy
+    balance_g = decimal_ratio((Fraction(target) * exact_d - exact_n)
+                              * exact_energy * Fraction(scope) / exact_d)
     status = "SURPLUS_ESTIMATE" if balance_g > 0 else "DEFICIT_ESTIMATE" if balance_g < 0 else "ON_TARGET_ESTIMATE"
     penalty = None
     if balance_g < 0:

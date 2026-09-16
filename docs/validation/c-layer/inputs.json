@@ -1,0 +1,2205 @@
+{
+  "schema_version": 1,
+  "seed": 20260907,
+  "synthetic": true,
+  "constraints": [
+    {
+      "id": "C-LP-01",
+      "label": "普通双燃料",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "10",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-LP-02",
+      "label": "候选同能源更便宜",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".05",
+        "wtt": "40",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-LP-03",
+      "label": "候选吨价高但同能源便宜",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".05",
+        "wtt": "40",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "650"
+      }
+    },
+    {
+      "id": "C-LP-04",
+      "label": "最大混兑上限",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".1",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "10",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-LP-05",
+      "label": "供应上限",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": "10",
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "10",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-LP-06",
+      "label": "增量预算上限",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": "5000",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "10",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-LP-07",
+      "label": "三个约束同时施加",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".4",
+      "supply": "10",
+      "budget": "5000",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "10",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-LP-08",
+      "label": "零供应",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": "0",
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "10",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-LP-09",
+      "label": "零预算且成本增加",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": "0",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "10",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-LP-10",
+      "label": "零预算且成本下降",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": "0",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".05",
+        "wtt": "40",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-LP-11",
+      "label": "双方均不达标",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "60",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-LP-12",
+      "label": "虽改善但仍无数学解",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "42",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-LP-13",
+      "label": "B0已达标且候选更差更便宜",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "5",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "1000"
+      },
+      "candidate": {
+        "lcv": ".04",
+        "wtt": "25",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "400"
+      }
+    },
+    {
+      "id": "C-LP-14",
+      "label": "B0已达标且候选继续改善",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "5",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "10",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-LP-15",
+      "label": "候选端点恰好达标",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".04",
+        "wtt": "64.3368",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-LP-16",
+      "label": "目标恰好等于混兑上限",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".5",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "25",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".04",
+        "wtt": "53.6736",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "900"
+      }
+    },
+    {
+      "id": "C-LP-17",
+      "label": "目标高于混兑上限1e-20",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".49999999999999999999",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "25",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".04",
+        "wtt": "53.6736",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "900"
+      }
+    },
+    {
+      "id": "C-LP-18",
+      "label": "目标低于混兑上限1e-20",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".50000000000000000001",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "25",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".04",
+        "wtt": "53.6736",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "900"
+      }
+    },
+    {
+      "id": "C-LP-19",
+      "label": "RWD=2分式目标",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "10",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "2",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-LP-20",
+      "label": "RWD回退后的普通分母",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "10",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-LP-21",
+      "label": "缺候选价格且有预算",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": "5000",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": null
+      }
+    },
+    {
+      "id": "C-LP-22",
+      "label": "缺EUA价格且有预算",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": "5000",
+      "eua": null,
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "10",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-LP-23",
+      "label": "2024 FuelEU不适用",
+      "year": 2024,
+      "scope": ".5",
+      "surrender": ".4",
+      "fueleu_scope": null,
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "10",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-LP-24",
+      "label": "2025 CO2-only",
+      "year": 2025,
+      "scope": ".5",
+      "surrender": ".7",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "10",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-LP-25",
+      "label": "2030目标",
+      "year": 2030,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "10",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-LP-26",
+      "label": "范围为零",
+      "year": 2026,
+      "scope": "0",
+      "surrender": "1",
+      "fueleu_scope": "0",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "10",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-LP-27",
+      "label": "成本和GHGI均并列",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      }
+    },
+    {
+      "id": "C-LP-28",
+      "label": "甲烷设备滑移与三气体",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "600"
+      },
+      "candidate": {
+        "lcv": ".05",
+        "wtt": "5",
+        "co2": "2.75",
+        "ch4": ".00005",
+        "n2o": ".0001",
+        "slip": "3.1",
+        "rwd": "1",
+        "price": "500"
+      }
+    },
+    {
+      "id": "C-RND-01",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".3",
+      "supply": "200",
+      "budget": "0",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "8",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "809"
+      },
+      "candidate": {
+        "lcv": ".05",
+        "wtt": "156",
+        "co2": "2",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "2",
+        "price": "706"
+      }
+    },
+    {
+      "id": "C-RND-02",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".1",
+      "supply": "5",
+      "budget": "0",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "17",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "862"
+      },
+      "candidate": {
+        "lcv": ".05",
+        "wtt": "184",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "2",
+        "price": "787"
+      }
+    },
+    {
+      "id": "C-RND-03",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".1",
+      "supply": "50",
+      "budget": "0",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "-2",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "461"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "-23",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "212"
+      }
+    },
+    {
+      "id": "C-RND-04",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": "15000",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "-4",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "702"
+      },
+      "candidate": {
+        "lcv": ".04",
+        "wtt": "46",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "391"
+      }
+    },
+    {
+      "id": "C-RND-05",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".3",
+      "supply": "5",
+      "budget": "2000",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "9",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "565"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "-12",
+        "co2": "2",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "1205"
+      }
+    },
+    {
+      "id": "C-RND-06",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".5",
+      "supply": "200",
+      "budget": "15000",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "6",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "776"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "44",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "2",
+        "price": "844"
+      }
+    },
+    {
+      "id": "C-RND-07",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".5",
+      "supply": "50",
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "17",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "447"
+      },
+      "candidate": {
+        "lcv": ".05",
+        "wtt": "-9",
+        "co2": "2",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "214"
+      }
+    },
+    {
+      "id": "C-RND-08",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": "5",
+      "budget": "2000",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "5",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "460"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "29",
+        "co2": "2",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "1272"
+      }
+    },
+    {
+      "id": "C-RND-09",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".1",
+      "supply": "200",
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "3",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "723"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "98",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "2",
+        "price": "846"
+      }
+    },
+    {
+      "id": "C-RND-10",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".3",
+      "supply": "200",
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "13",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "578"
+      },
+      "candidate": {
+        "lcv": ".05",
+        "wtt": "194",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "2",
+        "price": "756"
+      }
+    },
+    {
+      "id": "C-RND-11",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".5",
+      "supply": null,
+      "budget": "15000",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "26",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "587"
+      },
+      "candidate": {
+        "lcv": ".05",
+        "wtt": "20",
+        "co2": "2",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "2",
+        "price": "457"
+      }
+    },
+    {
+      "id": "C-RND-12",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".5",
+      "supply": "50",
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "22",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "716"
+      },
+      "candidate": {
+        "lcv": ".04",
+        "wtt": "34",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "210"
+      }
+    },
+    {
+      "id": "C-RND-13",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".5",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "19",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "413"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "-24",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "2",
+        "price": "410"
+      }
+    },
+    {
+      "id": "C-RND-14",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".1",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "-4",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "564"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "38",
+        "co2": "2",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "2",
+        "price": "676"
+      }
+    },
+    {
+      "id": "C-RND-15",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".5",
+      "supply": "200",
+      "budget": "0",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "20",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "713"
+      },
+      "candidate": {
+        "lcv": ".05",
+        "wtt": "77",
+        "co2": "2",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "1216"
+      }
+    },
+    {
+      "id": "C-RND-16",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".5",
+      "supply": "5",
+      "budget": "0",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "30",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "803"
+      },
+      "candidate": {
+        "lcv": ".04",
+        "wtt": "91",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "2",
+        "price": "802"
+      }
+    },
+    {
+      "id": "C-RND-17",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".3",
+      "supply": "200",
+      "budget": "0",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "5",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "696"
+      },
+      "candidate": {
+        "lcv": ".05",
+        "wtt": "72",
+        "co2": "2",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "431"
+      }
+    },
+    {
+      "id": "C-RND-18",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".1",
+      "supply": "50",
+      "budget": "15000",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "16",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "758"
+      },
+      "candidate": {
+        "lcv": ".05",
+        "wtt": "34",
+        "co2": "2",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "1363"
+      }
+    },
+    {
+      "id": "C-RND-19",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": "50",
+      "budget": "15000",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "23",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "798"
+      },
+      "candidate": {
+        "lcv": ".04",
+        "wtt": "-15",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "1188"
+      }
+    },
+    {
+      "id": "C-RND-20",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".3",
+      "supply": "50",
+      "budget": "2000",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "23",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "700"
+      },
+      "candidate": {
+        "lcv": ".04",
+        "wtt": "-12",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "345"
+      }
+    },
+    {
+      "id": "C-RND-21",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".1",
+      "supply": "200",
+      "budget": "0",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "35",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "813"
+      },
+      "candidate": {
+        "lcv": ".05",
+        "wtt": "75",
+        "co2": "2",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "748"
+      }
+    },
+    {
+      "id": "C-RND-22",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": "5",
+      "budget": "15000",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "9",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "843"
+      },
+      "candidate": {
+        "lcv": ".05",
+        "wtt": "17",
+        "co2": "2",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "265"
+      }
+    },
+    {
+      "id": "C-RND-23",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".1",
+      "supply": null,
+      "budget": "15000",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "33",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "655"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "110",
+        "co2": "2",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "2",
+        "price": "778"
+      }
+    },
+    {
+      "id": "C-RND-24",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".5",
+      "supply": null,
+      "budget": "0",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "25",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "826"
+      },
+      "candidate": {
+        "lcv": ".05",
+        "wtt": "-4",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "1205"
+      }
+    },
+    {
+      "id": "C-RND-25",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".3",
+      "supply": "5",
+      "budget": "2000",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "17",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "564"
+      },
+      "candidate": {
+        "lcv": ".05",
+        "wtt": "1",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "1319"
+      }
+    },
+    {
+      "id": "C-RND-26",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": "2000",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "11",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "715"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "52",
+        "co2": "2",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "2",
+        "price": "273"
+      }
+    },
+    {
+      "id": "C-RND-27",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".3",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "35",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "536"
+      },
+      "candidate": {
+        "lcv": ".05",
+        "wtt": "170",
+        "co2": "2",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "2",
+        "price": "657"
+      }
+    },
+    {
+      "id": "C-RND-28",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".3",
+      "supply": "50",
+      "budget": "0",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "32",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "417"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "-78",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "2",
+        "price": "240"
+      }
+    },
+    {
+      "id": "C-RND-29",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".1",
+      "supply": "50",
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "11",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "897"
+      },
+      "candidate": {
+        "lcv": ".05",
+        "wtt": "208",
+        "co2": "1",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "2",
+        "price": "759"
+      }
+    },
+    {
+      "id": "C-RND-30",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": "200",
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "-1",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "492"
+      },
+      "candidate": {
+        "lcv": ".05",
+        "wtt": "172",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "2",
+        "price": "1206"
+      }
+    },
+    {
+      "id": "C-RND-31",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": "5",
+      "budget": "15000",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "26",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "436"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "14",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "2",
+        "price": "481"
+      }
+    },
+    {
+      "id": "C-RND-32",
+      "label": "固定种子合成案例",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": ".1",
+      "supply": "200",
+      "budget": "2000",
+      "eua": "80",
+      "baseline": {
+        "lcv": ".04",
+        "wtt": "11",
+        "co2": "3",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "1",
+        "price": "534"
+      },
+      "candidate": {
+        "lcv": ".02",
+        "wtt": "-28",
+        "co2": "2",
+        "ch4": "0",
+        "n2o": "0",
+        "slip": "0",
+        "rwd": "2",
+        "price": "261"
+      }
+    }
+  ],
+  "builtin_reproduction": {
+    "case": {
+      "id": "C-BUILTIN-01",
+      "label": "内置UCO_FAME基准与便宜MGO候选",
+      "year": 2026,
+      "scope": ".5",
+      "surrender": "1",
+      "fueleu_scope": ".5",
+      "mass": "100",
+      "cap": "1",
+      "supply": null,
+      "budget": null,
+      "eua": "80",
+      "baseline": {
+        "lcv": ".037",
+        "wtt": "-61.694594594594594594594594594594594594594594594595",
+        "co2": "2.834",
+        "ch4": ".00005",
+        "n2o": ".00018",
+        "slip": "0",
+        "rwd": "1",
+        "price": "1000"
+      },
+      "candidate": {
+        "lcv": ".0427",
+        "wtt": "14.4",
+        "co2": "3.206",
+        "ch4": ".00005",
+        "n2o": ".00018",
+        "slip": "0",
+        "rwd": "1",
+        "price": "400"
+      }
+    },
+    "source": "2026-09-07 local factor snapshot; no new factor audit",
+    "payload": {
+      "reportYear": 2026,
+      "departurePort": "CNSHG",
+      "arrivalPort": "NLRTM",
+      "adjacentValidPortOfCallConfirmed": true,
+      "currency": "EUR",
+      "baseline": {
+        "pathId": "UCO_FAME",
+        "massTonnes": "100",
+        "pricePerTonne": "1000"
+      },
+      "euaPricePerTCO2e": "80",
+      "candidates": [
+        {
+          "candidateId": "mgo",
+          "pathId": "MGO",
+          "pricePerTonne": "400",
+          "allowsPureUse": true,
+          "maxBlendRatio": "1"
+        }
+      ]
+    }
+  },
+  "envelope": [
+    {
+      "id": "C-ENV-01",
+      "label": "单次切换与支配交点",
+      "lines": [
+        [
+          "a",
+          "0",
+          "0"
+        ],
+        [
+          "b",
+          "10",
+          "1"
+        ],
+        [
+          "c",
+          "30",
+          "3"
+        ],
+        [
+          "d",
+          "100",
+          "2"
+        ]
+      ]
+    },
+    {
+      "id": "C-ENV-02",
+      "label": "两次有效切换",
+      "lines": [
+        [
+          "a",
+          "0",
+          "0"
+        ],
+        [
+          "b",
+          "10",
+          "2"
+        ],
+        [
+          "c",
+          "40",
+          "4"
+        ]
+      ]
+    },
+    {
+      "id": "C-ENV-03",
+      "label": "全平行",
+      "lines": [
+        [
+          "a",
+          "0",
+          "1"
+        ],
+        [
+          "b",
+          "10",
+          "1"
+        ],
+        [
+          "c",
+          "20",
+          "1"
+        ]
+      ]
+    },
+    {
+      "id": "C-ENV-04",
+      "label": "全重合",
+      "lines": [
+        [
+          "a",
+          "10",
+          "1"
+        ],
+        [
+          "b",
+          "10",
+          "1"
+        ],
+        [
+          "c",
+          "10",
+          "1"
+        ]
+      ]
+    },
+    {
+      "id": "C-ENV-05",
+      "label": "零价值交点",
+      "lines": [
+        [
+          "a",
+          "0",
+          "0"
+        ],
+        [
+          "b",
+          "0",
+          "1"
+        ]
+      ]
+    },
+    {
+      "id": "C-ENV-06",
+      "label": "仅负交点",
+      "lines": [
+        [
+          "a",
+          "10",
+          "0"
+        ],
+        [
+          "b",
+          "0",
+          "1"
+        ]
+      ]
+    },
+    {
+      "id": "C-ENV-07",
+      "label": "极近交点1e-31",
+      "lines": [
+        [
+          "a",
+          "0",
+          "0"
+        ],
+        [
+          "b",
+          "1",
+          "1"
+        ],
+        [
+          "c",
+          "2.0000000000000000000000000000001",
+          "2"
+        ]
+      ]
+    },
+    {
+      "id": "C-ENV-08",
+      "label": "改善为负",
+      "lines": [
+        [
+          "a",
+          "0",
+          "0"
+        ],
+        [
+          "b",
+          "-10",
+          "-1"
+        ]
+      ]
+    }
+  ]
+}

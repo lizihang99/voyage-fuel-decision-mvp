@@ -1,0 +1,13 @@
+{
+  "command": [
+    "C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+    "-m",
+    "unittest",
+    "tests.test_c_layer_fixes.ExactBoundaryFixTests.test_small_rewarded_ratio_preserves_complement_digits",
+    "-v"
+  ],
+  "returncode": 1,
+  "stdout": "",
+  "stderr": "test_small_rewarded_ratio_preserves_complement_digits (tests.test_c_layer_fixes.ExactBoundaryFixTests.test_small_rewarded_ratio_preserves_complement_digits) ... FAIL\n\n======================================================================\nFAIL: test_small_rewarded_ratio_preserves_complement_digits (tests.test_c_layer_fixes.ExactBoundaryFixTests.test_small_rewarded_ratio_preserves_complement_digits)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\projects\\工具MVP\\.worktrees\\c-layer-correctness-fixes\\tests\\test_c_layer_fixes.py\", line 149, in test_small_rewarded_ratio_preserves_complement_digits\n    self.assertEqual(F(point.candidate_mass_tonnes) /\nAssertionError: Fract[45 chars]076923077, 500000000000000000000000000000000000000000000000002) != Fract[45 chars]076923077, 500000000000000000000000000000000000000000000000000)\n\n----------------------------------------------------------------------\nRan 1 test in 0.066s\n\nFAILED (failures=1)\n",
+  "timestamp": "2026-09-07T08:37:58.148265+00:00"
+}

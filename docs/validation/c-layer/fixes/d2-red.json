@@ -1,0 +1,13 @@
+{
+  "command": [
+    "C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+    "-m",
+    "unittest",
+    "tests.test_c_layer_fixes.CloseSwitchFixTests",
+    "-v"
+  ],
+  "returncode": 1,
+  "stdout": "",
+  "stderr": "test_case_preserves_two_close_switches (tests.test_c_layer_fixes.CloseSwitchFixTests.test_case_preserves_two_close_switches) ... FAIL\ntest_single_candidate_preserves_two_close_switches (tests.test_c_layer_fixes.CloseSwitchFixTests.test_single_candidate_preserves_two_close_switches) ... FAIL\n\n======================================================================\nFAIL: test_case_preserves_two_close_switches (tests.test_c_layer_fixes.CloseSwitchFixTests.test_case_preserves_two_close_switches)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\projects\\工具MVP\\.worktrees\\c-layer-correctness-fixes\\tests\\test_c_layer_fixes.py\", line 161, in test_case_preserves_two_close_switches\n    self.assertEqual([(p.from_scenario_id, p.to_scenario_id) for p in points], [(\"a\", \"b\"), (\"b\", \"c\")])\nAssertionError: Lists differ: [('a', 'c')] != [('a', 'b'), ('b', 'c')]\n\nFirst differing element 0:\n('a', 'c')\n('a', 'b')\n\nSecond list contains 1 additional elements.\nFirst extra element 1:\n('b', 'c')\n\n- [('a', 'c')]\n+ [('a', 'b'), ('b', 'c')]\n\n======================================================================\nFAIL: test_single_candidate_preserves_two_close_switches (tests.test_c_layer_fixes.CloseSwitchFixTests.test_single_candidate_preserves_two_close_switches)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\projects\\工具MVP\\.worktrees\\c-layer-correctness-fixes\\tests\\test_c_layer_fixes.py\", line 154, in test_single_candidate_preserves_two_close_switches\n    self.assertEqual([(p.from_ratio, p.to_ratio) for p in points], [(D(0), D(\".1\")), (D(\".1\"), D(\".2\"))])\nAssertionError: Lists differ: [(Decimal('0'), Decimal('0.2'))] != [(Decimal('0'), Decimal('0.1')), (Decimal('0.1'), Decimal('0.2'))]\n\nFirst differing element 0:\n(Decimal('0'), Decimal('0.2'))\n(Decimal('0'), Decimal('0.1'))\n\nSecond list contains 1 additional elements.\nFirst extra element 1:\n(Decimal('0.1'), Decimal('0.2'))\n\n- [(Decimal('0'), Decimal('0.2'))]\n+ [(Decimal('0'), Decimal('0.1')), (Decimal('0.1'), Decimal('0.2'))]\n\n----------------------------------------------------------------------\nRan 2 tests in 0.114s\n\nFAILED (failures=2)\n",
+  "timestamp": "2026-09-07T08:35:15.582048+00:00"
+}

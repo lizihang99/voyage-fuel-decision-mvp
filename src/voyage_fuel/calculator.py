@@ -41,6 +41,11 @@ def calculate_voyage(request: VoyageInput) -> VoyageResult:
         requested = (*requested, constraints.x_supply)
     if constraints.x_target_min is not None:
         requested = (*requested, constraints.x_target_min)
+    if (constraints.x_target_min_cost is not None
+            and (constraints.x_target_min_cost != Decimal("1") or request.candidate_allows_pure_use)):
+        # A cheaper worsening candidate can have a compliance upper endpoint
+        # distinct from both the minimum target ratio and the constraint cap.
+        requested = (*requested, constraints.x_target_min_cost)
     if (constraints.x_max_improvement is not None
             and (constraints.x_max_improvement != Decimal("1") or request.candidate_allows_pure_use)):
         requested = (*requested, constraints.x_max_improvement)

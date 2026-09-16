@@ -1,0 +1,29 @@
+{
+  "same_input": true,
+  "same_oracle": true,
+  "current_source_hashes_match": true,
+  "experiment_count": 107,
+  "before": {
+    "MATCH_WITH_ROUNDING": 53,
+    "MATCH": 41,
+    "DIFFERENCE": 13
+  },
+  "after": {
+    "MATCH_WITH_ROUNDING": 61,
+    "MATCH": 45,
+    "DIFFERENCE": 1
+  },
+  "unresolved": [
+    {
+      "id": "C-LP-17",
+      "field": "oracle.target_min.feasible",
+      "kind": "SOLVER_PRECISION_LIMIT"
+    },
+    {
+      "id": "C-LP-17",
+      "field": "oracle.target_cost.feasible",
+      "kind": "SOLVER_PRECISION_LIMIT"
+    }
+  ],
+  "all_recorded_product_differences_resolved": true
+}

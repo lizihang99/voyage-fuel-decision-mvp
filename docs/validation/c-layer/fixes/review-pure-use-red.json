@@ -1,0 +1,14 @@
+{
+  "command": [
+    "C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+    "-m",
+    "unittest",
+    "tests.test_c_layer_fixes.TargetIntervalFixTests.test_priced_cheaper_candidate_does_not_emit_forbidden_b100",
+    "tests.test_c_layer_fixes.TargetIntervalFixTests.test_case_recommendations_never_reference_forbidden_b100",
+    "-v"
+  ],
+  "returncode": 1,
+  "stdout": "",
+  "stderr": "test_priced_cheaper_candidate_does_not_emit_forbidden_b100 (tests.test_c_layer_fixes.TargetIntervalFixTests.test_priced_cheaper_candidate_does_not_emit_forbidden_b100) ... FAIL\ntest_case_recommendations_never_reference_forbidden_b100 (tests.test_c_layer_fixes.TargetIntervalFixTests.test_case_recommendations_never_reference_forbidden_b100) ... FAIL\n\n======================================================================\nFAIL: test_priced_cheaper_candidate_does_not_emit_forbidden_b100 (tests.test_c_layer_fixes.TargetIntervalFixTests.test_priced_cheaper_candidate_does_not_emit_forbidden_b100)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\projects\\工具MVP\\.worktrees\\c-layer-correctness-fixes\\tests\\test_c_layer_fixes.py\", line 92, in test_priced_cheaper_candidate_does_not_emit_forbidden_b100\n    self.assertNotIn(D(1), [s.ratio for s in result.scenarios])\nAssertionError: Decimal('1') unexpectedly found in [Decimal('0'), Decimal('0.25'), Decimal('1')]\n\n======================================================================\nFAIL: test_case_recommendations_never_reference_forbidden_b100 (tests.test_c_layer_fixes.TargetIntervalFixTests.test_case_recommendations_never_reference_forbidden_b100)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\projects\\工具MVP\\.worktrees\\c-layer-correctness-fixes\\tests\\test_c_layer_fixes.py\", line 101, in test_case_recommendations_never_reference_forbidden_b100\n    self.assertNotIn(\"candidate@1\", [r.scenario_id for r in result.scenarios])\nAssertionError: 'candidate@1' unexpectedly found in ['B0', 'candidate@0.25', 'candidate@1']\n\n----------------------------------------------------------------------\nRan 2 tests in 0.229s\n\nFAILED (failures=2)\n",
+  "timestamp": "2026-09-07T08:47:08.579144+00:00"
+}

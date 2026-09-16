@@ -6,6 +6,8 @@ tmp/
 node_modules/
 __pycache__/
 *.py[cod]
+.venv/
+.pytest_cache/
 build/
 *.egg-info/
 npm-debug.log*

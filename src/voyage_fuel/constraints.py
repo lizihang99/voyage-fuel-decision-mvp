@@ -1,10 +1,12 @@
 """Continuous blend constraint and FuelEU target calculations."""
 
-from decimal import Decimal
+from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR
+from fractions import Fraction
 from typing import Optional
 
 from .emissions import calculate_eu_ets, _ttw_mass_eq, _fueleu_target
 from .models import ConstraintResult, FuelAmount, FuelComponent, ScopeRates
+from .numerics import decimal_ratio, exact_unit_n_d
 
 
 ZERO = Decimal("0")
@@ -77,10 +79,10 @@ def calculate_minimum_target_ratio(
     target = _fueleu_target(report_year)
     if report_year == 2024 or fuel_eu_scope_rate is None or fuel_eu_scope_rate == ZERO or target is None:
         return "TARGET_NOT_APPLICABLE", None, None
-    n_b, d_b = _unit_n_d(baseline)
-    n_c, d_c = _unit_n_d(candidate)
-    h_b = n_b - target * d_b
-    h_c = n_c - target * d_c
+    n_b, d_b = exact_unit_n_d(baseline)
+    n_c, d_c = exact_unit_n_d(candidate)
+    h_b = n_b - Fraction(target) * d_b
+    h_c = n_c - Fraction(target) * d_c
     if h_b <= ZERO:
         unconstrained = ZERO
     elif h_c > ZERO:
@@ -88,7 +90,7 @@ def calculate_minimum_target_ratio(
     elif h_c == ZERO:
         unconstrained = ONE
     else:
-        unconstrained = h_b / (h_b - h_c)
+        unconstrained = decimal_ratio(h_b / (h_b - h_c), rounding=ROUND_CEILING)
     if unconstrained > x_cap:
         return "TARGET_UNREACHABLE_UNDER_CONSTRAINTS", unconstrained, None
     return "TARGET_REACHABLE", unconstrained, unconstrained
@@ -158,14 +160,21 @@ def calculate_constraints(
     if omega is not None:
         x_cost_min = ZERO if omega >= ZERO else x_cap
         if x_target is not None:
-            x_target_cost = x_target if omega >= ZERO else x_cap
+            # B0 can already comply while a cheaper candidate worsens GHGI.
+            # Then compliance supplies an upper bound, not a minimum blend.
+            target = _fueleu_target(report_year)
+            n_b, d_b = exact_unit_n_d(baseline)
+            n_c, d_c = exact_unit_n_d(candidate)
+            h_b, h_c = n_b - Fraction(target) * d_b, n_c - Fraction(target) * d_c
+            target_upper = min(x_cap, decimal_ratio(-h_b / (h_c - h_b), rounding=ROUND_FLOOR)) if h_b <= ZERO < h_c else x_cap
+            x_target_cost = x_target if omega >= ZERO else target_upper
 
     x_max_improvement: Optional[Decimal]
     if target_status == "TARGET_NOT_APPLICABLE":
         x_max_improvement = None
     else:
-        n_b, d_b = _unit_n_d(baseline)
-        n_c, d_c = _unit_n_d(candidate)
+        n_b, d_b = exact_unit_n_d(baseline)
+        n_c, d_c = exact_unit_n_d(candidate)
         psi = n_c * d_b - n_b * d_c
         x_max_improvement = x_cap if psi < ZERO else ZERO
 
