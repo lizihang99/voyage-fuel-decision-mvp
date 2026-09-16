@@ -7,7 +7,7 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
-from .contracts import DecisionCaseResult
+from .contracts import CaseScenario, DecisionCaseResult
 from .formatting import DisplayConfig, format_for_display
 from .models import ScenarioResult, VoyageResult
 
@@ -299,16 +299,25 @@ def _case_metric_rows(result: DecisionCaseResult) -> list[dict[str, str]]:
     return rows
 
 
+def _decision_summary_selections(result: DecisionCaseResult) -> list[tuple[str, CaseScenario]]:
+    """Keep each recommendation role even when several select the same scenario."""
+    summary = result.decision_summary
+    scenarios = {row.scenario_id: row for row in result.scenarios}
+    baseline_id = summary.baseline_scenario_id if summary else "B0"
+    selections = [("BASELINE", scenarios[baseline_id])] if baseline_id in scenarios else []
+    if summary is not None:
+        selections.extend(
+            (recommendation.recommendation_id, scenarios[recommendation.scenario_id])
+            for recommendation in result.recommendations
+            if recommendation.scenario_id in scenarios
+        )
+    return selections
+
+
 def _decision_summary_rows(result: DecisionCaseResult) -> list[dict[str, str]]:
     summary = result.decision_summary
     if summary is None:
         return []
-    scenarios = {row.scenario_id: row for row in result.scenarios}
-    decision_types: dict[str, str] = {"B0": "BASELINE"}
-    for recommendation in result.recommendations:
-        if recommendation.scenario_id in scenarios:
-            decision_types.setdefault(recommendation.scenario_id, recommendation.recommendation_id)
-
     rows: list[dict[str, str]] = []
     metrics = (
         ("fuel_cost_delta", "fuel_cost", "case_currency", False),
@@ -318,8 +327,8 @@ def _decision_summary_rows(result: DecisionCaseResult) -> list[dict[str, str]]:
         ("fueleu_balance_delta", "fueleu_compliance_balance_t", "tCO2e", False),
         ("fueleu_penalty_delta", "fueleu_indicative_penalty_eur", "EUR", False),
     )
-    for scenario_id, decision_type in decision_types.items():
-        scenario = scenarios[scenario_id]
+    for decision_type, scenario in _decision_summary_selections(result):
+        scenario_id = scenario.scenario_id
         deltas = summary.scenario_deltas.get(scenario_id, {})
         for metric_name, source_metric, unit, negate in metrics:
             delta = deltas.get(source_metric)
@@ -333,10 +342,13 @@ def _decision_summary_rows(result: DecisionCaseResult) -> list[dict[str, str]]:
                 "metric_name": metric_name,
                 "absolute": _text(delta.absolute if delta else None),
                 "delta": _text(
-                    -delta.delta if delta and negate and delta.delta is not None
+                    delta.delta.copy_negate() if delta and negate and delta.delta
                     else delta.delta if delta else None
                 ),
-                "percent_delta": _text(delta.percent_delta if delta else None),
+                "percent_delta": _text(
+                    delta.percent_delta.copy_negate() if delta and negate and delta.percent_delta
+                    else delta.percent_delta if delta else None
+                ),
                 "reason_code": _text(delta.reason_code if delta else None),
                 "unit": unit,
                 "value_currency": result.currency if unit == "case_currency" else "",
@@ -653,14 +665,8 @@ def decision_case_to_pdf(
         "FuelEU GHGI change", "FuelEU balance change",
     ]]
     summary = result.decision_summary
-    scenario_map = {row.scenario_id: row for row in result.scenarios}
-    decision_types: dict[str, str] = {"B0": "BASELINE"}
-    if summary is not None:
-        for recommendation in result.recommendations:
-            if recommendation.scenario_id in scenario_map:
-                decision_types.setdefault(recommendation.scenario_id, recommendation.recommendation_id)
-    for scenario_id, decision_type in decision_types.items():
-        scenario = scenario_map[scenario_id]
+    for decision_type, scenario in _decision_summary_selections(result):
+        scenario_id = scenario.scenario_id
         deltas = summary.scenario_deltas.get(scenario_id, {}) if summary else {}
         fuel_cost = deltas.get("fuel_cost")
         eua_cost = deltas.get("eua_cost")

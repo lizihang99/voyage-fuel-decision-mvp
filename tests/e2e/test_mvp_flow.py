@@ -141,6 +141,28 @@ class BrowserAppMixin:
         self.assertEqual([scenario_id for _, scenario_id in expected], [scenario_id for _, scenario_id, _ in sorted(ranked)])
 
 class MVPFlowTests(BrowserAppMixin, unittest.TestCase):
+    def test_decision_summary_explains_missing_price_and_recovers(self):
+        context, page = self.new_page()
+        try:
+            self.fill_case(page, include_rfnbo=False)
+            page.locator("#baseline-price").fill("")
+            result = self.calculate(page)
+            self.assertIsNone(result["decision_summary"]["cost_min_scenario_id"])
+            summary = page.locator("#new-energy-decision-summary")
+            cost_min = summary.locator(".decision-item").filter(has_text="当前模型最低成本")
+            self.assertIn("PRICE_REQUIRED_FOR_COMPARISON", cost_min.inner_text())
+            self.assertNotIn("后端未提供可用场景", cost_min.inner_text())
+            self.assertIn("暂无可用方案", cost_min.inner_text())
+            self.assertIsNotNone(result["decision_summary"]["max_improvement_scenario_id"])
+
+            page.locator("#baseline-price").fill("700")
+            result = self.calculate(page)
+            self.assertIsNotNone(result["decision_summary"]["cost_min_scenario_id"])
+            self.assertNotIn("PRICE_REQUIRED_FOR_COMPARISON", cost_min.inner_text())
+            self.assertIn("推荐新能源用量", cost_min.inner_text())
+        finally:
+            context.close()
+
     def test_complete_result_contract_is_visible_across_result_panels(self):
         context, page = self.new_page()
         try:

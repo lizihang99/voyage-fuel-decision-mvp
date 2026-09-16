@@ -618,7 +618,7 @@
     const recommendationByScenario = new Map((result.recommendations || []).filter((item) => item.scenario_id).map((item) => [item.scenario_id, item]));
     const blocks = recommendations.map(([label, scenarioId, type]) => {
       const row = scenarioId ? rows.get(scenarioId) : null;
-      const recommendation = scenarioId ? recommendationByScenario.get(scenarioId) : (result.recommendations || []).find((item) => item.recommendation_id.startsWith(`${type}:`));
+      const recommendation = scenarioId ? recommendationByScenario.get(scenarioId) : (result.recommendations || []).find((item) => item.recommendation_id === type || item.recommendation_id.startsWith(`${type}:`));
       if (!row) {
         return `<div class="decision-item unavailable"><strong>${label}</strong><span>暂无可用方案 · ${esc(recommendation?.reason || "后端未提供可用场景")}</span><small>假设: ${esc((recommendation?.assumptions || []).join(", ") || "-")}</small></div>`;
       }
