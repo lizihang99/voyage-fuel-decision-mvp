@@ -90,14 +90,15 @@ class CustomFactorTests(unittest.TestCase):
                         self.assertIsNotNone(result["baseline_scenario"])
                         self.assertFalse(any(row["candidate_id"] == "invalid" for row in result["scenarios"]))
                         for endpoint in ("export/csv", "export/pdf"):
-                            self.assertEqual(client.post("/api/" + endpoint, json=payload).status_code, 200)
+                            self.assertEqual(client.post("/api/" + endpoint, json={
+                                "resultSnapshotId": result["result_snapshot_id"],
+                            }).status_code, 200)
 
                         bad_baseline = deepcopy(payload)
                         bad_baseline["baseline"] = {**invalid, "massTonnes": "100"}
-                        for endpoint in ("calculate", "export/csv", "export/pdf"):
-                            response = client.post("/api/" + endpoint, json=bad_baseline)
-                            self.assertEqual(response.status_code, 422)
-                            self.assertEqual(response.json()["issues"][0]["code"], "INVALID_EMISSION_FACTOR")
+                        response = client.post("/api/calculate", json=bad_baseline)
+                        self.assertEqual(response.status_code, 422)
+                        self.assertEqual(response.json()["issues"][0]["code"], "INVALID_EMISSION_FACTOR")
 
     def test_invalid_qualification_status_is_blocked(self):
         payload = {

@@ -42,7 +42,7 @@ class WebPageContractTests(unittest.TestCase):
         source = self.client.get("/static/app.js").text
         self.assertIn("function clearResults()", source)
         self.assertIn("state.result = null", source)
-        self.assertRegex(source, r"catch \(error\) \{ clearResults\(\);")
+        self.assertIn("if (requestId !== state.requestSerial) return;", source)
         self.assertIn('code: "EXPORT_ERROR"', source)
 
     def test_candidate_issues_are_deduplicated_and_match_candidate_id(self):
@@ -100,13 +100,15 @@ class WebPageContractTests(unittest.TestCase):
             "equipment_id", "source_evidence", "EXECUTION_CONDITIONS_PENDING",
         ):
             self.assertIn(field, source)
+        self.assertIn("指示性罚款 (EUR)", source)
+        self.assertIn("综合约束上限", source)
 
     def test_new_energy_decision_summary_contract_is_present(self):
         html = self.client.get("/").text
         source = self.client.get("/static/app.js").text
         for label in (
             "新能源决策摘要", "新增燃料成本", "EU ETS 成本节省",
-            "净成本变化", "推荐新能源用量", "推荐混兑比例",
+            "净成本变化", "推荐新能源用量", "推荐候选燃料质量占比",
         ):
             self.assertIn(label, html + source)
         for field in ("decision_summary", "scenario_deltas", "function renderNewEnergyDecisionSummary"):

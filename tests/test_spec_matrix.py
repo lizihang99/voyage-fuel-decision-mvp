@@ -156,8 +156,9 @@ class SpecificationMatrixTests(unittest.TestCase):
 
     def test_empty_candidates_and_2024_ets_exclusion_are_structured(self):
         parsed = parse_decision_case(self._case_payload(candidates=[]))
-        self.assertEqual(parsed.issues[0].field, "candidates")
-        self.assertTrue(parsed.issues[0].blocking)
+        b0_only = calculate_decision_case(parsed.request, parsed.issues)
+        self.assertEqual([row.scenario_id for row in b0_only.scenarios], ["B0"])
+        self.assertEqual(b0_only.recommendations, ())
         parsed_ets = parse_decision_case(self._case_payload(year=2024))
         result = decision_case_result_to_dict(calculate_decision_case(parsed_ets.request, parsed_ets.issues))
         ets = result["scenarios"][0]["result"]["eu_ets"]

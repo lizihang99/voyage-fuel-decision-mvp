@@ -1,11 +1,17 @@
-"""Stateless HTTP boundary for voyage fuel decision cases."""
+"""HTTP boundary for voyage fuel decision cases and short-lived exports."""
 
 from __future__ import annotations
 
 import argparse
+from collections import OrderedDict
+from dataclasses import dataclass
+import os
+from threading import Lock
+from time import monotonic
 from typing import Any
+from uuid import uuid4
 
-from fastapi import Body, FastAPI, Query, Request
+from fastapi import Body, FastAPI, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -25,10 +31,78 @@ _templates = Jinja2Templates(directory=str(_PACKAGE_DIR / "templates"))
 app.mount("/static", StaticFiles(directory=str(_PACKAGE_DIR / "static")), name="static")
 
 
+@dataclass(frozen=True)
+class _ResultSnapshot:
+    result: Any
+    created_at: float
+
+
+_SNAPSHOT_TTL_SECONDS = 30 * 60
+_SNAPSHOT_LIMIT = 32
+_VIEW_MODES = frozenset({"legacy", "workbench"})
+_result_snapshots: OrderedDict[str, _ResultSnapshot] = OrderedDict()
+_snapshot_lock = Lock()
+
+
+def _store_snapshot(result: Any) -> str:
+    snapshot_id = uuid4().hex
+    now = monotonic()
+    with _snapshot_lock:
+        expired = [
+            key for key, snapshot in _result_snapshots.items()
+            if now - snapshot.created_at > _SNAPSHOT_TTL_SECONDS
+        ]
+        for key in expired:
+            _result_snapshots.pop(key, None)
+        _result_snapshots[snapshot_id] = _ResultSnapshot(result=result, created_at=now)
+        while len(_result_snapshots) > _SNAPSHOT_LIMIT:
+            _result_snapshots.popitem(last=False)
+    return snapshot_id
+
+
+def _load_snapshot(snapshot_id: str) -> Any | None:
+    now = monotonic()
+    with _snapshot_lock:
+        snapshot = _result_snapshots.get(snapshot_id)
+        if snapshot is None:
+            return None
+        if now - snapshot.created_at > _SNAPSHOT_TTL_SECONDS:
+            _result_snapshots.pop(snapshot_id, None)
+            return None
+        _result_snapshots.move_to_end(snapshot_id)
+        return snapshot.result
+
+
+def _snapshot_error(code: str, message: str) -> JSONResponse:
+    return JSONResponse(status_code=409, content={"issues": [{
+        "code": code,
+        "scope": "CASE",
+        "field": "resultSnapshotId",
+        "blocking": True,
+        "message": message,
+        "candidate_id": None,
+        "scenario_id": None,
+        "component": None,
+    }]})
+
+
+def _view_mode(view: str | None) -> str:
+    """Resolve a whitelisted view, keeping the legacy shell as the default."""
+    configured = os.environ.get("VOYAGE_FUEL_UI", "legacy").strip().lower()
+    requested = (view if view is not None else configured).strip().lower()
+    if requested not in _VIEW_MODES:
+        raise HTTPException(status_code=422, detail="view must be legacy or workbench")
+    return requested
+
+
 @app.get("/", response_class=HTMLResponse)
-def index(request: Request) -> HTMLResponse:
-    """Serve the stateless operational calculator shell."""
-    return _templates.TemplateResponse(request=request, name="index.html", context={})
+def index(request: Request, view: str | None = Query(default=None)) -> HTMLResponse:
+    """Serve the operational calculator shell."""
+    return _templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={"view_mode": _view_mode(view)},
+    )
 
 
 @app.get("/health")
@@ -68,9 +142,13 @@ def ports(q: str = Query(default="", max_length=100)) -> dict[str, list[dict[str
 def calculate(payload: Any = Body(...)) -> JSONResponse:
     """Calculate a single request, projecting business errors as structured data."""
     parsed = parse_decision_case(payload)
-    result = decision_case_result_to_dict(calculate_parsed_decision_case(parsed))
+    result_object = calculate_parsed_decision_case(parsed)
+    result = decision_case_result_to_dict(result_object)
     if parsed.request is None:
         return JSONResponse(status_code=422, content={"issues": result["issues"]})
+    result["result_snapshot_id"] = (
+        _store_snapshot(result_object) if result_object.baseline_scenario is not None else None
+    )
     return JSONResponse(status_code=200, content=result)
 
 
@@ -91,11 +169,18 @@ def _display_config(payload: Any) -> DisplayConfig:
 
 
 def _export_result(payload: Any) -> tuple[Any, DisplayConfig] | JSONResponse:
-    """Calculate exactly once for an export and return the shared result object."""
-    parsed = parse_decision_case(payload)
-    result = calculate_parsed_decision_case(parsed)
-    if parsed.request is None:
-        return JSONResponse(status_code=422, content={"issues": decision_case_result_to_dict(result)["issues"]})
+    """Resolve the exact result produced by the preceding calculate request."""
+    if not isinstance(payload, dict) or not isinstance(payload.get("resultSnapshotId"), str):
+        return _snapshot_error(
+            "RESULT_SNAPSHOT_REQUIRED",
+            "Complete a calculation before exporting the result.",
+        )
+    result = _load_snapshot(payload["resultSnapshotId"])
+    if result is None:
+        return _snapshot_error(
+            "RESULT_SNAPSHOT_EXPIRED",
+            "The calculated result is unavailable or expired; calculate again before exporting.",
+        )
     return result, _display_config(payload)
 
 

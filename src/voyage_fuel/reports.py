@@ -420,6 +420,26 @@ def decision_case_to_csv(result: DecisionCaseResult, display_config: DisplayConf
                 "warning_codes": ";".join(constraints.warning_codes),
             })
         rows.append(row)
+        if candidate.voyage_result is not None and candidate.voyage_result.economics is not None:
+            candidate_economics = candidate.voyage_result.economics
+            row = _case_base(result, "candidate_economics")
+            row.update({
+                "candidate_id": candidate.candidate_id,
+                "calculation_status": candidate.calculation_status,
+                "comparison_status": candidate_economics.comparison_status,
+                "pc_break_even": _text(candidate_economics.pc_break_even),
+                "pe_break_even": _text(candidate_economics.pe_break_even),
+                "pe_break_even_status": candidate_economics.pe_break_even_status,
+                "comparison_value": _text(candidate_economics.comparison_value),
+                "cost_min_ratio": _text(candidate_economics.cost_min_ratio),
+                "cost_sorted_ratios": ";".join(
+                    _text(ratio) for ratio in candidate_economics.cost_sorted_ratios
+                ),
+                "warning_codes": ";".join(candidate_economics.warning_codes),
+                "unit": "case_currency",
+                "value_currency": result.currency,
+            })
+            rows.append(row)
     if result.economics is not None:
         economics = result.economics
         row = _case_base(result, "economics")
@@ -454,6 +474,13 @@ def decision_case_to_csv(result: DecisionCaseResult, display_config: DisplayConf
         if recommendation.value_star is not None:
             row["unit"] = "case_currency"
             row["value_currency"] = result.currency
+        rows.append(row)
+    for field_path, reason_code in result.field_reasons.items():
+        row = _case_base(result, "field_reason")
+        row.update({
+            "metric_name": field_path,
+            "reason_code": reason_code,
+        })
         rows.append(row)
     for trace in getattr(provenance, "factor_resolutions", ()) or ():
         factor = trace.factor
@@ -623,7 +650,12 @@ def decision_case_to_pdf(
         "Boundary: voyage-level regulatory estimate for this submitted voyage. "
         "FuelEU indicative penalty equivalent is not a formal annual penalty or annual-limit settlement; "
         "execution conditions remain pending and this report is not a procurement recommendation. "
-        "This report does not provide an independent physical lifecycle WtW reduction.",
+        "This report does not provide an independent physical lifecycle WtW reduction. "
+        "No currency conversion is performed: fuel prices, EUA prices, budgets and reference "
+        "values must use the case currency. FuelEU indicative amounts remain in EUR. "
+        "CONSTRAINT_UNVERIFIED means a supplied budget could not be evaluated; "
+        "it is not a budget-feasibility conclusion. Evidence verification statuses are "
+        "provided declarations, not automatic certificate authentication.",
         styles["ReportBody"],
     ))
 
@@ -801,6 +833,35 @@ def decision_case_to_pdf(
             value(c.x_target_min_cost, "ratio"), value(c.x_max_improvement, "ratio"), value(c.x_cost_min, "ratio"),
         ])
     story.append(make_table(constraints_rows, [24*mm, 17*mm, 19*mm, 19*mm, 15*mm, 15*mm, 15*mm, 24*mm, 19*mm, 23*mm, 22*mm, 18*mm], small=True))
+
+    story.append(Paragraph("Candidate economic thresholds", styles["ReportHeading"]))
+    threshold_rows = [[
+        "Candidate", "Candidate fuel break-even price", "EUA break-even price",
+        "EUA threshold status", "Comparison status", "Warnings",
+    ]]
+    for candidate in result.candidate_results:
+        economics = candidate.voyage_result.economics if candidate.voyage_result else None
+        if economics is None:
+            threshold_rows.append([candidate.candidate_id, "-", "-", "BLOCKED", candidate.calculation_status, "-"])
+            continue
+        threshold_rows.append([
+            candidate.candidate_id,
+            value(economics.pc_break_even, "price"),
+            value(economics.pe_break_even, "price"),
+            economics.pe_break_even_status,
+            economics.comparison_status,
+            "; ".join(economics.warning_codes) or "-",
+        ])
+    if len(threshold_rows) == 1:
+        threshold_rows.append(["-", "-", "-", "NOT_APPLICABLE", "CALCULABLE", "No candidate fuel"])
+    story.append(make_table(threshold_rows, [28*mm, 38*mm, 34*mm, 38*mm, 27*mm, 45*mm], small=True))
+
+    story.append(Paragraph("Nullable field reasons", styles["ReportHeading"]))
+    reason_rows = [["Field path", "Reason code"]]
+    reason_rows.extend([field_path, reason] for field_path, reason in result.field_reasons.items())
+    if len(reason_rows) == 1:
+        reason_rows.append(["-", "No nullable public fields"])
+    story.append(make_table(reason_rows, [118*mm, 92*mm], small=True))
 
     story.append(Paragraph("Factor evidence and resolution", styles["ReportHeading"]))
     factor_rows = [["Requested path", "Resolved path", "Fallback reason", "Qualification", "Factor status", "Equipment ID", "WtT mode", "Evidence (field/source/type/unit/status/value)"]]

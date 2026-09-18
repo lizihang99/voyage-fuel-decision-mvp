@@ -115,12 +115,13 @@ class BrowserAppMixin:
             page.locator("#add-candidate").click()
             self.fill_candidate(page, 2, candidate_id="rfnbo-no-proof", path_id="E_DIESEL", price="900", ratio="0.1", max_ratio="0.2")
 
-    def calculate(self, page):
+    def calculate(self, page, view="legacy"):
         with page.expect_response(lambda response: response.url.endswith("/api/calculate") and response.request.method == "POST") as response_info:
             page.locator("#calculate-command").click()
         response = response_info.value
         self.assertEqual(response.status, 200)
-        page.locator("#result-run-status").filter(has_text="已完成").wait_for()
+        status_selector = "#workbench-status" if view == "workbench" else "#result-run-status"
+        page.locator(status_selector).filter(has_text="已完成").wait_for()
         return response.json()
 
     @staticmethod
@@ -176,7 +177,7 @@ class MVPFlowTests(BrowserAppMixin, unittest.TestCase):
             self.assertIn("EU ETS CO2", overview)
             self.assertIn("FuelEU WtT", overview)
             self.assertIn("相对 B0", overview)
-            for label in ("新能源决策摘要", "新增燃料成本", "EU ETS 成本节省", "净成本变化", "推荐新能源用量", "推荐混兑比例"):
+            for label in ("新能源决策摘要", "新增燃料成本", "EU ETS 成本节省", "净成本变化", "推荐新能源用量", "推荐候选燃料质量占比"):
                 self.assertIn(label, overview)
 
             page.get_by_role("tab", name="Scenarios").click()
@@ -186,7 +187,7 @@ class MVPFlowTests(BrowserAppMixin, unittest.TestCase):
 
             page.get_by_role("tab", name="Thresholds").click()
             thresholds = page.locator("#thresholds-panel").inner_text()
-            for label in ("目标", "预算", "供应量", "最大混合比例", "最大改善比例"):
+            for label in ("目标", "预算", "供应量", "综合约束上限", "最大改善候选燃料质量占比"):
                 self.assertIn(label, thresholds)
 
             page.get_by_role("tab", name="Evidence").click()
@@ -473,7 +474,7 @@ class MVPFlowTests(BrowserAppMixin, unittest.TestCase):
             self.assertIn("lng-quote-1@0.1", body)
             self.assertIn("EXECUTION_CONDITIONS_PENDING", body)
             self.assertIn("TARGET_REACHABLE", page.locator("#thresholds-panel").inner_text())
-            self.assertRegex(page.locator("#thresholds-panel").inner_text(), r"目标最低成本比例")
+            self.assertRegex(page.locator("#thresholds-panel").inner_text(), r"目标最低成本候选燃料质量占比")
             self.assertRegex(page.locator("#thresholds-panel").inner_text(), r"2\.2131%")
             scenario_rows_before_precision = self.scenario_rows(page)
             self.assertEqual(scenario_rows_before_precision[0][0], "B0")

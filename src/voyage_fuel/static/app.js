@@ -4,9 +4,14 @@
   const state = {
     candidates: [],
     result: null,
+    resultSnapshotId: null,
+    requestSerial: 0,
+    calculating: false,
     ports: { departure: null, arrival: null },
     display: { mass: 3, energy: 3, ratio: 4, price: 2 },
     nextCandidateSerial: 1,
+    workbench: null,
+    submittedInput: null,
   };
 
   const $ = (id) => document.getElementById(id);
@@ -73,6 +78,30 @@
   }[char]));
   const selected = (actual, expected) => actual === expected ? " selected" : "";
   const checked = (value) => value ? " checked" : "";
+  const isWorkbench = () => document.body.dataset.view === "workbench";
+  let displayValuesModule = null;
+
+  async function loadDisplayValues() {
+    if (!displayValuesModule) displayValuesModule = import("/static/display-values.mjs");
+    return displayValuesModule;
+  }
+
+  async function percentDisplay(value) {
+    if (!isWorkbench()) return value;
+    const { ratioToPercentInput } = await loadDisplayValues();
+    return ratioToPercentInput(value);
+  }
+
+  async function listedPercentDisplay(value) {
+    const values = await Promise.all(String(value ?? "").split(",").map((item) => percentDisplay(item.trim())));
+    return values.filter(Boolean).join(", ");
+  }
+
+  async function percentToRatioValue(value) {
+    if (!isWorkbench()) return value;
+    const { percentInputToRatio } = await loadDisplayValues();
+    return percentInputToRatio(value);
+  }
 
   const EVIDENCE_UNITS = {
     lcv: "MJ/gFuel",
@@ -102,7 +131,7 @@
     return body;
   }
 
-  function candidateTemplate(candidate, index) {
+  async function candidateTemplate(candidate, index) {
     const mode = candidate.candidateMode || "builtin";
     const customType = candidate.customFuelType || "non_methane";
     const methaneSlip = candidate.methaneSlipApplicable === undefined
@@ -128,8 +157,8 @@
         <label>价格 / t<input data-field="pricePerTonne" type="number" min="0" step="any" value="${esc(candidate.pricePerTonne)}"></label>
       </div>
       <div class="candidate-grid">
-        <label>最大混合比例<input data-field="maxBlendRatio" type="number" min="0" max="1" step="any" value="${esc(candidate.maxBlendRatio || "1")}"></label>
-        <label>指定混合比例<input data-field="specifiedBlendRatios" type="text" inputmode="decimal" placeholder="例如 0.2, 0.4" value="${esc(candidate.specifiedBlendRatios)}"></label>
+        <label>最大候选燃料质量占比${isWorkbench() ? " (%)" : ""}<input data-field="maxBlendRatio" type="number" min="0" max="${isWorkbench() ? "100" : "1"}" step="any" value="${esc(isWorkbench() ? await percentDisplay(candidate.maxBlendRatio || "1") : candidate.maxBlendRatio || "1")}"></label>
+        <label>指定候选燃料质量占比${isWorkbench() ? " (%)" : ""}<input data-field="specifiedBlendRatios" type="text" inputmode="decimal" placeholder="${isWorkbench() ? "例如 20, 40" : "例如 0.2, 0.4"}" value="${esc(isWorkbench() ? await listedPercentDisplay(candidate.specifiedBlendRatios) : candidate.specifiedBlendRatios)}"></label>
         <label>供应量 (t)<input data-field="candidateSupplyTonnes" type="number" min="0" step="any" value="${esc(candidate.candidateSupplyTonnes)}"></label>
         <label>增量预算<input data-field="incrementalBudget" type="number" min="0" step="any" value="${esc(candidate.incrementalBudget)}"></label>
       </div>
@@ -419,15 +448,19 @@
     return records;
   }
 
-  function readCandidates() {
-    return [...document.querySelectorAll(".candidate-row")].map((row, index) => {
+  async function readCandidates() {
+    return Promise.all([...document.querySelectorAll(".candidate-row")].map(async (row, index) => {
+      const maxBlendRatio = fieldValue(row, "maxBlendRatio") || (isWorkbench() ? "100" : "1");
+      const specifiedRatios = fieldValue(row, "specifiedBlendRatios").split(",").map((value) => value.trim()).filter(Boolean);
       const common = {
         candidateId: fieldValue(row, "candidateId").trim(),
         candidateMode: fieldValue(row, "candidateMode", "builtin"),
         customPathId: row.dataset.customPathId || "",
         pricePerTonne: fieldValue(row, "pricePerTonne") || null,
-        specifiedBlendRatios: fieldValue(row, "specifiedBlendRatios").split(",").map((value) => value.trim()).filter(Boolean),
-        maxBlendRatio: fieldValue(row, "maxBlendRatio") || "1",
+        specifiedBlendRatios: isWorkbench()
+          ? await Promise.all(specifiedRatios.map((value) => percentToRatioValue(value)))
+          : specifiedRatios,
+        maxBlendRatio: isWorkbench() ? await percentToRatioValue(maxBlendRatio) : maxBlendRatio,
         candidateAllowsPureUse: Boolean(field(row, "candidateAllowsPureUse")?.checked),
         candidateSupplyTonnes: fieldValue(row, "candidateSupplyTonnes") || null,
         incrementalBudget: fieldValue(row, "incrementalBudget") || null,
@@ -489,7 +522,7 @@
       };
       custom.sourceEvidence = evidenceRecords(custom, [...new Set(requiredFields)]);
       return custom;
-    });
+    }));
   }
 
   async function loadFuels() {
@@ -501,13 +534,13 @@
     });
     document.querySelectorAll(".candidate-row").forEach(syncCustomRow);
   }
-  function renderCandidates() {
-    $("candidate-collection").innerHTML = state.candidates.map(candidateTemplate).join("");
+  async function renderCandidates() {
+    $("candidate-collection").innerHTML = (await Promise.all(state.candidates.map(candidateTemplate))).join("");
     document.querySelectorAll(".candidate-row").forEach(syncCustomRow);
     loadFuels().catch(() => {});
   }
-  function addCandidate() {
-    if (document.querySelectorAll(".candidate-row").length) state.candidates = readCandidates();
+  async function addCandidate() {
+    if (document.querySelectorAll(".candidate-row").length) state.candidates = await readCandidates();
     const existingIds = new Set(state.candidates.map((candidate) => candidate.candidateId));
     let serial = state.nextCandidateSerial;
     while (existingIds.has(`candidate-${serial}`)) serial += 1;
@@ -549,10 +582,10 @@
       sourceType: "SUPPLIER_SPEC",
       verificationStatus: "ESTIMATED",
     });
-    renderCandidates();
+    await renderCandidates();
   }
 
-  function payload() {
+  async function payload() {
     return {
       reportYear: Number($("report-year").value),
       departurePort: state.ports.departure || $("departure-port-search").value.trim(),
@@ -561,7 +594,7 @@
       currency: $("case-currency").value,
       baseline: readBaseline(),
       euaPricePerTCO2e: $("eua-price").value || null,
-      candidates: readCandidates(),
+      candidates: await readCandidates(),
     };
   }
 
@@ -571,7 +604,10 @@
   function renderIssues(issues = []) {
     const normalized = uniqueIssues(issues);
     $("case-errors").innerHTML = normalized.filter((issue) => issue.scope === "CASE").map(issueMarkup).join("");
-    $("result-issues").innerHTML = normalized.filter((issue) => issue.scope !== "CASE").map(issueMarkup).join("");
+    const resultIssues = $("result-issues");
+    if (resultIssues) {
+      resultIssues.innerHTML = normalized.filter((issue) => issue.scope !== "CASE").map(issueMarkup).join("");
+    }
     document.querySelectorAll("[data-candidate-error]").forEach((el) => { el.textContent = ""; });
     normalized.filter((issue) => issue.scope === "CANDIDATE").forEach((issue) => {
       const index = (issue.field.match(/^candidates\[(\d+)\]/) || [])[1];
@@ -582,19 +618,58 @@
   }
   function clearResults() {
     state.result = null;
-    $("result-run-status").textContent = "计算失败 · 未生成结果";
-    $("result-run-status").classList.add("muted");
-    $("result-boundary-summary").textContent = "本次计算未生成结果，请先处理问题后重新提交。";
-    $("overview-metrics").innerHTML = "<p class=\"empty-state\">没有可呈现的基准结果。</p>";
-    $("port-identity-details").innerHTML = "<h3>港口范围与制度身份</h3><p class=\"empty-state\">暂无港口结果。</p>";
-    $("ets-fueleu-detail").innerHTML = "<h3>基准排放与 FuelEU</h3><p class=\"empty-state\">暂无排放结果。</p>";
-    $("new-energy-decision-summary").innerHTML = "<h3>新能源决策摘要</h3><p class=\"empty-state\">暂无新能源决策结果。</p>";
-    $("economics-summary").innerHTML = "<h3>案例经济结果</h3><p class=\"empty-state\">暂无案例经济结果。</p>";
-    $("conditional-recommendations").innerHTML = "<h3>条件式建议</h3><p class=\"empty-state\">暂无建议。</p>";
-    $("scenario-comparison-table").querySelector("tbody").innerHTML = '<tr><td colspan="26" class="empty-state">暂无场景。</td></tr>';
-    $("scenario-detail-table").innerHTML = "";
-    $("thresholds-content").innerHTML = '<p class="empty-state">暂无约束阈值。</p>';
-    $("calculation-basis").innerHTML = '<p class="empty-state">暂无计算依据。</p>';
+    state.resultSnapshotId = null;
+    state.submittedInput = null;
+    setExportEnabled(false);
+    if (state.workbench) {
+      state.workbench.clear("计算失败 · 未生成结果");
+      return;
+    }
+    const status = $("result-run-status");
+    const boundary = $("result-boundary-summary");
+    if (status) {
+      status.textContent = "计算失败 · 未生成结果";
+      status.classList.add("muted");
+    }
+    if (boundary) boundary.textContent = "本次计算未生成结果，请先处理问题后重新提交。";
+    const replacements = {
+      "overview-metrics": "<p class=\"empty-state\">没有可呈现的基准结果。</p>",
+      "port-identity-details": "<h3>港口范围与制度身份</h3><p class=\"empty-state\">暂无港口结果。</p>",
+      "ets-fueleu-detail": "<h3>基准排放与 FuelEU</h3><p class=\"empty-state\">暂无排放结果。</p>",
+      "new-energy-decision-summary": "<h3>新能源决策摘要</h3><p class=\"empty-state\">暂无新能源决策结果。</p>",
+      "economics-summary": "<h3>案例经济结果</h3><p class=\"empty-state\">暂无案例经济结果。</p>",
+      "conditional-recommendations": "<h3>条件式建议</h3><p class=\"empty-state\">暂无建议。</p>",
+      "scenario-detail-table": "",
+      "thresholds-content": '<p class="empty-state">暂无约束阈值。</p>',
+      "calculation-basis": '<p class="empty-state">暂无计算依据。</p>',
+    };
+    Object.entries(replacements).forEach(([id, markup]) => {
+      const element = $(id);
+      if (element) element.innerHTML = markup;
+    });
+    const scenarioTable = $("scenario-comparison-table");
+    if (scenarioTable) {
+      scenarioTable.querySelector("tbody").innerHTML = '<tr><td colspan="26" class="empty-state">暂无场景。</td></tr>';
+    }
+  }
+  function setExportEnabled(enabled) {
+    $("export-csv").disabled = !enabled;
+    $("export-pdf").disabled = !enabled;
+  }
+  function invalidateResults() {
+    state.requestSerial += 1;
+    if (!state.result && !state.calculating) return;
+    state.calculating = false;
+    clearResults();
+    renderIssues([]);
+    if (state.workbench) {
+      state.workbench.clear("输入已变更 · 待重新计算");
+    } else {
+      const status = $("result-run-status");
+      const boundary = $("result-boundary-summary");
+      if (status) status.textContent = "输入已变更 · 待重新计算";
+      if (boundary) boundary.textContent = "旧结果已失效，当前输入尚未计算。";
+    }
   }
   function scenarioMap(result) {
     return new Map((result.scenarios || []).map((row) => [row.scenario_id, row]));
@@ -631,7 +706,7 @@
         <strong>${label}</strong><span>场景 ${esc(row.scenario_id)} · ${esc(row.candidate_id || "基准")}</span>
         <div class="decision-metrics">
           <dl><dt>推荐新能源用量</dt><dd>${formatField(scenario.candidate_mass_tonnes, "mass")}</dd></dl>
-          <dl><dt>推荐混兑比例</dt><dd>${percent(scenario.ratio)}</dd></dl>
+          <dl><dt>推荐候选燃料质量占比</dt><dd>${percent(scenario.ratio)}</dd></dl>
           <dl><dt>新增燃料成本</dt><dd>${number(fuelCostDelta, state.display.price)}</dd></dl>
           <dl><dt>EU ETS 成本节省</dt><dd>${number(negateDecimalString(euaCostDelta), state.display.price)}</dd></dl>
           <dl><dt>净成本变化</dt><dd>${number(modelCostDelta, state.display.price)}</dd></dl>
@@ -664,12 +739,23 @@
   }
 
   function renderResults(result) {
+    if (state.workbench) {
+      state.workbench.render(result, state.submittedInput, state.display);
+      return;
+    }
     const baseline = result.baseline_scenario;
-    $("result-run-status").textContent = baseline ? "已完成 · 原始结果保留" : "存在阻断问题";
-    $("result-run-status").classList.toggle("muted", !baseline);
-    $("result-boundary-summary").textContent = baseline ? `${result.report_year} · ${result.departure_port} → ${result.arrival_port} · ${result.currency} · 结果为航次级 FuelEU / EU ETS 估算，不构成年度罚款或采购建议。` : "案例未完成计算，请先处理阻断问题。";
+    const resultStatus = $("result-run-status");
+    const resultBoundary = $("result-boundary-summary");
+    if (resultStatus) {
+      resultStatus.textContent = baseline ? "已完成 · 原始结果保留" : "存在阻断问题";
+      resultStatus.classList.toggle("muted", !baseline);
+    }
+    if (resultBoundary) {
+      resultBoundary.textContent = baseline ? `${result.report_year} · ${result.departure_port} → ${result.arrival_port} · ${result.currency} · 结果为航次级 FuelEU / EU ETS 估算，不构成年度罚款或采购建议。` : "案例未完成计算，请先处理阻断问题。";
+    }
     if (!baseline) {
-      $("overview-metrics").innerHTML = "<p class=\"empty-state\">没有可呈现的基准结果。</p>";
+      const overview = $("overview-metrics");
+      if (overview) overview.innerHTML = "<p class=\"empty-state\">没有可呈现的基准结果。</p>";
       return;
     }
     const ets = baseline.eu_ets || {};
@@ -682,14 +768,22 @@
       ["FuelEU 合规余额 (t)", formatField(fuelEu.compliance_balance_t, "gas")],
       ["模型成本", number(baseline.model_cost, state.display.price)],
     ].map(([label, value]) => `<div class="metric"><span class="metric-label">${label}</span><strong class="metric-value">${value}</strong></div>`).join("");
+    const provenance = result.provenance || {};
     const voyageBasis = (result.candidate_results || []).find((item) => item.voyage_result)?.voyage_result || {};
-    const scope = voyageBasis.scope_rates || {};
+    const scope = voyageBasis.scope_rates || {
+      departure_port: provenance.departure,
+      arrival_port: provenance.arrival,
+      eu_ets_effective_rate: provenance.eu_ets_effective_rate,
+      fuel_eu_scope_rate: provenance.fuel_eu_rate,
+      eu_ets_reason: provenance.eu_ets_reason,
+      fuel_eu_reason: provenance.fuel_eu_reason,
+    };
     const departure = scope.departure_port || {};
     const arrival = scope.arrival_port || {};
     $("port-identity-details").innerHTML = `<h3>港口范围与制度身份</h3><div class="detail-grid"><dl class="evidence-item"><dt>出发港</dt><dd>${esc(departure.port_name || result.departure_port)} · EU ETS ${esc(departure.eu_ets_identity)} · FuelEU ${esc(departure.fuel_eu_identity)}</dd></dl><dl class="evidence-item"><dt>到达港</dt><dd>${esc(arrival.port_name || result.arrival_port)} · EU ETS ${esc(arrival.eu_ets_identity)} · FuelEU ${esc(arrival.fuel_eu_identity)}</dd></dl><dl class="evidence-item"><dt>范围比例</dt><dd>EU ETS ${formatField(scope.eu_ets_effective_rate, "scope")} · FuelEU ${formatField(scope.fuel_eu_scope_rate, "scope")}</dd></dl><dl class="evidence-item"><dt>判断理由</dt><dd>EU ETS ${esc(scope.eu_ets_reason)} · FuelEU ${esc(scope.fuel_eu_reason)}</dd></dl></div>`;
     const gases = ets.mrv_raw_by_gas || {};
     const excluded = Object.entries(ets.excluded_from_ets_surrender || {}).filter(([, value]) => value).map(([gasName]) => gasName).join(", ") || "无";
-    $("ets-fueleu-detail").innerHTML = `<h3>基准排放与 FuelEU</h3><div class="detail-grid"><dl class="evidence-item"><dt>EU ETS 气体</dt><dd>CO2 ${formatField(gases.CO2, "gas")} · CH4 ${formatField(gases.CH4, "gas")} · N2O ${formatField(gases.N2O, "gas")}</dd></dl><dl class="evidence-item"><dt>纳入 / 排除气体</dt><dd>${esc((ets.included_gases || []).join(", "))} / ${esc(excluded)}</dd></dl><dl class="evidence-item"><dt>EUAs / EUA 成本</dt><dd>${formatField(ets.euas_required, "gas")} / ${number(ets.eua_cost, state.display.price)}</dd></dl><dl class="evidence-item"><dt>FuelEU WtT / TtW / GHGI</dt><dd>WtT ${formatField(fuelEu.wt_t_intensity_g_per_mj, "intensity")} · TtW ${formatField(fuelEu.tt_w_intensity_g_per_mj, "intensity")} · GHGI ${formatField(fuelEu.ghgi_actual_g_per_mj, "intensity")} · 目标 ${formatField(fuelEu.target_g_per_mj, "intensity")} · 余额 ${formatField(fuelEu.compliance_balance_t, "gas")} · 指示性罚款 ${number(fuelEu.indicative_penalty_eur, state.display.price)}</dd></dl></div>`;
+    $("ets-fueleu-detail").innerHTML = `<h3>基准排放与 FuelEU</h3><div class="detail-grid"><dl class="evidence-item"><dt>EU ETS 气体</dt><dd>CO2 ${formatField(gases.CO2, "gas")} · CH4 ${formatField(gases.CH4, "gas")} · N2O ${formatField(gases.N2O, "gas")}</dd></dl><dl class="evidence-item"><dt>纳入 / 排除气体</dt><dd>${esc((ets.included_gases || []).join(", "))} / ${esc(excluded)}</dd></dl><dl class="evidence-item"><dt>EUAs / EUA 成本</dt><dd>${formatField(ets.euas_required, "gas")} / ${number(ets.eua_cost, state.display.price)}</dd></dl><dl class="evidence-item"><dt>FuelEU WtT / TtW / GHGI</dt><dd>WtT ${formatField(fuelEu.wt_t_intensity_g_per_mj, "intensity")} · TtW ${formatField(fuelEu.tt_w_intensity_g_per_mj, "intensity")} · GHGI ${formatField(fuelEu.ghgi_actual_g_per_mj, "intensity")} · 目标 ${formatField(fuelEu.target_g_per_mj, "intensity")} · 余额 ${formatField(fuelEu.compliance_balance_t, "gas")} · 指示性罚款 (EUR) ${number(fuelEu.indicative_penalty_eur, state.display.price)}</dd></dl></div>`;
     const economics = result.economics || {};
     $("economics-summary").innerHTML = `<h3>案例经济结果</h3><div class="detail-grid"><dl class="evidence-item"><dt>当前模型成本最低</dt><dd>${esc(economics.cost_min_scenario_id)}</dd></dl><dl class="evidence-item"><dt>目标最低成本</dt><dd>${esc(economics.target_min_cost_scenario_id)}</dd></dl><dl class="evidence-item"><dt>最大合规改善</dt><dd>${esc(economics.max_improvement_scenario_id)}</dd></dl><dl class="evidence-item"><dt>比较状态</dt><dd>${esc(economics.comparison_status)}</dd></dl></div><p>相对 B0 的合规改善和成本变化见场景表。</p><div id="switch-points">${(economics.switch_points || []).map((point) => `<p>切换 ${esc(point.from_scenario_id)} → ${esc(point.to_scenario_id)} · value* ${number(point.value_star, state.display.price)}</p>`).join("") || "<p>暂无切换点。</p>"}</div>`;
     renderNewEnergyDecisionSummary(result);
@@ -700,52 +794,84 @@
       const scenarioEts = scenario.eu_ets || {};
       const scenarioGases = scenarioEts.mrv_raw_by_gas || {};
       const scenarioExcluded = Object.entries(scenario.eu_ets?.excluded_from_ets_surrender || {}).filter(([, value]) => value).map(([gasName]) => gasName).join(", ") || "-";
-      return `<tr><td>${esc(row.scenario_id)}</td><td>${esc(row.candidate_id || "基准")}</td><td>${esc(row.calculation_status || "")} / ${esc(scenario.execution_status || "")}</td><td class="numeric">${percent(scenario.ratio)}</td><td class="numeric">${number(scenario.model_cost, state.display.price)}</td><td class="numeric">${number(deltaValue(row, "fuel_cost"), state.display.price)}</td><td class="numeric">${number(negateDecimalString(deltaValue(row, "eua_cost")), state.display.price)}</td><td class="numeric">${number(deltaValue(row, "model_cost"), state.display.price)}</td><td class="numeric">${formatField(fuelEuResult.ghgi_actual_g_per_mj, "intensity")}</td><td class="numeric">${formatField(fuelEuResult.compliance_balance_t, "gas")}</td><td class="numeric">${text(row.current_model_cost_rank)}</td><td class="numeric">B0 ${formatField(scenario.baseline_mass_tonnes, "mass")} + 候选 ${formatField(scenario.candidate_mass_tonnes, "mass")}</td><td class="numeric">${formatField(scenario.physical_energy_mj, "energy")}</td><td class="numeric">${number(scenario.fuel_cost, state.display.price)}</td><td class="numeric">${formatField(scenarioGases.CO2 || scenarioEts.raw_co2_t, "gas")}</td><td class="numeric">${formatField(scenarioGases.CH4 || scenarioEts.raw_ch4_t, "gas")}</td><td class="numeric">${formatField(scenarioGases.N2O || scenarioEts.raw_n2o_t, "gas")}</td><td>${esc((scenarioEts.included_gases || []).join(", "))}</td><td>${esc(scenarioExcluded)}</td><td class="numeric">${formatField(scenarioEts.euas_required, "gas")}</td><td class="numeric">${number(scenarioEts.eua_cost, state.display.price)}</td><td class="numeric">${formatField(fuelEuResult.wt_t_intensity_g_per_mj, "intensity")}</td><td class="numeric">${formatField(fuelEuResult.tt_w_intensity_g_per_mj, "intensity")}</td><td class="numeric">${formatField(fuelEuResult.target_g_per_mj, "intensity")}</td><td class="numeric">${number(fuelEuResult.indicative_penalty_eur, state.display.price)}</td><td class="numeric">${formatField(scenario.compliance_improvement_tco2e, "gas")}</td></tr>`;
+      return `<tr><td>${esc(row.scenario_id)}</td><td>${esc(row.candidate_id || "基准")}</td><td>${esc(row.calculation_status || "")} / ${esc(scenario.constraint_status || "")} / ${esc(scenario.execution_status || "")}</td><td class="numeric">${percent(scenario.ratio)}</td><td class="numeric">${number(scenario.model_cost, state.display.price)}</td><td class="numeric">${number(deltaValue(row, "fuel_cost"), state.display.price)}</td><td class="numeric">${number(negateDecimalString(deltaValue(row, "eua_cost")), state.display.price)}</td><td class="numeric">${number(deltaValue(row, "model_cost"), state.display.price)}</td><td class="numeric">${formatField(fuelEuResult.ghgi_actual_g_per_mj, "intensity")}</td><td class="numeric">${formatField(fuelEuResult.compliance_balance_t, "gas")}</td><td class="numeric">${text(row.current_model_cost_rank)}</td><td class="numeric">B0 ${formatField(scenario.baseline_mass_tonnes, "mass")} + 候选 ${formatField(scenario.candidate_mass_tonnes, "mass")}</td><td class="numeric">${formatField(scenario.physical_energy_mj, "energy")}</td><td class="numeric">${number(scenario.fuel_cost, state.display.price)}</td><td class="numeric">${formatField(scenarioGases.CO2 || scenarioEts.raw_co2_t, "gas")}</td><td class="numeric">${formatField(scenarioGases.CH4 || scenarioEts.raw_ch4_t, "gas")}</td><td class="numeric">${formatField(scenarioGases.N2O || scenarioEts.raw_n2o_t, "gas")}</td><td>${esc((scenarioEts.included_gases || []).join(", "))}</td><td>${esc(scenarioExcluded)}</td><td class="numeric">${formatField(scenarioEts.euas_required, "gas")}</td><td class="numeric">${number(scenarioEts.eua_cost, state.display.price)}</td><td class="numeric">${formatField(fuelEuResult.wt_t_intensity_g_per_mj, "intensity")}</td><td class="numeric">${formatField(fuelEuResult.tt_w_intensity_g_per_mj, "intensity")}</td><td class="numeric">${formatField(fuelEuResult.target_g_per_mj, "intensity")}</td><td class="numeric">${number(fuelEuResult.indicative_penalty_eur, state.display.price)}</td><td class="numeric">${formatField(scenario.compliance_improvement_tco2e, "gas")}</td></tr>`;
     }).join("") || '<tr><td colspan="26" class="empty-state">暂无场景。</td></tr>';
-    $("scenario-detail-table").innerHTML = "<p>执行状态：EXECUTION_CONDITIONS_PENDING。相对 B0 合规改善以 tCO2e 表示。</p>";
+    const unverifiedBudget = (result.candidate_results || []).some((candidate) =>
+      candidate.voyage_result?.constraints?.warning_codes?.includes("BUDGET_UNAVAILABLE_WITHOUT_PRICES")
+    );
+    $("scenario-detail-table").innerHTML = `<p>执行状态：EXECUTION_CONDITIONS_PENDING。相对 B0 合规改善以 tCO2e 表示。${unverifiedBudget ? "预算未验证：缺少价格，系统未判断预算可行性。" : ""}</p>`;
     $("conditional-recommendations").innerHTML = `<h3>条件式建议</h3>${(result.recommendations || []).map((rec) => `<div class="recommendation ${rec.status === "UNAVAILABLE" ? "unavailable" : ""}"><strong>${esc(rec.status)}</strong><span>${esc(rec.condition)} · ${esc(rec.reason)}${rec.scenario_id ? ` · 场景 ${esc(rec.scenario_id)}` : ""}</span><small>假设: ${esc((rec.assumptions || []).join(", "))}</small></div>`).join("") || '<p class="empty-state">暂无建议。</p>'}`;
-    const provenance = result.provenance || {};
     const evidence = [["计算规范版本", provenance.calculation_spec_version], ["燃料因子版本", provenance.fuel_factor_version], ["港口规则版本", provenance.port_rule_version], ["EU ETS 边界理由", provenance.eu_ets_reason], ["FuelEU 边界理由", provenance.fuel_eu_reason], ["ETS effective rate", provenance.eu_ets_effective_rate], ["来源 ID", (provenance.source_ids || []).join("; ")]];
     (provenance.factor_resolutions || []).forEach((trace) => { const factor = trace.factor || {}; const evidenceText = (factor.source_evidence || []).map((item) => `${item.field_name}:${item.source_id}/${item.source_type}/${item.unit}/${item.verification_status}/${factorEvidenceValue(factor, trace, item.field_name)}`).join("; "); evidence.push([`因子回溯 · ${trace.requested_path_id}`, `${trace.resolved_path_id} · ${trace.resolution_reason} · 因子模式 ${factor.wt_t_mode} · 因子状态 ${trace.factor_status} · 资格 ${factor.qualification_status} · 设备 ${factor.equipment_id} · ${evidenceText}`]); });
     $("calculation-basis").innerHTML = evidence.map(([label, value]) => `<dl class="evidence-item"><dt>${label}</dt><dd>${esc(text(value))}</dd></dl>`).join("");
     const candidateThresholds = (result.candidate_results || []).map((candidate) => {
       const constraints = candidate.voyage_result && candidate.voyage_result.constraints;
-      return constraints ? `<tr><td>${esc(candidate.candidate_id)}</td><td>${esc(constraints.target_status)}</td><td>${percent(constraints.x_budget)}</td><td>${percent(constraints.x_supply)}</td><td>${percent(constraints.x_cap)}</td><td>${percent(constraints.x_target_min_cost)}</td><td>${percent(constraints.x_max_improvement)}</td><td>${esc((constraints.warning_codes || []).join(", ") || "-")}</td></tr>` : `<tr><td>${esc(candidate.candidate_id)}</td><td colspan="7">BLOCKED · ${esc((candidate.issues || []).map((issue) => issue.code).join(", ") || "无约束结果")}</td></tr>`;
+      const economics = candidate.voyage_result && candidate.voyage_result.economics;
+      return constraints ? `<tr><td>${esc(candidate.candidate_id)}</td><td>${esc(constraints.target_status)}</td><td>${percent(constraints.x_budget)}</td><td>${percent(constraints.x_supply)}</td><td>${percent(constraints.x_cap)}</td><td>${percent(constraints.x_target_min)}</td><td>${percent(constraints.x_target_min_cost)}</td><td>${percent(constraints.x_max_improvement)}</td><td>${percent(constraints.x_cost_min)}</td><td>${number(economics?.pc_break_even, state.display.price)}</td><td>${number(economics?.pe_break_even, state.display.price)}</td><td>${esc(economics?.pe_break_even_status || "-")}</td><td>${esc((constraints.warning_codes || []).join(", ") || "-")}</td></tr>` : `<tr><td>${esc(candidate.candidate_id)}</td><td colspan="12">BLOCKED · ${esc((candidate.issues || []).map((issue) => issue.code).join(", ") || "无约束结果")}</td></tr>`;
     }).join("");
-    $("thresholds-content").innerHTML = `<table><thead><tr><th>候选</th><th>目标状态</th><th>预算边界</th><th>供应量边界</th><th>最大混合比例</th><th>目标最低成本比例</th><th>最大改善比例</th><th>警告</th></tr></thead><tbody>${candidateThresholds || '<tr><td colspan="8">暂无约束阈值。</td></tr>'}</tbody></table>`;
+    const fieldReasons = Object.entries(result.field_reasons || {}).map(([fieldPath, reason]) => `<tr><td>${esc(fieldPath)}</td><td>${esc(reason)}</td></tr>`).join("");
+    $("thresholds-content").innerHTML = `<table><thead><tr><th>候选</th><th>目标状态</th><th>预算边界</th><th>供应量边界</th><th>综合约束上限</th><th>目标最低候选燃料质量占比</th><th>目标最低成本候选燃料质量占比</th><th>最大改善候选燃料质量占比</th><th>当前成本最低候选燃料质量占比</th><th>候选燃料临界价格</th><th>EUA 临界价格</th><th>EUA 临界状态</th><th>警告</th></tr></thead><tbody>${candidateThresholds || '<tr><td colspan="13">暂无候选阈值。</td></tr>'}</tbody></table><h3>空值原因</h3><table><thead><tr><th>字段</th><th>原因码</th></tr></thead><tbody>${fieldReasons || '<tr><td colspan="2">当前结果没有需要解释的空值。</td></tr>'}</tbody></table>`;
   }
 
   async function calculate(event) {
     event.preventDefault();
+    const requestId = ++state.requestSerial;
     clearResults();
     renderIssues([]);
+    state.calculating = true;
+    if (state.workbench) {
+      state.workbench.clear("计算中");
+    } else {
+      const status = $("result-run-status");
+      const boundary = $("result-boundary-summary");
+      if (status) status.textContent = "计算中";
+      if (boundary) boundary.textContent = "当前输入正在计算。";
+    }
     try {
-      state.result = await fetchJson("/api/calculate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload()) });
+      const submitted = await payload();
+      const result = await fetchJson("/api/calculate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(submitted) });
+      // Input edits and newer submissions invalidate both success and error responses.
+      if (requestId !== state.requestSerial) return;
+      state.result = result;
+      state.submittedInput = submitted;
+      state.resultSnapshotId = result.baseline_scenario ? result.result_snapshot_id : null;
       renderResults(state.result);
+      setExportEnabled(Boolean(state.resultSnapshotId));
       const issues = [...(state.result.issues || []), ...(state.result.candidate_results || []).flatMap((candidate) => candidate.issues || [])];
       renderIssues(issues);
-    } catch (error) { clearResults(); renderIssues((error.body && error.body.issues) || [{ code: "NETWORK_ERROR", scope: "CASE", field: "case", blocking: true, message: "无法连接计算服务" }]); }
+    } catch (error) {
+      if (requestId !== state.requestSerial) return;
+      clearResults();
+      renderIssues((error.body && error.body.issues) || [{ code: "NETWORK_ERROR", scope: "CASE", field: "case", blocking: true, message: "无法连接计算服务" }]);
+    } finally {
+      if (requestId === state.requestSerial) state.calculating = false;
+    }
   }
   async function exportResult(format) {
-    if (!state.result) {
+    if (!state.resultSnapshotId) {
       renderIssues([{ code: "NO_RESULT", scope: "CASE", field: "case", blocking: true, message: "请先完成一次计算。" }]);
       return;
     }
+    const requestId = state.requestSerial;
     try {
-      const response = await fetch(`/api/export/${format}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...payload(), displayConfig: { fuel_mass_decimals: state.display.mass, energy_decimals: state.display.energy, ratio_decimals: state.display.ratio, price_decimals: state.display.price } }) });
+      const response = await fetch(`/api/export/${format}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ resultSnapshotId: state.resultSnapshotId, displayConfig: { fuel_mass_decimals: state.display.mass, energy_decimals: state.display.energy, ratio_decimals: state.display.ratio, price_decimals: state.display.price } }) });
+      if (requestId !== state.requestSerial) return;
       if (!response.ok) {
         let body = {};
         try { body = await response.json(); } catch (_) { body = {}; }
+        if (requestId !== state.requestSerial) return;
         renderIssues(body.issues || [{ code: "EXPORT_ERROR", scope: "CASE", field: "export", blocking: true, message: "导出失败，请稍后重试。" }]);
         return;
       }
       const blob = await response.blob();
+      if (requestId !== state.requestSerial) return;
       const anchor = document.createElement("a");
       anchor.href = URL.createObjectURL(blob);
       anchor.download = `voyage-fuel-decision.${format}`;
       anchor.click();
       URL.revokeObjectURL(anchor.href);
     } catch (_) {
+      if (requestId !== state.requestSerial) return;
       renderIssues([{ code: "EXPORT_ERROR", scope: "CASE", field: "export", blocking: true, message: "导出失败，请检查网络连接后重试。" }]);
     }
   }
@@ -762,14 +888,14 @@
         try {
           const data = await fetchJson(`/api/ports?q=${encodeURIComponent(query)}`);
           list.innerHTML = data.ports.map((port) => `<button type="button" class="lookup-option" data-code="${esc(port.unlocode)}"><strong>${esc(port.unlocode)}</strong> · ${esc(port.portName)} · ${esc(port.countryCode)}</button>`).join("");
-          list.querySelectorAll(".lookup-option").forEach((button) => button.addEventListener("click", () => { state.ports[role] = button.dataset.code; input.value = button.dataset.code; list.innerHTML = ""; }));
+          list.querySelectorAll(".lookup-option").forEach((button) => button.addEventListener("click", () => { state.ports[role] = button.dataset.code; input.value = button.dataset.code; list.innerHTML = ""; invalidateResults(); }));
         } catch (_) { list.innerHTML = ""; }
       }, 160);
     });
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    addCandidate();
+    addCandidate().catch(() => {});
     loadFuels().catch(() => {});
     setupLookup("departure");
     setupLookup("arrival");
@@ -777,14 +903,17 @@
     $("baseline-custom-editor").addEventListener("change", syncBaselineCustomEditor);
     $("baseline-custom-editor").addEventListener("input", syncBaselineCustomEditor);
     syncBaselineCustomEditor();
-    $("add-candidate").addEventListener("click", addCandidate);
-    $("candidate-collection").addEventListener("click", (event) => {
+    $("case-form").addEventListener("input", invalidateResults);
+    $("case-form").addEventListener("change", invalidateResults);
+    $("add-candidate").addEventListener("click", async () => { await addCandidate(); invalidateResults(); });
+    $("candidate-collection").addEventListener("click", async (event) => {
       if (event.target.closest(".remove-candidate")) {
         const row = event.target.closest(".candidate-row");
-        state.candidates = readCandidates();
+        state.candidates = await readCandidates();
         const index = [...document.querySelectorAll(".candidate-row")].indexOf(row);
         if (index >= 0) state.candidates.splice(index, 1);
-        renderCandidates();
+        await renderCandidates();
+        invalidateResults();
       }
     });
     $("candidate-collection").addEventListener("change", (event) => {
@@ -801,6 +930,29 @@
     $("export-csv").addEventListener("click", () => exportResult("csv"));
     $("export-pdf").addEventListener("click", () => exportResult("pdf"));
     document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => { document.querySelectorAll(".tab").forEach((item) => { item.classList.toggle("active", item === tab); item.setAttribute("aria-selected", item === tab); }); document.querySelectorAll(".tab-panel").forEach((panel) => { panel.hidden = panel.id !== tab.dataset.tab; panel.classList.toggle("active", panel.id === tab.dataset.tab); }); }));
-    ["mass", "energy", "ratio", "price"].forEach((kind) => { $(`precision-${kind}`).addEventListener("input", (event) => { state.display[kind] = Math.max(0, Math.min(9, Number(event.target.value) || 0)); if (state.result) renderResults(state.result); }); });
+    ["mass", "energy", "ratio", "price"].forEach((kind) => { $(`precision-${kind}`).addEventListener("input", (event) => { state.display[kind] = Math.max(0, Math.min(9, Number(event.target.value) || 0)); if (state.result) state.workbench ? state.workbench.setDisplay(state.display) : renderResults(state.result); }); });
+
+    if (document.body.dataset.view === "workbench") {
+      const root = $("workbench-root");
+      const initializeWorkbench = async () => {
+        try {
+          if (!root) throw new Error("workbench root unavailable");
+          const { createWorkbenchView } = await import("/static/workbench-view.mjs");
+          state.workbench = createWorkbenchView(root, {
+            onEditInputs: () => $("input-heading")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+          });
+          $("calculate-command").disabled = false;
+        } catch (error) {
+          state.workbench = null;
+          if (root) {
+            root.hidden = false;
+            const content = root.querySelector("#workbench-content");
+            if (content) content.innerHTML = '<div class="workbench-empty"><strong>新版工作台加载失败</strong><p><a href="/?view=legacy">返回旧版计算器</a></p></div>';
+          }
+          renderIssues([{ code: "WORKBENCH_LOAD_ERROR", scope: "CASE", field: "workbench", blocking: true, message: "新版工作台脚本未能加载，请返回旧版继续使用。" }]);
+        }
+      };
+      initializeWorkbench();
+    }
   });
 })();

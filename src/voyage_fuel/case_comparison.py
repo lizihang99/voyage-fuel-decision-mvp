@@ -331,6 +331,12 @@ def _maximum_compliance_improvement_recommendation(
     condition = "FUELEU_MAX_COMPLIANCE_IMPROVEMENT"
     if candidate.voyage_result is None:
         return _unavailable(recommendation_id, condition, "CANDIDATE_BLOCKED", "CANDIDATE_BLOCKED")
+    constraints = candidate.voyage_result.constraints
+    if constraints and "BUDGET_UNAVAILABLE_WITHOUT_PRICES" in constraints.warning_codes:
+        return _unavailable(
+            recommendation_id, condition, "BUDGET_UNAVAILABLE_WITHOUT_PRICES",
+            *_candidate_assumptions(candidate), "CONSTRAINT_UNVERIFIED", target_status,
+        )
     scenario = _scenario_for_ratio(scenarios, candidate.candidate_id, ratio)
     assumptions = (*_candidate_assumptions(candidate), target_status)
     if scenario is None or scenario.result.constraint_status != "FEASIBLE":

@@ -307,17 +307,15 @@ class CaseJsonIoTests(unittest.TestCase):
 
         self.assertEqual(parsed.issues[0].code, "MISSING_REQUIRED_FACTOR")
 
-    def test_empty_candidates_is_case_blocking(self):
+    def test_empty_candidates_creates_b0_only_request(self):
         payload = minimum_payload()
         payload["candidates"] = []
 
         parsed = parse_decision_case(payload)
 
-        self.assertIsNone(parsed.request)
-        self.assertEqual(parsed.issues[0].code, "MISSING_REQUIRED_FACTOR")
-        self.assertEqual(parsed.issues[0].scope, "CASE")
-        self.assertEqual(parsed.issues[0].field, "candidates")
-        self.assertTrue(parsed.issues[0].blocking)
+        self.assertIsNotNone(parsed.request)
+        self.assertEqual(parsed.request.candidates, ())
+        self.assertEqual(parsed.issues, ())
 
 
 if __name__ == "__main__":

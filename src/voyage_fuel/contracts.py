@@ -1,6 +1,6 @@
 """Immutable contracts for multi-candidate voyage decision cases."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from decimal import Decimal
 from typing import Mapping
 
@@ -58,6 +58,8 @@ class CandidateInput:
             raise ValueError("INVALID_BLEND_RATIO: max_blend_ratio must be between zero and one")
         if any(not ZERO <= ratio <= self.max_blend_ratio for ratio in self.specified_blend_ratios):
             raise ValueError("INVALID_BLEND_RATIO: specified_blend_ratios must be within max_blend_ratio")
+        if not self.allows_pure_use and ONE in self.specified_blend_ratios:
+            raise ValueError("INVALID_BLEND_RATIO: B100 requires explicit pure-use permission")
         if any(
             getattr(self, field_name) is not None and getattr(self, field_name) < ZERO
             for field_name in (
@@ -100,8 +102,6 @@ class DecisionCaseInput:
             raise ValueError("INVALID_BASELINE_MASS: baseline_mass_tonnes must be positive")
         if self.eua_price_per_tco2e is not None and self.eua_price_per_tco2e < ZERO:
             raise ValueError("INVALID_EUA_PRICE: eua_price_per_tco2e must be non-negative")
-        if not self.candidates:
-            raise ValueError("MISSING_REQUIRED_FACTOR: at least one candidate is required")
         candidate_ids = tuple(candidate.candidate_id for candidate in self.candidates)
         if len(candidate_ids) != len(set(candidate_ids)):
             raise ValueError("DUPLICATE_CANDIDATE_ID: candidate_id values must be unique")
@@ -201,3 +201,4 @@ class DecisionCaseResult:
     provenance: object | None = None
     economics: CaseEconomicsResult | None = None
     decision_summary: DecisionSummary | None = None
+    field_reasons: Mapping[str, str] = field(default_factory=dict)

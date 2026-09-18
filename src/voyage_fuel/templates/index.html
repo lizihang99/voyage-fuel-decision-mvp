@@ -3,19 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>航次燃料决策计算器</title>
+  <title>{{ "航次燃料决策工作台" if view_mode == "workbench" else "航次燃料决策计算器" }}</title>
   <link rel="stylesheet" href="/static/styles.css">
+  {% if view_mode == "workbench" %}
+  <link rel="stylesheet" href="/static/workbench.css">
+  {% endif %}
 </head>
-<body>
+<body data-view="{{ view_mode }}">
   <header class="topbar">
     <div>
       <p class="eyebrow">航运合规分析</p>
-      <h1>航次燃料决策计算器</h1>
+      <h1>{{ "航次燃料决策工作台" if view_mode == "workbench" else "航次燃料决策计算器" }}</h1>
     </div>
     <div class="topbar-actions">
       <span id="calculation-boundary-status" class="status-chip">航次级估算 · 不含年度罚款结算</span>
-      <button id="export-csv" class="button secondary" type="button">下载 CSV</button>
-      <button id="export-pdf" class="button secondary" type="button">下载 PDF</button>
+      {% if view_mode == "legacy" %}
+      <a class="button secondary view-link" href="/?view=workbench">试用新版工作台</a>
+      {% else %}
+      <a class="button secondary view-link" href="/?view=legacy">返回旧版</a>
+      {% endif %}
+      <button id="export-csv" class="button secondary" type="button" disabled>下载 CSV</button>
+      <button id="export-pdf" class="button secondary" type="button" disabled>下载 PDF</button>
     </div>
   </header>
 
@@ -30,6 +38,7 @@
             <label for="case-currency">案例货币 *<select id="case-currency" name="currency"><option>EUR</option><option>USD</option><option>GBP</option></select></label>
             <label class="check-field" for="adjacent-port-confirmation"><input id="adjacent-port-confirmation" name="adjacentValidPortOfCallConfirmed" type="checkbox" checked> 已确认相邻有效 Port of Call</label>
           </div>
+          <p id="currency-boundary-note" class="boundary-note">燃料价格、EUA 价格、增量预算及合规改善参考价值须统一使用案例币种；系统不换汇。FuelEU 指示性金额始终为 EUR，不计入模型成本或预算。</p>
           <div class="field-grid two port-fields">
             <label for="departure-port-search">出发港 *<input id="departure-port-search" name="departurePort" type="search" placeholder="输入 UN/LOCODE 或港口名" autocomplete="off" required><span id="departure-port-options" class="lookup-options" role="listbox"></span><span id="departure-port-error" class="field-error" aria-live="polite"></span></label>
             <label for="arrival-port-search">到达港 *<input id="arrival-port-search" name="arrivalPort" type="search" placeholder="输入 UN/LOCODE 或港口名" autocomplete="off" required><span id="arrival-port-options" class="lookup-options" role="listbox"></span><span id="arrival-port-error" class="field-error" aria-live="polite"></span></label>
@@ -38,6 +47,7 @@
 
         <fieldset>
           <legend>基准燃料</legend>
+          <p id="catalog-qualification-note" class="boundary-note">目录燃料按默认资格计算；内置 RFNBO 资格未证明时回退对应化石路径。资格及批次参数可通过高级自定义或 API 提供。</p>
           <div class="field-grid four baseline-fields">
             <label for="baseline-mode">输入模式 *<select id="baseline-mode" data-field="baselineMode" required><option value="builtin">目录燃料</option><option value="custom">高级自定义</option></select></label>
             <label for="baseline-fuel" id="baseline-fuel-label">燃料路径 *<select id="baseline-fuel" name="baseline.pathId" required><option value="MDO">加载燃料目录…</option></select></label>
@@ -84,10 +94,11 @@
           <div id="candidate-collection" class="candidate-collection" aria-live="polite"></div>
         </fieldset>
         <div id="case-errors" class="issue-list" aria-live="polite"></div>
-        <button id="calculate-command" class="button primary" type="submit">计算航次结果</button>
+        <button id="calculate-command" class="button primary" type="submit"{% if view_mode == "workbench" %} disabled{% endif %}>计算航次结果</button>
       </form>
     </section>
 
+    {% if view_mode == "legacy" %}
     <section class="workspace results-workspace" aria-labelledby="results-heading">
       <div class="section-heading"><div><p class="eyebrow">结果工作区</p><h2 id="results-heading">比较与依据</h2></div><span id="result-run-status" class="status-chip muted">尚未计算</span></div>
       <div id="result-boundary-summary" class="boundary-summary" role="status">提交输入后，这里会显示航次级 FuelEU / EU ETS 计算边界。</div>
@@ -107,17 +118,21 @@
         <div id="conditional-recommendations" class="recommendations"><h3>条件式建议</h3><p class="empty-state">暂无建议。</p></div>
       </div>
       <div id="scenarios-panel" class="tab-panel" role="tabpanel" hidden>
-        <div class="table-scroll"><table id="scenario-comparison-table"><caption>场景比较（数值保留原始精度，显示设置仅影响展示）</caption><thead><tr><th>场景</th><th>候选燃料</th><th>状态</th><th>混合比例</th><th>模型成本</th><th>新增燃料成本</th><th>EU ETS 成本节省</th><th>净成本变化</th><th>FuelEU GHGI</th><th>合规余额 (t)</th><th>排序</th><th>燃料质量 (t)</th><th>物理能源 (GJ)</th><th>燃料成本</th><th>EU ETS CO2</th><th>EU ETS CH4</th><th>EU ETS N2O</th><th>纳入气体</th><th>排除气体</th><th>EUAs</th><th>EUA 成本</th><th>FuelEU WtT</th><th>FuelEU TtW</th><th>目标</th><th>指示性罚款</th><th>相对 B0</th></tr></thead><tbody><tr><td colspan="26" class="empty-state">暂无场景。</td></tr></tbody></table></div>
+        <div class="table-scroll"><table id="scenario-comparison-table"><caption>场景比较（数值保留原始精度，显示设置仅影响展示）</caption><thead><tr><th>场景</th><th>候选燃料</th><th>状态</th><th>候选燃料质量占比</th><th>模型成本</th><th>新增燃料成本</th><th>EU ETS 成本节省</th><th>净成本变化</th><th>FuelEU GHGI</th><th>合规余额 (t)</th><th>排序</th><th>燃料质量 (t)</th><th>物理能源 (GJ)</th><th>燃料成本</th><th>EU ETS CO2</th><th>EU ETS CH4</th><th>EU ETS N2O</th><th>纳入气体</th><th>排除气体</th><th>EUAs</th><th>EUA 成本</th><th>FuelEU WtT</th><th>FuelEU TtW</th><th>目标</th><th>指示性罚款 (EUR)</th><th>相对 B0</th></tr></thead><tbody><tr><td colspan="26" class="empty-state">暂无场景。</td></tr></tbody></table></div>
         <div id="scenario-detail-table" class="scenario-detail-table" aria-live="polite"></div>
       </div>
       <div id="thresholds-panel" class="tab-panel" role="tabpanel" hidden>
         <div id="thresholds-content" class="table-scroll"><p class="empty-state">暂无约束阈值。</p></div>
       </div>
       <div id="evidence-panel" class="tab-panel" role="tabpanel" hidden>
+        <p class="boundary-note">来源与核验状态由数据提供方声明，系统不自动核验证书真实性。网页使用同一组来源信息生成字段证据，逐字段不同来源可通过 API 提供。</p>
         <div id="calculation-basis" class="evidence-grid"><p class="empty-state">暂无计算依据。</p></div>
       </div>
       <div id="result-issues" class="issue-list" aria-live="polite"></div>
     </section>
+    {% else %}
+    {% include "workbench_results.html" %}
+    {% endif %}
 
     <section id="display-precision" class="settings-strip" aria-labelledby="display-heading">
       <div><p class="eyebrow">展示设置</p><h2 id="display-heading">显示精度</h2></div>

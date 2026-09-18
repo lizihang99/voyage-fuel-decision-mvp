@@ -291,6 +291,8 @@ class VoyageInput:
             raise ValueError("compliance_improvement_value must be non-negative")
         if any(not ZERO <= ratio <= self.max_blend_ratio for ratio in self.specified_blend_ratios):
             raise ValueError("specified_blend_ratios must be within max_blend_ratio")
+        if not self.candidate_allows_pure_use and ONE in self.specified_blend_ratios:
+            raise ValueError("INVALID_BLEND_RATIO: B100 requires explicit pure-use permission")
         if self.eua_price_per_tco2e is not None:
             object.__setattr__(self, "eua_price_per_tco2e", as_decimal(self.eua_price_per_tco2e))
             if self.eua_price_per_tco2e < ZERO:

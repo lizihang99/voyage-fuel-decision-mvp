@@ -95,14 +95,14 @@ class ContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "DUPLICATE_CANDIDATE_ID"):
             DecisionCaseInput(currency="EUR", candidates=(candidate, candidate), **common)
 
-    def test_case_rejects_empty_candidate_collection(self):
-        with self.assertRaisesRegex(ValueError, "MISSING_REQUIRED_FACTOR"):
-            DecisionCaseInput(
-                report_year=2026, departure_port="CNSHG", arrival_port="NLRTM",
-                adjacent_valid_port_of_call_confirmed=True, currency="EUR",
-                baseline_component=self.baseline, baseline_mass_tonnes=Decimal("100"),
-                eua_price_per_tco2e=Decimal("80"), candidates=(),
-            )
+    def test_case_accepts_empty_candidate_collection_for_b0_only(self):
+        case = DecisionCaseInput(
+            report_year=2026, departure_port="CNSHG", arrival_port="NLRTM",
+            adjacent_valid_port_of_call_confirmed=True, currency="EUR",
+            baseline_component=self.baseline, baseline_mass_tonnes=Decimal("100"),
+            eua_price_per_tco2e=Decimal("80"), candidates=(),
+        )
+        self.assertEqual(case.candidates, ())
 
 
 if __name__ == "__main__":

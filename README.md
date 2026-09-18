@@ -17,7 +17,7 @@ py -3.12 -m venv .venv
 Invoke-RestMethod http://127.0.0.1:8000/health
 ```
 
-预期返回 `status: ok`。浏览器访问 `http://127.0.0.1:8000/` 即可使用单航次计算器。
+预期返回 `status: ok`。浏览器访问 `http://127.0.0.1:8000/` 使用原版单航次计算器；访问 `http://127.0.0.1:8000/?view=workbench` 使用目标驱动的新版决策工作台。当前默认入口仍为原版，`/?view=legacy` 可显式回退。
 
 ### API和导出
 
@@ -25,14 +25,16 @@ Invoke-RestMethod http://127.0.0.1:8000/health
 
 ```powershell
 $caseBody = Get-Content -Raw .\tests\fixtures\multi_candidate_case.json
-Invoke-RestMethod http://127.0.0.1:8000/api/calculate -Method Post -ContentType "application/json" -Body $caseBody | ConvertTo-Json -Depth 20
+$result = Invoke-RestMethod http://127.0.0.1:8000/api/calculate -Method Post -ContentType "application/json" -Body $caseBody
+$result | ConvertTo-Json -Depth 20
 ```
 
-CSV 和 PDF 由服务端重新校验并计算，客户端不能伪造结果字段：
+计算成功后服务端返回短期有效的 `result_snapshot_id`。CSV 和 PDF 读取这份服务端结果快照，不重新计算，也不接受客户端提交的结果字段：
 
 ```powershell
-Invoke-WebRequest http://127.0.0.1:8000/api/export/csv -Method Post -ContentType "application/json" -Body $caseBody -OutFile .\voyage-fuel-decision.csv
-Invoke-WebRequest http://127.0.0.1:8000/api/export/pdf -Method Post -ContentType "application/json" -Body $caseBody -OutFile .\voyage-fuel-decision.pdf
+$exportBody = @{ resultSnapshotId = $result.result_snapshot_id } | ConvertTo-Json
+Invoke-WebRequest http://127.0.0.1:8000/api/export/csv -Method Post -ContentType "application/json" -Body $exportBody -OutFile .\voyage-fuel-decision.csv
+Invoke-WebRequest http://127.0.0.1:8000/api/export/pdf -Method Post -ContentType "application/json" -Body $exportBody -OutFile .\voyage-fuel-decision.pdf
 ```
 
 ### 聚焦测试
@@ -43,6 +45,8 @@ Invoke-WebRequest http://127.0.0.1:8000/api/export/pdf -Method Post -ContentType
 $env:PYTHONPATH = "src"
 & ".\.venv\Scripts\python.exe" -m unittest tests.test_case_reports tests.test_reports -v
 & ".\.venv\Scripts\python.exe" -m unittest tests.test_web_api tests.test_web_page -v
+node --test tests/frontend/display-values.test.mjs tests/frontend/workbench-model.test.mjs
+& ".\.venv\Scripts\python.exe" -m pytest tests/e2e/test_workbench_flow.py -q
 & ".\.venv\Scripts\python.exe" -m unittest tests.e2e.test_display_precision tests.e2e.test_mvp_flow -v
 ```
 
@@ -55,6 +59,17 @@ $env:PYTHONPATH = "src"
 本期只处理 2024-2030 年两个相邻有效 Port of Call 之间的单航段；固定因子库开放 36 条航行燃料路径，`ELECTRICITY_OPS` 不进入本期。2024-2025 年 EU ETS 只纳入 CO2，2026 年起纳入 CO2、CH4 和 N2O。系统不实现正式年度 FuelEU 结算、真实年度罚款、Banking、Borrowing、Pooling、OPS 或登录和云端案例历史。
 
 这个文件夹集中保存本轮确认的产品骨架、两个固定基础，以及支撑它们的数据、法规原文、核对材料和港口可再生成链。
+
+安全使用约定：
+
+- 页面计算成功后会绑定本次成功提交的输入快照；修改航次、燃料、候选或约束输入会使旧结果失效，必须重新计算后才能导出；
+- 新版工作台默认显示百分比单位，但发送给 API 的仍是 0 到 1 的质量比例；转换保留十进制输入精度；
+- CSV/PDF 直接消费服务端保存的同一份成功计算结果，快照过期或不存在时必须重新计算；显示精度只影响页面和 PDF，不改变原始计算；
+- `candidates: []` 是合法的 B0-only 请求，继续返回基础能源、排放、EU ETS 和 FuelEU 结果，不生成新能源建议；
+- 案例结果通过 `field_reasons` 说明关键空值，CSV/PDF 同步输出原因码；
+- `B100` 只有在候选明确允许纯用时才进入报告点；未经允许的显式比例会返回候选级 `INVALID_BLEND_RATIO`；
+- 价格缺失时，预算不能验证，相关非零混兑场景标记为 `CONSTRAINT_UNVERIFIED`，不进入预算相关的条件式建议；
+- 案例货币只作为价格口径标签，系统不做换汇；FuelEU 指示性金额固定以 EUR 表示；证据状态是输入声明，系统不自动核验证书真实性。
 
 ## 阅读顺序
 

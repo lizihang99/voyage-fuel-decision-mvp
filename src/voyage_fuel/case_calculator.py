@@ -247,6 +247,93 @@ def _issue_index(issue: Issue) -> int | None:
     return int(match.group(1)) if match else None
 
 
+def _result_field_reasons(
+    request: DecisionCaseInput,
+    candidate_results: tuple[CandidateResult, ...],
+    scenarios,
+) -> dict[str, str]:
+    """Explain key nullable public fields without changing calculation values."""
+    reasons: dict[str, str] = {}
+    candidate_inputs = {candidate.candidate_id: candidate for candidate in request.candidates}
+
+    for row in scenarios:
+        prefix = f"scenarios.{row.scenario_id}.result"
+        result = row.result
+        if result.fuel_cost is None:
+            reasons[f"{prefix}.fuel_cost"] = "PRICE_REQUIRED_FOR_COMPARISON"
+        if result.model_cost is None:
+            reasons[f"{prefix}.model_cost"] = "PRICE_REQUIRED_FOR_COMPARISON"
+        if result.eu_ets.eua_cost is None:
+            reasons[f"{prefix}.eu_ets.eua_cost"] = "EUA_PRICE_NOT_PROVIDED"
+        fuel_eu_reason = result.fuel_eu.status
+        for field_name in (
+            "wt_t_intensity_g_per_mj", "tt_w_intensity_g_per_mj",
+            "ghgi_actual_g_per_mj", "target_g_per_mj", "compliance_balance_g",
+            "compliance_balance_t", "indicative_penalty_eur",
+        ):
+            if getattr(result.fuel_eu, field_name) is None:
+                reasons[f"{prefix}.fuel_eu.{field_name}"] = fuel_eu_reason
+        if result.compliance_improvement_tco2e is None:
+            reasons[f"{prefix}.compliance_improvement_tco2e"] = fuel_eu_reason
+        if result.reference_adjusted_cost is None:
+            candidate_input = candidate_inputs.get(row.candidate_id) if row.candidate_id else None
+            if candidate_input is None:
+                reference_reason = "NOT_DEFINED_AT_CASE_LEVEL"
+            elif candidate_input.compliance_improvement_value is None:
+                reference_reason = "COMPLIANCE_VALUE_NOT_PROVIDED"
+            else:
+                reference_reason = fuel_eu_reason
+            reasons[f"{prefix}.reference_adjusted_cost"] = reference_reason
+        for metric_name, delta in row.deltas.items():
+            if delta.percent_delta is None and delta.reason_code:
+                reasons[f"scenarios.{row.scenario_id}.deltas.{metric_name}.percent_delta"] = delta.reason_code
+
+    for candidate in candidate_results:
+        voyage = candidate.voyage_result
+        prefix = f"candidate_results.{candidate.candidate_id}"
+        if voyage is None:
+            reasons[f"{prefix}.voyage_result"] = "BLOCKED"
+            continue
+        economics = voyage.economics
+        if economics is not None:
+            if economics.pc_break_even is None:
+                reasons[f"{prefix}.economics.pc_break_even"] = (
+                    economics.warning_codes[0] if economics.warning_codes
+                    else "PRICE_REQUIRED_FOR_COMPARISON"
+                )
+            if economics.pe_break_even is None:
+                reasons[f"{prefix}.economics.pe_break_even"] = economics.pe_break_even_status
+            if economics.comparison_value is None:
+                reasons[f"{prefix}.economics.comparison_value"] = "NOT_PROVIDED"
+        constraints = voyage.constraints
+        candidate_input = candidate_inputs.get(candidate.candidate_id)
+        if constraints is None or candidate_input is None:
+            continue
+        if constraints.candidate_supply_tonnes is None:
+            reasons[f"{prefix}.constraints.candidate_supply_tonnes"] = "NOT_PROVIDED"
+        if constraints.incremental_budget is None:
+            reasons[f"{prefix}.constraints.incremental_budget"] = "NOT_PROVIDED"
+        if constraints.x_supply is None:
+            reasons[f"{prefix}.constraints.x_supply"] = "NOT_PROVIDED"
+        if constraints.x_budget is None:
+            reasons[f"{prefix}.constraints.x_budget"] = (
+                "NOT_PROVIDED" if candidate_input.incremental_budget is None
+                else "BUDGET_UNAVAILABLE_WITHOUT_PRICES"
+            )
+        for field_name in ("x_target_min_unconstrained", "x_target_min", "x_max_improvement"):
+            if getattr(constraints, field_name) is None:
+                reasons[f"{prefix}.constraints.{field_name}"] = constraints.target_status
+        if constraints.x_target_min_cost is None:
+            reasons[f"{prefix}.constraints.x_target_min_cost"] = (
+                constraints.target_status
+                if constraints.target_status != "TARGET_REACHABLE"
+                else "PRICE_REQUIRED_FOR_COMPARISON"
+            )
+        if constraints.x_cost_min is None:
+            reasons[f"{prefix}.constraints.x_cost_min"] = "PRICE_REQUIRED_FOR_COMPARISON"
+    return reasons
+
+
 def calculate_decision_case(
     request: DecisionCaseInput | None,
     initial_issues: tuple[Issue, ...] = (),
@@ -368,9 +455,12 @@ def calculate_decision_case(
             [s.ratio for s in voyage.scenarios])
         for ratio, pair in local.items():
             coefficients["B0" if ratio == 0 else candidate_input.scenario_id(ratio)] = pair
-    recommendations = build_recommendations(scenarios, candidate_results, coefficients)
+    recommendations = (
+        build_recommendations(scenarios, candidate_results, coefficients)
+        if candidate_results else ()
+    )
     economics = build_case_economics(scenarios, coefficients)
-    decision_summary = build_decision_summary(scenarios, economics)
+    decision_summary = build_decision_summary(scenarios, economics) if candidate_results else None
     provenance = _result_provenance(request)
     return DecisionCaseResult(
         report_year=request.report_year,
@@ -385,6 +475,7 @@ def calculate_decision_case(
         provenance=provenance,
         economics=economics,
         decision_summary=decision_summary,
+        field_reasons=_result_field_reasons(request, candidate_results, scenarios),
     )
 
 

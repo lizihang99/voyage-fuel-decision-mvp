@@ -197,7 +197,7 @@ def calculate_fueleu(
     balance_g = decimal_ratio((Fraction(target) * exact_d - exact_n)
                               * exact_energy * Fraction(scope) / exact_d)
     status = "SURPLUS_ESTIMATE" if balance_g > 0 else "DEFICIT_ESTIMATE" if balance_g < 0 else "ON_TARGET_ESTIMATE"
-    penalty = None
+    penalty = Decimal("0")
     if balance_g < 0:
         penalty = abs(balance_g) / (ghgi * Decimal("41000")) * Decimal("2400")
     return FuelEuResult(

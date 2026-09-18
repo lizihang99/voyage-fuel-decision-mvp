@@ -119,10 +119,13 @@ class WebApiTests(unittest.TestCase):
             self.assertEqual(list(Path(temporary_directory).iterdir()), [])
             self.assertNotIn("set-cookie", response.headers)
 
-    def test_export_csv_calculates_server_result_and_returns_auditable_csv(self):
+    def test_export_csv_uses_server_snapshot_and_returns_auditable_csv(self):
         payload = minimum_payload()
-        payload["calculatedResult"] = {"model_cost": "client forged value"}
-        response = self.client.post("/api/export/csv", json=payload)
+        calculated = self.client.post("/api/calculate", json=payload).json()
+        response = self.client.post("/api/export/csv", json={
+            "resultSnapshotId": calculated["result_snapshot_id"],
+            "calculatedResult": {"model_cost": "client forged value"},
+        })
         self.assertEqual(response.status_code, 200)
         self.assertIn("text/csv", response.headers["content-type"])
         self.assertIn("attachment", response.headers.get("content-disposition", ""))
@@ -131,38 +134,34 @@ class WebApiTests(unittest.TestCase):
         self.assertNotIn("client forged value", response.text)
 
     def test_export_pdf_returns_complete_nonempty_pdf(self):
-        response = self.client.post("/api/export/pdf", json=minimum_payload())
+        calculated = self.client.post("/api/calculate", json=minimum_payload()).json()
+        response = self.client.post("/api/export/pdf", json={
+            "resultSnapshotId": calculated["result_snapshot_id"],
+        })
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.headers["content-type"], "application/pdf")
         self.assertIn("attachment", response.headers.get("content-disposition", ""))
         self.assertTrue(response.content.startswith(b"%PDF"))
         self.assertGreater(len(response.content), 1000)
 
-    def test_export_pdf_preserves_unknown_port_error_without_a_baseline(self):
-        from pypdf import PdfReader
+    def test_blocked_result_has_no_export_snapshot(self):
         payload = minimum_payload()
         payload["departurePort"] = "ZZZZZ"
         with TestClient(app, raise_server_exceptions=False) as client:
-            response = client.post("/api/export/pdf", json=payload)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.headers["content-type"], "application/pdf")
-        text = "\n".join(page.extract_text() or "" for page in PdfReader(
-            io.BytesIO(response.content)
-        ).pages)
-        self.assertIn("PORT_NOT_FOUND", text)
-        self.assertIn("ZZZZZ", text)
-        summary = text.split("New energy decision summary", 1)[1].split(
-            "Scenario comparison (fuel mass and energy)", 1
-        )[0]
-        self.assertNotIn("BASELINE", summary)
+            calculated = client.post("/api/calculate", json=payload)
+            response = client.post("/api/export/pdf", json={"resultSnapshotId": ""})
+        self.assertEqual(calculated.status_code, 200)
+        self.assertIsNone(calculated.json()["result_snapshot_id"])
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.json()["issues"][0]["code"], "RESULT_SNAPSHOT_EXPIRED")
 
-    def test_export_endpoints_preserve_structured_case_errors(self):
+    def test_export_endpoints_require_a_calculated_snapshot(self):
         payload = minimum_payload()
         payload["adjacentValidPortOfCallConfirmed"] = False
         for path in ("/api/export/csv", "/api/export/pdf"):
             response = self.client.post(path, json=payload)
-            self.assertEqual(response.status_code, 422)
-            self.assertEqual(response.json()["issues"][0]["code"], "PORT_OF_CALL_CONFIRMATION_REQUIRED")
+            self.assertEqual(response.status_code, 409)
+            self.assertEqual(response.json()["issues"][0]["code"], "RESULT_SNAPSHOT_REQUIRED")
 
     def test_readme_documents_reproducible_runtime_and_product_boundaries(self):
         readme = (Path(__file__).parents[1] / "README.md").read_text(encoding="utf-8")

@@ -20,3 +20,6 @@ tests/e2e/artifacts/desktop-result.pdf
 
 # Local report renderings generated during verification.
 output/
+
+# Local Superpowers preview runtime.
+.superpowers/

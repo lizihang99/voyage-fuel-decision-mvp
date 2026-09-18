@@ -174,12 +174,22 @@ def _parse_candidate(payload: Mapping[str, Any], *, field_prefix: str,
         raise _InputError(
             "INVALID_BLEND_RATIO", f"{field_prefix}.maxBlendRatio", "maxBlendRatio must be between zero and one"
         )
+    allows_pure_use = _strict_bool(
+        payload.get("candidateAllowsPureUse", payload.get("allowsPureUse", False)),
+        field=f"{field_prefix}.candidateAllowsPureUse",
+    )
     for index, ratio in enumerate(specified_ratios):
         if not Decimal("0") <= ratio <= max_blend_ratio:
             raise _InputError(
                 "INVALID_BLEND_RATIO",
                 f"{field_prefix}.specifiedBlendRatios[{index}]",
                 "specifiedBlendRatios must be within maxBlendRatio",
+            )
+        if ratio == Decimal("1") and not allows_pure_use:
+            raise _InputError(
+                "INVALID_BLEND_RATIO",
+                f"{field_prefix}.specifiedBlendRatios[{index}]",
+                "B100 requires explicit pure-use permission",
             )
     supply_tonnes = (
         None if payload.get("candidateSupplyTonnes") is None
@@ -209,10 +219,7 @@ def _parse_candidate(payload: Mapping[str, Any], *, field_prefix: str,
         component=_parse_component(payload, field_prefix=field_prefix, report_year=report_year),
         specified_blend_ratios=specified_ratios,
         max_blend_ratio=max_blend_ratio,
-        allows_pure_use=_strict_bool(
-            payload.get("candidateAllowsPureUse", payload.get("allowsPureUse", False)),
-            field=f"{field_prefix}.candidateAllowsPureUse",
-        ),
+        allows_pure_use=allows_pure_use,
         supply_tonnes=supply_tonnes,
         incremental_budget=incremental_budget,
         compliance_improvement_value=compliance_improvement_value,
@@ -262,8 +269,6 @@ def parse_decision_case(payload: str | Mapping[str, Any]) -> ParsedDecisionCase:
         candidates_payload = decoded.get("candidates")
         if not isinstance(candidates_payload, (list, tuple)):
             raise _InputError("MISSING_REQUIRED_FACTOR", "candidates", "candidates must be an array")
-        if not candidates_payload:
-            raise _InputError("MISSING_REQUIRED_FACTOR", "candidates", "at least one candidate is required")
         candidate_ids = [
             item.get("candidateId")
             for item in candidates_payload

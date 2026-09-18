@@ -49,7 +49,11 @@ def calculate_voyage(request: VoyageInput) -> VoyageResult:
     if (constraints.x_max_improvement is not None
             and (constraints.x_max_improvement != Decimal("1") or request.candidate_allows_pure_use)):
         requested = (*requested, constraints.x_max_improvement)
-    ratios = tuple(dict.fromkeys(requested))
+    # Apply permission once to every report-point source, including target/budget/supply.
+    ratios = tuple(dict.fromkeys(
+        ratio for ratio in requested
+        if ratio != Decimal("1") or request.candidate_allows_pure_use
+    ))
     scenarios = []
     for ratio in ratios:
         baseline_mass, candidate_mass = blend_masses_tonnes(
@@ -68,6 +72,11 @@ def calculate_voyage(request: VoyageInput) -> VoyageResult:
         ets = calculate_eu_ets(request.report_year, amounts, scope_rates, request.eua_price_per_tco2e)
         fuel_eu = calculate_fueleu(request.report_year, amounts, scope_rates.fuel_eu_scope_rate)
         total_cost = sum_known_costs(fuel_total_cost, ets.eua_cost)
+        constraint_status = "FEASIBLE"
+        if ratio > constraints.x_cap:
+            constraint_status = "CONSTRAINT_INFEASIBLE"
+        elif ratio > 0 and "BUDGET_UNAVAILABLE_WITHOUT_PRICES" in constraints.warning_codes:
+            constraint_status = "CONSTRAINT_UNVERIFIED"
         scenarios.append(
             ScenarioResult(
                 ratio=ratio,
@@ -79,7 +88,7 @@ def calculate_voyage(request: VoyageInput) -> VoyageResult:
                 fuel_eu=fuel_eu,
                 model_cost=total_cost,
                 execution_status="EXECUTION_CONDITIONS_PENDING",
-                constraint_status=("FEASIBLE" if ratio <= constraints.x_cap else "CONSTRAINT_INFEASIBLE"),
+                constraint_status=constraint_status,
             )
         )
     economics, enriched_scenarios = build_economics(

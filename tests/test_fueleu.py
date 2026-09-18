@@ -22,6 +22,7 @@ class FuelEuTests(unittest.TestCase):
         self.assertLess(abs(result.ghgi_actual_g_per_mj - Decimal("55.7655483870967741935483871")), Decimal("1e-24"))
         self.assertLess(abs(result.compliance_balance_g - Decimal("650443")), Decimal("1"))
         self.assertEqual(result.status, "SURPLUS_ESTIMATE")
+        self.assertEqual(result.indicative_penalty_eur, Decimal("0"))
 
     def test_2024_has_no_fueleu_result(self):
         result = calculate_fueleu(
