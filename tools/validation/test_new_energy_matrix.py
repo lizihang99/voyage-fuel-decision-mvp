@@ -138,7 +138,7 @@ class ExpandedDecisionTests(IndependentDecisionAssertions, unittest.TestCase):
 
     def test_api_rejects_case_wide_invalid_inputs(self):
         with TestClient(app) as client:
-            for variant in ("year", "zero_mass", "negative_eua", "confirmation", "duplicate_ids", "no_candidates"):
+            for variant in ("year", "zero_mass", "negative_eua", "confirmation", "duplicate_ids"):
                 with self.subTest(variant=variant):
                     payload = custom_payload([hand_case()])
                     if variant == "year":
@@ -151,12 +151,26 @@ class ExpandedDecisionTests(IndependentDecisionAssertions, unittest.TestCase):
                         payload["adjacentValidPortOfCallConfirmed"] = False
                     elif variant == "duplicate_ids":
                         payload["candidates"].append(deepcopy(payload["candidates"][0]))
-                    else:
-                        payload["candidates"] = []
-                    for endpoint in ("calculate", "export/csv", "export/pdf"):
+                    response = client.post("/api/calculate", json=payload)
+                    self.assertEqual(response.status_code, 422)
+                    self.assertTrue(response.json()["issues"])
+                    for endpoint in ("export/csv", "export/pdf"):
                         response = client.post("/api/" + endpoint, json=payload)
-                        self.assertEqual(response.status_code, 422)
-                        self.assertTrue(response.json()["issues"])
+                        self.assertEqual(response.status_code, 409)
+                        self.assertEqual(response.json()["issues"][0]["code"], "RESULT_SNAPSHOT_REQUIRED")
+
+    def test_api_accepts_baseline_only_case_and_exports_its_snapshot(self):
+        with TestClient(app) as client:
+            payload = custom_payload([hand_case()])
+            payload["candidates"] = []
+            response = client.post("/api/calculate", json=payload)
+            self.assertEqual(response.status_code, 200)
+            result = response.json()
+            self.assertIsNone(result["decision_summary"])
+            self.assertEqual(result["scenarios"][0]["scenario_id"], "B0")
+            export = {"resultSnapshotId": result["result_snapshot_id"]}
+            for endpoint in ("export/csv", "export/pdf"):
+                self.assertEqual(client.post("/api/" + endpoint, json=export).status_code, 200)
 
     def test_api_missing_prices_retain_physical_results_and_explain_limits(self):
         with TestClient(app) as client:

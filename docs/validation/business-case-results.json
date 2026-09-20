@@ -1,0 +1,2029 @@
+{
+  "generated_at": "2026-09-20T17:54:13.424122+00:00",
+  "mode": "full",
+  "disclaimer": "合成数据，仅用于系统验证和未来示例复用",
+  "reference_production_imports": [],
+  "family_count": 4,
+  "request_count": 61,
+  "compact_request_count": 8,
+  "family_request_counts": {
+    "A": 7,
+    "B": 18,
+    "C": 8,
+    "D": 28
+  },
+  "parameterized_variant_count": 53,
+  "parameterized_variant_definition": "完整自动集中未选入 compact 的独立冻结请求",
+  "api_calculation_count": 61,
+  "csv_export_count": 60,
+  "pdf_export_count": 60,
+  "runtime": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+  "source_sha256": {
+    "src/voyage_fuel/__init__.py": "9e883760252a254dc910c8a9faba41199dcbcd4ae07856b416ed2cdb0ba43468",
+    "src/voyage_fuel/calculator.py": "896df2563a20abe6f968bea9fe5d5197e741b6b9c790a0c5c1eb48fb2b9dc19a",
+    "src/voyage_fuel/case_calculator.py": "0d5cb4d49a324f98eff375f644364efa44a7faca118c50fc31d11ad9a9622467",
+    "src/voyage_fuel/case_comparison.py": "00a7c0afd2790d50437b9b4a4cc557f86f6e5b112207d6d8f700cfde79dd8ff5",
+    "src/voyage_fuel/constraints.py": "114c05478ed494a61c14c427cc969ec07c1ae6de003c71483105a6082d39f880",
+    "src/voyage_fuel/contracts.py": "84c26fd9408832fb1df72e4cd67c657aa455958120d48936787c6d6802a4a125",
+    "src/voyage_fuel/custom_factors.py": "5de20753f7e95e0552a0fc02dc5f764ad6c44d20e1053148c3042c53bd48fb4c",
+    "src/voyage_fuel/economics.py": "00c5528890971bc749755dd561890e2f651ae988162ec6367e12c2a67b10d9e7",
+    "src/voyage_fuel/emissions.py": "a5a1dfda485ab3c27b95273147ec2e37393f6db734df420a8f2f4d8aa3aa1944",
+    "src/voyage_fuel/energy.py": "90f055a350a8eba9c7484062c11436a4158ebb389b188219b2533e1d2dd841d8",
+    "src/voyage_fuel/factors.py": "7b28987ee0d57e5344be9f6158c04e7e838d09b8e3e4b1cde20cd4cefc469d4d",
+    "src/voyage_fuel/formatting.py": "b936a88a1787999d6c23c7f143a1c2fb6c1cb84ce265014c5731921662ee8e26",
+    "src/voyage_fuel/issues.py": "061d8c73158f01c5f780909a0f095f58ab58d56261a55fac2bce0e7405596471",
+    "src/voyage_fuel/json_io.py": "55fcde94a33d62964055fef7c8933eb9db4ce987b388132af8db16b137e911b3",
+    "src/voyage_fuel/models.py": "b677f9aa5be274a7d408f9bded33075ffe7cbc79d1c6d553e1e23c943efaca36",
+    "src/voyage_fuel/numerics.py": "1bb2ef97941eb802c953de4012ef3b7996eec1d4252348f4305bd4428eeb81c4",
+    "src/voyage_fuel/ports.py": "9aec756b1342e03c246f1cb21568723b750387780dccbae72f67bf801e30c474",
+    "src/voyage_fuel/provenance.py": "35f27da819d5eb987a834f0e0b2e8533d40c821490eb61f400f261409ed2f7ae",
+    "src/voyage_fuel/reports.py": "a8b34759e9e8fe7c6f4f1ac51baac10ec55f5037c9da64d77846b282cd28068b",
+    "src/voyage_fuel/web.py": "96ef47e50b28597dc72abaa67428de19aa701e1c6906e666711e422b8dd91b54",
+    "src/voyage_fuel/data/UNLOCODE_2025-1_港口制度身份清单.csv": "1edf5c35333fe86cd836c1a8c82dbda7fe8730438a15ee42ec63f7a0a0724211",
+    "src/voyage_fuel/templates/examples_guide.html": "2539a919867ba435f33512015c85c7c6a1d577b4073c63313bc24f70a29e03e4",
+    "src/voyage_fuel/templates/index.html": "be29f889be2c7c455b6d6fae4fb72d8a903a4cbecc9cacbb43d7ef2e70eaa6a8",
+    "src/voyage_fuel/templates/workbench_results.html": "b995e686719e94f038adcf40437f985adb25801e077f7ad0a3c91581da668998",
+    "src/voyage_fuel/static/app.js": "91b31c3cfac3a066e6e08ce72b18fb43f4bb5d028976d83c5af2f653f71c3e23",
+    "src/voyage_fuel/static/display-values.mjs": "c56a31ecb699c113ca4753129476116dff6d2d6fb249f3dbaee230c0a3778cea",
+    "src/voyage_fuel/static/styles.css": "c0ece76eea54be9087d965a86a2985ee6b795b4dab80eb40d316511ed7f28a05",
+    "src/voyage_fuel/static/teaching-examples.json": "1632508e6db3e5a108818804b183824e3b45012240e3cb8e4f780917bec8e10b",
+    "src/voyage_fuel/static/teaching-guide-view.mjs": "764d106d54694277184550cef6582b039c3b7088fdf6c0712c6bfa2795853195",
+    "src/voyage_fuel/static/teaching-guide.mjs": "d111c7134f1f06b5a50ab17dcdc2c6c3224efd2cd1364073e8c9aadf3dc44b7c",
+    "src/voyage_fuel/static/workbench-charts.mjs": "8d91c4c46c84a8606450450ed1b758deabc4981e9b002165f19671ec64234425",
+    "src/voyage_fuel/static/workbench-labels.mjs": "651ed57bb378efb0cd8ec13aecc1817603d78f5850fcc54b5cbeeb0c7be93269",
+    "src/voyage_fuel/static/workbench-model.mjs": "b7e59fc6d0f185bcfd0903cf56403b5a11d6c3878616092d889e8a35aa34b999",
+    "src/voyage_fuel/static/workbench-view.mjs": "edb06f70fa79cb17fa194299b8941f54c4067c2de2b14c62637e45e53239c4e0",
+    "src/voyage_fuel/static/workbench.css": "44a3d45f145d7ae6610df08d1f05e589ae4a527bea9080c0bd5c600481bc76ba",
+    "tools/validation/business_case_assertions.py": "630d4c8a4566498a46d6a39f7ca3ad4f021289ab5140960d85a87e2477dd8f41",
+    "tools/validation/business_case_inputs.py": "fd924736e757956d013beb6e57a3227963477a1cd52f295fbfc010ec55d06d94",
+    "tools/validation/business_case_reference.py": "81e69dc8afc551713f77721229446af181ee06c87abf38da8944c097bd33308f",
+    "tools/validation/business_case_runner.py": "e1ace5f116647e476b1cb362d97bce72c1297aca901983187bcb1af0488fc379",
+    "tools/validation/business_case_schema.py": "83701e8cf19ac1606a831fff6177da916b3476c9699868e1e19dbe83bd34a7a7",
+    "tools/validation/business_case_surfaces.py": "29bdbdcb1ae39fc32bd19653a45ddcdb05c98d3c5ac6c597d317d99c5cf17e0b",
+    "tools/validation/business_case_worker.py": "5dfb1a8ef4c79eabc4a3e750e655f6a67e2726f53c67d26ebebac5f8d29ce414"
+  },
+  "assertion_count": 412517,
+  "passed": 61,
+  "failed": 0,
+  "elapsed_seconds": 93.485,
+  "results": [
+    {
+      "id": "A-2024",
+      "family": "A",
+      "compact": true,
+      "coverage": [
+        "baseline_only",
+        "year_boundary",
+        "half_scope"
+      ],
+      "expected_sha256": "4d22be90e46f516946fa97c7bf4362c263843f46f12915897c8ca36c191fb983",
+      "checks": {
+        "kernel": {
+          "assertions": 137,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 137,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 310,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 588,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "A-2025",
+      "family": "A",
+      "compact": false,
+      "coverage": [
+        "baseline_only",
+        "year_boundary",
+        "half_scope"
+      ],
+      "expected_sha256": "e7ea981ac4466019f0b6ffaae9e94db46b9ec8a82448d3902555ab9b0d0d5ed5",
+      "checks": {
+        "kernel": {
+          "assertions": 129,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 129,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 294,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 556,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "A-2030",
+      "family": "A",
+      "compact": false,
+      "coverage": [
+        "baseline_only",
+        "year_boundary",
+        "half_scope"
+      ],
+      "expected_sha256": "ad405e6bfc6dcfcd4f0b700ad9860b9c1e2d3c8a278a85da98ca3ad8f26fb006",
+      "checks": {
+        "kernel": {
+          "assertions": 129,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 129,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 294,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 556,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "A-zero-scope",
+      "family": "A",
+      "compact": false,
+      "coverage": [
+        "baseline_only",
+        "zero_scope",
+        "zero_baseline"
+      ],
+      "expected_sha256": "cd3c5b83d57ffc117ebd4c52bfb91d11bb0bd4a57f3363f8b812ae4011602cc8",
+      "checks": {
+        "kernel": {
+          "assertions": 137,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 137,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 314,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 592,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "A-missing-fuel-price",
+      "family": "A",
+      "compact": false,
+      "coverage": [
+        "baseline_only",
+        "missing_price"
+      ],
+      "expected_sha256": "c0600f0013acfb01ac688518969138b2c0581a0ed34e7fe5b5aefb2c310f4858",
+      "checks": {
+        "kernel": {
+          "assertions": 130,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 130,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 298,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 562,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "A-missing-eua-price",
+      "family": "A",
+      "compact": false,
+      "coverage": [
+        "baseline_only",
+        "missing_price"
+      ],
+      "expected_sha256": "13c02e19f109047b1b322fdf7f74074e27267e729db540b2c95a511fe9b5181b",
+      "checks": {
+        "kernel": {
+          "assertions": 130,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 130,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 298,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 562,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "A-manual-zero",
+      "family": "A",
+      "compact": true,
+      "coverage": [
+        "baseline_only",
+        "manual_zero_anchor",
+        "zero_baseline"
+      ],
+      "expected_sha256": "56257f4d266ac06153a48e76a6726a51362ae505ed764f2d71a1871af886499b",
+      "checks": {
+        "kernel": {
+          "assertions": 183,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 183,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 320,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 690,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "B-default",
+      "family": "B",
+      "compact": true,
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "default"
+      ],
+      "expected_sha256": "f2110d87ffd87fc1dca5cfaefbffb105200952b3fdd214afd516a2625b094917",
+      "checks": {
+        "kernel": {
+          "assertions": 2884,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2884,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 7305,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 13077,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "B-eua0",
+      "family": "B",
+      "compact": false,
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "eua0"
+      ],
+      "expected_sha256": "833f988e86066e6368706ce306654c2cfb5bba4d67672571688d8c35448787b9",
+      "checks": {
+        "kernel": {
+          "assertions": 2884,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2884,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 7353,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 13125,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "B-eua200",
+      "family": "B",
+      "compact": false,
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "eua200"
+      ],
+      "expected_sha256": "6b95a2033e4abdb30a4aa531726e2b4b21c5454159a92f8cf2d7742aa9de2836",
+      "checks": {
+        "kernel": {
+          "assertions": 2879,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2879,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 7299,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 13061,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "B-hvo-budget0",
+      "family": "B",
+      "compact": false,
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "hvo-budget0"
+      ],
+      "expected_sha256": "f60f126928c6c11f91c22d1b545ae83c693de9c0c6e0f3586f898c7814f790a8",
+      "checks": {
+        "kernel": {
+          "assertions": 2679,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2679,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 6717,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 12079,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "B-hvo-budget1000",
+      "family": "B",
+      "compact": false,
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "hvo-budget1000"
+      ],
+      "expected_sha256": "83ce43bd9a1be0168c26a8bc85e3877cda86d6712cfac68e371edf3371a33b19",
+      "checks": {
+        "kernel": {
+          "assertions": 2787,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2787,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 6997,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 12575,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "B-hvo-supply0",
+      "family": "B",
+      "compact": false,
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "hvo-supply0"
+      ],
+      "expected_sha256": "6fae4c9d5e873654c6da688478abc3dc47fb525aa9426dfa565b393fc093a1bb",
+      "checks": {
+        "kernel": {
+          "assertions": 2679,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2679,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 6717,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 12079,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "B-hvo-supply50",
+      "family": "B",
+      "compact": false,
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "hvo-supply50"
+      ],
+      "expected_sha256": "efe42671b4f28b88e461681250cb1c0b27824b146134e2b2a419961226444350",
+      "checks": {
+        "kernel": {
+          "assertions": 2786,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2786,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 6991,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 12567,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "B-hvo-cap005",
+      "family": "B",
+      "compact": false,
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "hvo-cap005"
+      ],
+      "expected_sha256": "c1a54069e0035eace8fc57e08323aef258f6a486973266216fa46f7e8966fce0",
+      "checks": {
+        "kernel": {
+          "assertions": 2683,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2683,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 6717,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 12087,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "B-rfnbo-unqualified",
+      "family": "B",
+      "compact": false,
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "rfnbo-unqualified"
+      ],
+      "expected_sha256": "928b1695bbffca542a5cf3d710fba0b6caf79620f5adccac4a5834fdee323858",
+      "checks": {
+        "kernel": {
+          "assertions": 2776,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2776,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 6979,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 12535,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "B-all-budgets1000",
+      "family": "B",
+      "compact": false,
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "all-budgets1000"
+      ],
+      "expected_sha256": "883248a40c15eb4932333bd1c07a389da8edbc66f626caf3524ed29d0d86798d",
+      "checks": {
+        "kernel": {
+          "assertions": 2443,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2443,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 5973,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 10863,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "B-hvo-price600",
+      "family": "B",
+      "compact": false,
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "hvo-price600"
+      ],
+      "expected_sha256": "ff8134e0ae9b3108596856315ab6d1ee1931e507c2b739c4419c92c0bbc1960a",
+      "checks": {
+        "kernel": {
+          "assertions": 2879,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2879,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 7299,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 13061,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "B-reverse",
+      "family": "B",
+      "compact": false,
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "reverse"
+      ],
+      "expected_sha256": "08c73664d7e8d8928ca9fc75906786a815cb3f4bd2b48213139d6a7fe7b58237",
+      "checks": {
+        "kernel": {
+          "assertions": 2884,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2884,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 7305,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 13077,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "B-reference-value100",
+      "family": "B",
+      "compact": false,
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "reference-value100",
+        "reference_value"
+      ],
+      "expected_sha256": "16eccd80c3c4a4da42ba02c1b18c81dc9d52f49382b4889b94ef51a74be1242b",
+      "checks": {
+        "kernel": {
+          "assertions": 2880,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2880,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 7297,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 13061,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "B-combined-constraints",
+      "family": "B",
+      "compact": true,
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "combined-constraints"
+      ],
+      "expected_sha256": "05b5885fd8298d328fbbf9d90b7f8db2f43dd4081e99f2a46ea0b365cbe674bd",
+      "checks": {
+        "kernel": {
+          "assertions": 2888,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2888,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 7271,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 13051,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "B-missing-price-budget",
+      "family": "B",
+      "compact": false,
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "missing-price-budget"
+      ],
+      "expected_sha256": "4babd23654e1e07820f568a9a058d75306ff8b13e35501b28ba8e525f7f46bbe",
+      "checks": {
+        "kernel": {
+          "assertions": 2891,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2891,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 7235,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 13021,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "B-b100-allowed",
+      "family": "B",
+      "compact": false,
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "b100-allowed"
+      ],
+      "expected_sha256": "6c16d7e8bb02d97357ea64e648f696fbd27fd7600742c6f965a1e2604feef464",
+      "checks": {
+        "kernel": {
+          "assertions": 2879,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2879,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 7299,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 13061,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "B-b100-forbidden",
+      "family": "B",
+      "compact": false,
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "b100-forbidden"
+      ],
+      "expected_sha256": "b1caa68bd65a5dc99c3d35c9ddb8c90175485486fb17aa4e05873d1568819928",
+      "checks": {
+        "kernel": {
+          "assertions": 2417,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2417,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 6112,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 10950,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "B-duplicate-ties",
+      "family": "B",
+      "compact": false,
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "duplicate-ties"
+      ],
+      "expected_sha256": "de472b3fbd5b4dc210e7660533fb932c131303379f9a97b88884fe62ebe50fd1",
+      "checks": {
+        "kernel": {
+          "assertions": 3359,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 3359,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 8509,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 15231,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "C-OTTO_MS-2025",
+      "family": "C",
+      "compact": true,
+      "coverage": [
+        "methane_slip",
+        "same_equipment",
+        "ets_gas_year",
+        "bio_qualification",
+        "rfnbo_qualification",
+        "rfnbo_fallback"
+      ],
+      "expected_sha256": "4610d2da80ddf9623831b446cfa7daeb55b3d44ecd04c970c5c0e08a55ec1418",
+      "checks": {
+        "kernel": {
+          "assertions": 2743,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2743,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 6955,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 12445,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "C-OTTO_MS-2026",
+      "family": "C",
+      "compact": true,
+      "coverage": [
+        "methane_slip",
+        "same_equipment",
+        "ets_gas_year",
+        "bio_qualification",
+        "rfnbo_qualification",
+        "rfnbo_fallback"
+      ],
+      "expected_sha256": "459aa8d1ccec4c8bb92bfbb421929012280a215e0f4e8cdf29abed382fefd562",
+      "checks": {
+        "kernel": {
+          "assertions": 2743,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2743,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 6955,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 12445,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "C-OTTO_SS-2025",
+      "family": "C",
+      "compact": false,
+      "coverage": [
+        "methane_slip",
+        "same_equipment",
+        "ets_gas_year",
+        "bio_qualification",
+        "rfnbo_qualification",
+        "rfnbo_fallback"
+      ],
+      "expected_sha256": "ec79bdf811c2c22ffb9a17fd86d9e3ef9d005183ba193650978ebea29e5d877b",
+      "checks": {
+        "kernel": {
+          "assertions": 2743,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2743,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 6955,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 12445,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "C-OTTO_SS-2026",
+      "family": "C",
+      "compact": false,
+      "coverage": [
+        "methane_slip",
+        "same_equipment",
+        "ets_gas_year",
+        "bio_qualification",
+        "rfnbo_qualification",
+        "rfnbo_fallback"
+      ],
+      "expected_sha256": "f6c8c8ab482eca0bc5a62ea83600edb5c0c14f14e09ad69bb131c505b0cede75",
+      "checks": {
+        "kernel": {
+          "assertions": 2743,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2743,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 6955,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 12445,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "C-DIESEL_SS-2025",
+      "family": "C",
+      "compact": false,
+      "coverage": [
+        "methane_slip",
+        "same_equipment",
+        "ets_gas_year",
+        "bio_qualification",
+        "rfnbo_qualification",
+        "rfnbo_fallback"
+      ],
+      "expected_sha256": "60981897bb048b9ad6fcd9d8efc525c8f0a16b13dc0186faa52de92a17d0422e",
+      "checks": {
+        "kernel": {
+          "assertions": 2743,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2743,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 6955,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 12445,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "C-DIESEL_SS-2026",
+      "family": "C",
+      "compact": false,
+      "coverage": [
+        "methane_slip",
+        "same_equipment",
+        "ets_gas_year",
+        "bio_qualification",
+        "rfnbo_qualification",
+        "rfnbo_fallback"
+      ],
+      "expected_sha256": "b5cb71d0623dc6c47837f092689384087c4b16426ef20d916ebf6a451fe4a64e",
+      "checks": {
+        "kernel": {
+          "assertions": 2743,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2743,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 6955,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 12445,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "C-LBSI-2025",
+      "family": "C",
+      "compact": false,
+      "coverage": [
+        "methane_slip",
+        "same_equipment",
+        "ets_gas_year",
+        "bio_qualification",
+        "rfnbo_qualification",
+        "rfnbo_fallback"
+      ],
+      "expected_sha256": "10995d076a1984cb68e75717b680d460efb922b926d5cc034bf15ee7e78e2baa",
+      "checks": {
+        "kernel": {
+          "assertions": 2743,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2743,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 6955,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 12445,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "C-LBSI-2026",
+      "family": "C",
+      "compact": false,
+      "coverage": [
+        "methane_slip",
+        "same_equipment",
+        "ets_gas_year",
+        "bio_qualification",
+        "rfnbo_qualification",
+        "rfnbo_fallback"
+      ],
+      "expected_sha256": "2bb29d5ce12277679c2e19ae1309009d82b4d17f8a3f12cbc47dd887160e5210",
+      "checks": {
+        "kernel": {
+          "assertions": 2743,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 2743,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 6955,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 12445,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-custom-static",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "custom",
+        "STATIC",
+        "field_evidence"
+      ],
+      "expected_sha256": "ccb39942576d9c40cf6446d800f849315275cb97cb31b8480136a72aa506dddd",
+      "checks": {
+        "kernel": {
+          "assertions": 560,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 560,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1279,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2403,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-custom-bio_e",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "custom",
+        "BIO_E",
+        "field_evidence"
+      ],
+      "expected_sha256": "d997b85c906a6e9b9c74d4b60d981710f40fcad8c4ff3728f9b20557138f50db",
+      "checks": {
+        "kernel": {
+          "assertions": 663,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 663,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1599,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2929,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-custom-rfnbo_e",
+      "family": "D",
+      "compact": true,
+      "coverage": [
+        "custom",
+        "RFNBO_E",
+        "field_evidence"
+      ],
+      "expected_sha256": "e552fb690ae06fa25626c2ede6e203ab78a3c458b9fdd82f5f37ebfa17170d00",
+      "checks": {
+        "kernel": {
+          "assertions": 684,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 684,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1617,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2989,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-custom-certified",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "custom",
+        "CERTIFIED",
+        "field_evidence"
+      ],
+      "expected_sha256": "097cafc57ebf6a80ccb70e05b6b18ae87c002da72d5f2ad99e0f8a3da7ba2357",
+      "checks": {
+        "kernel": {
+          "assertions": 560,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 560,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1279,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2403,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-bio-unqualified",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "builtin_bio",
+        "bio_qualification",
+        "unqualified"
+      ],
+      "expected_sha256": "d79a5c8012a79801defbaf108da2d96a9abea3fc48d9f90b5e814ec0d1744116",
+      "checks": {
+        "kernel": {
+          "assertions": 609,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 609,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1599,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2821,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-bio-assumed",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "builtin_bio",
+        "bio_qualification",
+        "assumed"
+      ],
+      "expected_sha256": "f5eb3c6e9944d4f1756b2ba291a3ec07fe45315d12d5fd91f1459487d4c1259c",
+      "checks": {
+        "kernel": {
+          "assertions": 609,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 609,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1599,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2821,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-bio-verified",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "builtin_bio",
+        "bio_qualification",
+        "verified"
+      ],
+      "expected_sha256": "accdf5e018adc8f68f4314f2fb09749dfa1ec3173bfe97b6307b8ae914834d58",
+      "checks": {
+        "kernel": {
+          "assertions": 609,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 609,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1599,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2821,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-rfnbo-unqualified",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "builtin_rfnbo",
+        "rfnbo_qualification",
+        "unqualified"
+      ],
+      "expected_sha256": "ce0225ca364f11131fc99feb99461d12fa0f1ea83187c1b09cd353eb12b20b59",
+      "checks": {
+        "kernel": {
+          "assertions": 501,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 501,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1273,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2279,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-rfnbo-assumed",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "builtin_rfnbo",
+        "rfnbo_qualification",
+        "assumed"
+      ],
+      "expected_sha256": "dfe9d1b226fc4560413a3bb07fccc62445425575b41159ed8bcfae57dc6d099a",
+      "checks": {
+        "kernel": {
+          "assertions": 624,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 624,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1617,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2869,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-rfnbo-verified",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "builtin_rfnbo",
+        "rfnbo_qualification",
+        "verified"
+      ],
+      "expected_sha256": "eaaf132c5b04085cc16730081cae01385a03aff46df5c45548e2f7413c760962",
+      "checks": {
+        "kernel": {
+          "assertions": 624,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 624,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1617,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2869,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-rfnbo-ineligible",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "builtin_rfnbo",
+        "rfnbo_qualification",
+        "ineligible"
+      ],
+      "expected_sha256": "79958e8dde02d1ea5a291b52c60a126ac804c1db5f4f2b01c38a49204faa4790",
+      "checks": {
+        "kernel": {
+          "assertions": 501,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 501,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1273,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2279,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-negative-co2",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "invalid_candidate",
+        "negative-co2"
+      ],
+      "expected_sha256": "1e3b4a9f57ea3e8de13f7d44786fb70e0abcc699eaa2bf1128e38459b0d3750f",
+      "checks": {
+        "kernel": {
+          "assertions": 504,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 504,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1278,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2290,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-negative-ch4",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "invalid_candidate",
+        "negative-ch4"
+      ],
+      "expected_sha256": "a756dba23635e918b7d4f7aa87a67b77f4afc8417a3946f4a30c6cf28dfb0c69",
+      "checks": {
+        "kernel": {
+          "assertions": 504,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 504,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1278,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2290,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-negative-n2o",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "invalid_candidate",
+        "negative-n2o"
+      ],
+      "expected_sha256": "ac2d607fc9cbe455d58a47ac23ccbe2350ef84a01e41ab59382e4db044b45356",
+      "checks": {
+        "kernel": {
+          "assertions": 504,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 504,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1278,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2290,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-missing-evidence",
+      "family": "D",
+      "compact": true,
+      "coverage": [
+        "invalid_candidate",
+        "missing-evidence"
+      ],
+      "expected_sha256": "6575ad8ff228024639a8ab0adfde224637508b5a891ae4694e92e2519d68aebc",
+      "checks": {
+        "kernel": {
+          "assertions": 504,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 504,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1278,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2290,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-wrong-unit",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "invalid_candidate",
+        "wrong-unit"
+      ],
+      "expected_sha256": "7ce6c7a5bbd5962ecbd438ee5d53e1a7396e847cf6ce021e9a94fead0df3c564",
+      "checks": {
+        "kernel": {
+          "assertions": 504,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 504,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1278,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2290,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-nonmethane-slip",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "invalid_candidate",
+        "nonmethane-slip"
+      ],
+      "expected_sha256": "350fae254758c53542a677977558351f326acbbac4d0e798ab880f08aaeb8140",
+      "checks": {
+        "kernel": {
+          "assertions": 504,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 504,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1278,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2290,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-rwd2-2024",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "invalid_candidate",
+        "rwd2-2024"
+      ],
+      "expected_sha256": "4c9a6081632ebb246e5c8a2eacb38d1e2a966ae16826d84590a4d85922a08a9e",
+      "checks": {
+        "kernel": {
+          "assertions": 536,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 536,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1296,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2372,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-e283",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "invalid_candidate",
+        "e283"
+      ],
+      "expected_sha256": "6bb62122d531eef08e640478deb5227e1ec6f0153e3f30d8b20f2d808448a6de",
+      "checks": {
+        "kernel": {
+          "assertions": 504,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 504,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1278,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2290,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-unknown-path",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "invalid_candidate",
+        "unknown-path"
+      ],
+      "expected_sha256": "1621c1f4fd19363cc267015d0c67e6acddf0c16d5e34021c01f7fbbb3907c552",
+      "checks": {
+        "kernel": {
+          "assertions": 504,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 504,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1278,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2290,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-missing-price",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "missing_price",
+        "calculable"
+      ],
+      "expected_sha256": "c8887abb47ed65098df0888c7f945a1740d64cfc2c5ac88dcbe045bd674a611e",
+      "checks": {
+        "kernel": {
+          "assertions": 502,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 502,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1285,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 2293,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-confirmation-false",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "invalid_case",
+        "confirmation"
+      ],
+      "expected_sha256": "1b35d5c3a23bfd48bcf86e2c8fd4675d55cce60693e63bea53870a56fb6646a8",
+      "checks": {
+        "kernel": {
+          "assertions": 3,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 3,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 2,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 12,
+      "csv_exported": false,
+      "pdf_exported": false,
+      "passed": true
+    },
+    {
+      "id": "D-smoke-liquid",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "builtin_smoke",
+        "liquid"
+      ],
+      "expected_sha256": "58120bdfef93fd0ee1e159e4cf925493321d839c9ec170610acdf072fbf8bde5",
+      "checks": {
+        "kernel": {
+          "assertions": 949,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 949,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 2069,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 3971,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-smoke-fossil-gas",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "builtin_smoke",
+        "fossil-gas"
+      ],
+      "expected_sha256": "8430e7576bbbcf48a539636dbf3f1689b2b3c709dff2d862b0aecfa2ae7d50fd",
+      "checks": {
+        "kernel": {
+          "assertions": 1769,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 1769,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 3749,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 7291,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-smoke-bio-liquid",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "builtin_smoke",
+        "bio-liquid"
+      ],
+      "expected_sha256": "329be8f6969fe50782a72de7273a7b16decc55fb40357650b88a3bb12f08840f",
+      "checks": {
+        "kernel": {
+          "assertions": 949,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 949,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 2069,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 3971,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-smoke-bio-gas",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "builtin_smoke",
+        "bio-gas"
+      ],
+      "expected_sha256": "3c408dbcf244cf886122de31576cd4f87a6af6e4fa5f1d3fc18f30ed01443d3b",
+      "checks": {
+        "kernel": {
+          "assertions": 1113,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 1113,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 2405,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 4635,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-smoke-renewable-liquid",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "builtin_smoke",
+        "renewable-liquid"
+      ],
+      "expected_sha256": "e5938b2b79b4d791c92c62c128bbdb34f133ea51de67a79884b90683d616d8a1",
+      "checks": {
+        "kernel": {
+          "assertions": 457,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 457,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 1061,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 1979,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    },
+    {
+      "id": "D-smoke-renewable-gas",
+      "family": "D",
+      "compact": false,
+      "coverage": [
+        "builtin_smoke",
+        "renewable-gas"
+      ],
+      "expected_sha256": "91c8b9f4b3c1732966c7a26437f65c4b1fcf9b04d7fd440ab8261054011368fa",
+      "checks": {
+        "kernel": {
+          "assertions": 1441,
+          "differences": [],
+          "passed": true
+        },
+        "api": {
+          "assertions": 1441,
+          "differences": [],
+          "passed": true
+        },
+        "exports": {
+          "assertions": 3077,
+          "differences": []
+        }
+      },
+      "differences": [],
+      "assertions": 5963,
+      "csv_exported": true,
+      "pdf_exported": true,
+      "passed": true
+    }
+  ]
+}

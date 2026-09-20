@@ -10,11 +10,11 @@
 
 依据：
 
-- [项目目标与总体架构](D:/projects/工具MVP/项目目标与总体架构.md)
-- [MVP 设计](D:/projects/工具MVP/docs/superpowers/specs/2026-08-07-voyage-fuel-decision-mvp-design.md)
-- [MVP 计算规格](D:/projects/工具MVP/docs/superpowers/specs/2026-08-07-voyage-fuel-decision-calculation-spec.md)
-- [新能源混兑经济性决策层设计](D:/projects/工具MVP/docs/superpowers/specs/2026-09-16-new-energy-decision-layer-design.md)
-- [安全升级实施计划](D:/projects/工具MVP/docs/superpowers/plans/2026-09-17-decision-workbench-safe-upgrade-plan.md)
+- [项目目标与总体架构](../../../项目目标与总体架构.md)
+- [MVP 设计](2026-08-07-voyage-fuel-decision-mvp-design.md)
+- [MVP 计算规格](2026-08-07-voyage-fuel-decision-calculation-spec.md)
+- [新能源混兑经济性决策层设计](2026-09-16-new-energy-decision-layer-design.md)
+- [安全升级实施计划](../plans/2026-09-17-decision-workbench-safe-upgrade-plan.md)
 
 目标：把目前按计算模块铺开的页面，升级为“目标驱动、方案联动”的决策工作台，使用户能够回答：
 

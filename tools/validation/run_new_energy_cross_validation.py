@@ -10,16 +10,21 @@ import json
 from pathlib import Path
 import platform
 import subprocess
+import sys
 import unittest
+
+
+ROOT = Path(__file__).resolve().parents[2]
+VALIDATION = Path(__file__).resolve().parent
+for path in (ROOT, VALIDATION):
+    if str(path) not in sys.path:
+        sys.path.insert(0, str(path))
 
 import test_c_layer_oracle
 import test_new_energy_cross_validation
 import test_new_energy_surfaces
 import test_new_energy_matrix
 from new_energy_matrix import expanded_cases, expanded_portfolios
-
-
-ROOT = Path(__file__).resolve().parents[2]
 
 
 def main():

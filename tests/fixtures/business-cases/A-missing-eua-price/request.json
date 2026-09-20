@@ -1,0 +1,14 @@
+{
+  "reportYear": 2030,
+  "departurePort": "NLRTM",
+  "arrivalPort": "DEHAM",
+  "adjacentValidPortOfCallConfirmed": true,
+  "currency": "EUR",
+  "baseline": {
+    "pathId": "MDO",
+    "massTonnes": "1000",
+    "pricePerTonne": "700"
+  },
+  "euaPricePerTCO2e": null,
+  "candidates": []
+}

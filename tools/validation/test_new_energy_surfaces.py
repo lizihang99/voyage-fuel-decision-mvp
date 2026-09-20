@@ -85,6 +85,8 @@ class NewEnergySurfaceTests(BrowserAppMixin, unittest.TestCase):
                         response = page.request.post(self.base_url + "/api/calculate", data=payload)
                         self.assertEqual(response.status, 200)
                         api = response.json()
+                        self.assertIsNotNone(api["result_snapshot_id"])
+                        export_payload = {"resultSnapshotId": api["result_snapshot_id"]}
                         for field, wanted in zip(
                             ("cost_min_scenario_id", "target_min_cost_scenario_id", "max_improvement_scenario_id"),
                             expected,
@@ -113,7 +115,7 @@ class NewEnergySurfaceTests(BrowserAppMixin, unittest.TestCase):
                             ):
                                 value = Decimal(literal) * (-1 if metric == "eua_cost" else 1)
                                 self.assertEqual(Decimal(deltas[metric]["delta"]), value)
-                        csv_response = page.request.post(self.base_url + "/api/export/csv", data=payload)
+                        csv_response = page.request.post(self.base_url + "/api/export/csv", data=export_payload)
                         self.assertEqual(csv_response.status, 200)
                         records = list(csv.DictReader(io.StringIO(csv_response.text())))
                         roles = ("CURRENT_MODEL_COST_MIN", "TARGET_MIN_COST:clean", "MAX_COMPLIANCE_IMPROVEMENT:clean")
@@ -132,7 +134,7 @@ class NewEnergySurfaceTests(BrowserAppMixin, unittest.TestCase):
                                 record = next(r for r in rows if r["metric_name"] == metric)
                                 self.assertEqual(Decimal(record["delta"]), Decimal(value))
 
-                        pdf_response = page.request.post(self.base_url + "/api/export/pdf", data=payload)
+                        pdf_response = page.request.post(self.base_url + "/api/export/pdf", data=export_payload)
                         self.assertEqual(pdf_response.status, 200)
                         text = "\n".join(p.extract_text() or "" for p in PdfReader(io.BytesIO(pdf_response.body())).pages)
                         section = text.split("New energy decision summary", 1)[1].split(

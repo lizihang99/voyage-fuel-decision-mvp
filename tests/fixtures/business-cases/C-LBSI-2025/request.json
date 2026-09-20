@@ -1,0 +1,107 @@
+{
+  "reportYear": 2025,
+  "departurePort": "NLRTM",
+  "arrivalPort": "DEHAM",
+  "adjacentValidPortOfCallConfirmed": true,
+  "currency": "EUR",
+  "baseline": {
+    "pathId": "LNG_LBSI",
+    "massTonnes": "1000",
+    "pricePerTonne": "700"
+  },
+  "euaPricePerTCO2e": "80",
+  "candidates": [
+    {
+      "candidateId": "bio-unqualified",
+      "pathId": "BIOLNG_LBSI",
+      "pricePerTonne": "1100",
+      "specifiedBlendRatios": [
+        "0.01",
+        "0.05"
+      ],
+      "maxBlendRatio": "0.5",
+      "candidateAllowsPureUse": false,
+      "qualificationStatus": "NOT_DEMONSTRATED",
+      "eligibleBiomassFraction": "0",
+      "e": "20"
+    },
+    {
+      "candidateId": "bio-assumed",
+      "pathId": "BIOLNG_LBSI",
+      "pricePerTonne": "1100",
+      "specifiedBlendRatios": [
+        "0.01",
+        "0.05"
+      ],
+      "maxBlendRatio": "0.5",
+      "candidateAllowsPureUse": false,
+      "qualificationStatus": "ASSUMED_ELIGIBLE",
+      "eligibleBiomassFraction": "1",
+      "e": "20"
+    },
+    {
+      "candidateId": "bio-verified",
+      "pathId": "BIOLNG_LBSI",
+      "pricePerTonne": "1100",
+      "specifiedBlendRatios": [
+        "0.01",
+        "0.05"
+      ],
+      "maxBlendRatio": "0.5",
+      "candidateAllowsPureUse": false,
+      "qualificationStatus": "VERIFIED_ELIGIBLE",
+      "eligibleBiomassFraction": "1",
+      "e": "20"
+    },
+    {
+      "candidateId": "e-unqualified",
+      "pathId": "E_LNG_LBSI",
+      "pricePerTonne": "1400",
+      "specifiedBlendRatios": [
+        "0.01",
+        "0.05"
+      ],
+      "maxBlendRatio": "0.5",
+      "candidateAllowsPureUse": false,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "e-assumed",
+      "pathId": "E_LNG_LBSI",
+      "pricePerTonne": "1400",
+      "specifiedBlendRatios": [
+        "0.01",
+        "0.05"
+      ],
+      "maxBlendRatio": "0.5",
+      "candidateAllowsPureUse": false,
+      "qualificationStatus": "ASSUMED_ELIGIBLE"
+    },
+    {
+      "candidateId": "e-verified",
+      "pathId": "E_LNG_LBSI",
+      "pricePerTonne": "1400",
+      "specifiedBlendRatios": [
+        "0.01",
+        "0.05"
+      ],
+      "maxBlendRatio": "0.5",
+      "candidateAllowsPureUse": false,
+      "qualificationStatus": "VERIFIED_ELIGIBLE",
+      "e": "20",
+      "eu": "56.2"
+    },
+    {
+      "candidateId": "e-ineligible",
+      "pathId": "E_LNG_LBSI",
+      "pricePerTonne": "1400",
+      "specifiedBlendRatios": [
+        "0.01",
+        "0.05"
+      ],
+      "maxBlendRatio": "0.5",
+      "candidateAllowsPureUse": false,
+      "qualificationStatus": "INELIGIBLE"
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+{
+  "reportYear": 2030,
+  "departurePort": "NLRTM",
+  "arrivalPort": "DEHAM",
+  "adjacentValidPortOfCallConfirmed": true,
+  "currency": "EUR",
+  "baseline": {
+    "pathId": "MDO",
+    "massTonnes": "1000",
+    "pricePerTonne": "700"
+  },
+  "euaPricePerTCO2e": "80",
+  "candidates": [
+    {
+      "candidateId": "invalid",
+      "pathId": "SYNTHETIC_RFNBO_E",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [
+        "0.01",
+        "0.05"
+      ],
+      "maxBlendRatio": "0.5",
+      "candidateAllowsPureUse": false,
+      "custom": true,
+      "equipmentId": "SYNTHETIC_TEST_ICE",
+      "wtTMode": "RFNBO_E",
+      "lcv": "0.04",
+      "cfCO2": "3",
+      "cfCH4": "0",
+      "cfN2O": "0",
+      "cslip": "NA",
+      "methaneSlipApplicable": false,
+      "rwd": "2",
+      "eligibleBiomassFraction": "0",
+      "qualificationStatus": "ASSUMED_ELIGIBLE",
+      "E": "28.3",
+      "eu": "70",
+      "sourceEvidence": {
+        "lcv": {
+          "sourceId": "SYNTHETIC:SYNTHETIC_RFNBO_E:lcv",
+          "sourceType": "SA",
+          "unit": "MJ/gFuel",
+          "verificationStatus": "ESTIMATED"
+        },
+        "cfCO2": {
+          "sourceId": "SYNTHETIC:SYNTHETIC_RFNBO_E:cfCO2",
+          "sourceType": "SA",
+          "unit": "gGHG/gFuel",
+          "verificationStatus": "ESTIMATED"
+        },
+        "cfCH4": {
+          "sourceId": "SYNTHETIC:SYNTHETIC_RFNBO_E:cfCH4",
+          "sourceType": "SA",
+          "unit": "gGHG/gFuel",
+          "verificationStatus": "ESTIMATED"
+        },
+        "cfN2O": {
+          "sourceId": "SYNTHETIC:SYNTHETIC_RFNBO_E:cfN2O",
+          "sourceType": "SA",
+          "unit": "gGHG/gFuel",
+          "verificationStatus": "ESTIMATED"
+        },
+        "cslip": {
+          "sourceId": "SYNTHETIC:SYNTHETIC_RFNBO_E:cslip",
+          "sourceType": "SA",
+          "unit": "%",
+          "verificationStatus": "ESTIMATED"
+        },
+        "methaneSlipApplicable": {
+          "sourceId": "SYNTHETIC:SYNTHETIC_RFNBO_E:methaneSlipApplicable",
+          "sourceType": "SA",
+          "unit": "boolean",
+          "verificationStatus": "ESTIMATED"
+        },
+        "rwd": {
+          "sourceId": "SYNTHETIC:SYNTHETIC_RFNBO_E:rwd",
+          "sourceType": "SA",
+          "unit": "ratio",
+          "verificationStatus": "ESTIMATED"
+        },
+        "eligibleBiomassFraction": {
+          "sourceId": "SYNTHETIC:SYNTHETIC_RFNBO_E:eligibleBiomassFraction",
+          "sourceType": "SA",
+          "unit": "fraction",
+          "verificationStatus": "ESTIMATED"
+        },
+        "E": {
+          "sourceId": "SYNTHETIC:SYNTHETIC_RFNBO_E:E",
+          "sourceType": "SA",
+          "unit": "gCO2eq/MJ",
+          "verificationStatus": "ESTIMATED"
+        },
+        "eu": {
+          "sourceId": "SYNTHETIC:SYNTHETIC_RFNBO_E:eu",
+          "sourceType": "SA",
+          "unit": "gCO2eq/MJ",
+          "verificationStatus": "ESTIMATED"
+        }
+      }
+    },
+    {
+      "candidateId": "control",
+      "pathId": "MDO",
+      "pricePerTonne": "700",
+      "specifiedBlendRatios": [
+        "0.01",
+        "0.05"
+      ],
+      "maxBlendRatio": "0.5",
+      "candidateAllowsPureUse": false
+    }
+  ]
+}

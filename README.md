@@ -1,8 +1,89 @@
-# P0-P1现行设计基线
+# 航次燃料决策 MVP
 
-## Python MVP运行
+单航次 FuelEU / EU ETS 燃料方案计算与比较工具。
 
-项目计算内核和网页服务使用 Python 3.12。下面的命令在仓库根目录执行，创建独立虚拟环境并安装当前包及开发依赖：
+项目面向船东、租家、燃油采购和燃料供应相关人员。用户给定一条航段、当前基准燃料和若干候选燃料，系统比较各方案的燃料成本、EU ETS、FuelEU 和约束结果，帮助团队判断哪些方案值得进一步讨论。
+
+当前版本属于航次级 MVP，适用于测算、比较和内部讨论，不能替代年度合规结算、采购审批或供应交付确认。
+
+![航次燃料决策产品全景](./docs/diagrams/product-overview.svg)
+
+*图 1：从航次问题到方案比较、条件式建议和结果交付。*
+
+## 1. 用户怎么使用
+
+![一次航次决策的用户路径](./docs/diagrams/user-journey.svg)
+
+*图 2：一次航次决策的六个步骤，以及调整条件后的重新计算路径。*
+
+一次使用围绕一个“航次决策案例”展开。案例包含报告年份、两个相邻有效 `Port of Call`、基准燃料、候选方案、价格和约束。所有候选方案使用同一航段和同一能源口径比较。
+
+需要理解的核心概念：
+
+- **基准方案 B0**：继续使用当前基准燃料的方案，也是所有比较的参照点；
+- **候选方案**：某种替代燃料、供应商报价或质量混兑方案；
+- **EU ETS 与 EUA**：EU ETS 是欧盟碳排放交易体系，EUA 是排放一吨 CO2e 对应的配额；系统估算本航次需要的配额和成本；
+- **FuelEU 与 GHGI**：FuelEU 是欧盟航运燃料法规，GHGI 是法规口径下的温室气体强度；系统只做本航次的法规比例估算；
+- **条件式建议**：在成本优先、达到 GHGI 参考线或合规改善等不同目标下给出的方案；
+- **执行条件**：认证、船舶兼容性、供应和交付条件仍待人工确认的状态。
+
+系统不提供一个脱离目标和约束的“综合最优”。目标或约束变化后，推荐方案可能随之变化。
+
+## 2. 主要功能
+
+- **航次与范围判断**：根据报告年份、港口身份和航段关系判断 EU ETS、FuelEU 的适用范围与比例；
+- **燃料方案计算**：计算单燃料和质量混兑方案的能量、燃料用量、排放、EU ETS、FuelEU 与成本；
+- **多方案比较**：比较 B0 与一个或多个候选方案，展示成本、EUA、GHGI、合规余额及相对变化；
+- **约束与边界**：处理预算、供应量、最大混兑比例等条件，并展示目标比例、成本边界和切换点；
+- **结果交付**：在决策工作台查看结论和依据，导出同一次成功计算的 CSV / PDF。
+
+当前覆盖 2024-2030 年、两个相邻有效 `Port of Call` 和 36 条本期航行燃料路径。`ELECTRICITY_OPS` 保留在完整因子库中，但不进入本期航段输入。
+
+## 3. 项目结构
+
+下图展示规则、案例、计算、决策和交付之间的关系：
+
+![计算流程与支撑关系](./docs/diagrams/calculation-flow.svg)
+
+*图 3：从基础信息、统一口径、逐方案计算到比较和交付。该图表达信息与计算关系，不表示代码调用顺序。*
+
+读图时只需要看四件事：
+
+- 法规、港口和燃料数据先确定计算依据；
+- 所有方案先统一年份、航段、能源需求和币种；
+- 每个方案分别计算，再放到同一张表里比较；
+- 页面和报告展示结果，同时保留数据来源、问题说明和执行条件限制。
+
+| 产品模块 | 主要位置 | 作用 |
+| --- | --- | --- |
+| 页面与交互 | `src/voyage_fuel/templates/`、`src/voyage_fuel/static/` | 输入、工作台、方案详情和结果图表 |
+| 接口与案例契约 | `src/voyage_fuel/web.py`、`contracts.py`、`json_io.py` | HTTP 接口、输入校验、结果结构和短期导出快照 |
+| 港口与法规范围 | `src/voyage_fuel/ports.py`、`port-identity-mapping.mjs`、`port-scope-rates.mjs` | 港口身份、航段关系和范围比例 |
+| 燃料与证据 | `src/voyage_fuel/factors.py`、`custom_factors.py`、`provenance.py` | 燃料路径、因子、资格、来源和版本追溯 |
+| 计算与决策 | `src/voyage_fuel/calculator.py`、`case_calculator.py`、`case_comparison.py` | 单方案计算、多候选比较和条件式建议 |
+| 约束与经济性 | `src/voyage_fuel/constraints.py`、`economics.py` | 预算、供应、比例、临界价格和切换点 |
+| 报告与验证 | `src/voyage_fuel/reports.py`、`tests/`、`tools/validation/` | CSV/PDF 输出、自动化测试和独立验证 |
+
+产品能力按“港口范围 → 燃料因子 → 单方案计算 → 多方案决策 → 页面和报告”排列。修改某个规则前，先确认它所在的层，再查看对应规格和测试。
+
+更完整的规则、计算和交付关系见 [计算流程与支撑关系图](./docs/diagrams/calculation-flow.svg)，图表生成脚本位于 [generate_diagrams.py](./tools/diagrams/generate_diagrams.py)。
+
+## 4. 结果边界
+
+- 结果是法规口径的航次级比例估算，不等于正式年度结算结果；
+- FuelEU 指示性金额用于辅助比较，不代表本航次真实应付罚款；
+- 方案可以计算，只说明数学测算成立，认证、兼容性、供应和交付仍需确认；
+- 缺少价格时可以比较排放和合规表现，但不能完成完整经济排序；
+- 当前不覆盖年度罚款、Banking、Borrowing、Pooling、船队优化、采购执行、货币换算、多候选燃料同时混兑和独立物理生命周期 WtW；
+- 证据状态来自输入或已整理因子，系统不会自动核验证书真实性。
+
+所有方案的执行状态统一保留待确认信息，不能把航次级推荐直接当作采购结论。
+
+Boundary contract: voyage-level proportional estimate; not a formal annual penalty; not a procurement recommendation; independent physical lifecycle WtW reduction is not provided. `EXECUTION_CONDITIONS_PENDING` remains until execution conditions are confirmed.
+
+## 5. 快速启动
+
+要求：Python 3.12+、Node.js。Windows PowerShell 下在仓库根目录执行：
 
 ```powershell
 py -3.12 -m venv .venv
@@ -11,122 +92,50 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\voyage-fuel-web.exe --host 127.0.0.1 --port 8000
 ```
 
-另开一个 PowerShell 窗口检查服务：
+浏览器访问：
+
+- `http://127.0.0.1:8000/?view=workbench`：决策工作台；
+- `http://127.0.0.1:8000/`：默认计算页面；
+- `http://127.0.0.1:8000/health`：健康检查，预期返回 `{"status":"ok"}`。
 
 ```powershell
 Invoke-RestMethod http://127.0.0.1:8000/health
 ```
 
-预期返回 `status: ok`。浏览器访问 `http://127.0.0.1:8000/` 使用原版单航次计算器；访问 `http://127.0.0.1:8000/?view=workbench` 使用目标驱动的新版决策工作台。当前默认入口仍为原版，`/?view=legacy` 可显式回退。
-
-### API和导出
-
-`tests/fixtures/multi_candidate_case.json` 是可复现的双候选案例。服务启动后，可以直接计算并保存 JSON 结果：
+用双候选样例完成一次计算：
 
 ```powershell
-$caseBody = Get-Content -Raw .\tests\fixtures\multi_candidate_case.json
-$result = Invoke-RestMethod http://127.0.0.1:8000/api/calculate -Method Post -ContentType "application/json" -Body $caseBody
+$body = Get-Content -Raw .\tests\fixtures\multi_candidate_case.json
+$result = Invoke-RestMethod http://127.0.0.1:8000/api/calculate `
+  -Method Post -ContentType "application/json" -Body $body
 $result | ConvertTo-Json -Depth 20
 ```
 
-计算成功后服务端返回短期有效的 `result_snapshot_id`。CSV 和 PDF 读取这份服务端结果快照，不重新计算，也不接受客户端提交的结果字段：
+计算接口为 `/api/calculate`；结果导出接口为 `/api/export/csv` 和 `/api/export/pdf`。导出时，将计算响应中的 `result_snapshot_id` 值写入请求字段 `resultSnapshotId`。
+
+交接前运行完整测试：
 
 ```powershell
-$exportBody = @{ resultSnapshotId = $result.result_snapshot_id } | ConvertTo-Json
-Invoke-WebRequest http://127.0.0.1:8000/api/export/csv -Method Post -ContentType "application/json" -Body $exportBody -OutFile .\voyage-fuel-decision.csv
-Invoke-WebRequest http://127.0.0.1:8000/api/export/pdf -Method Post -ContentType "application/json" -Body $exportBody -OutFile .\voyage-fuel-decision.pdf
+.\.venv\Scripts\python.exe -m pytest -q
+node --test tests/frontend/*.test.mjs port-scope-rates.test.mjs port-identity-mapping.test.mjs
 ```
 
-### 聚焦测试
-
-不需要每次运行全量测试。开发时按改动范围运行对应套件：
+浏览器端到端测试位于 `tests/e2e/`，运行前安装 Playwright Chromium：
 
 ```powershell
-$env:PYTHONPATH = "src"
-& ".\.venv\Scripts\python.exe" -m unittest tests.test_case_reports tests.test_reports -v
-& ".\.venv\Scripts\python.exe" -m unittest tests.test_web_api tests.test_web_page -v
-node --test tests/frontend/display-values.test.mjs tests/frontend/workbench-model.test.mjs
-& ".\.venv\Scripts\python.exe" -m pytest tests/e2e/test_workbench_flow.py -q
-& ".\.venv\Scripts\python.exe" -m unittest tests.e2e.test_display_precision tests.e2e.test_mvp_flow -v
+.\.venv\Scripts\python.exe -m playwright install chromium
+.\.venv\Scripts\python.exe -m pytest tests/e2e -q
 ```
 
-最终验收才运行完整 Python、Node、编译和 JavaScript 语法检查，命令以 `docs/superpowers/plans/2026-09-02-mvp-gap-remediation-plan.md` 的 Task 7 为准。
+## 6. 接手入口
 
-## MVP边界
+建议按以下顺序阅读：
 
-结果是 `voyage-level` 的 FuelEU 法规口径比例估算。FuelEU 指示性金额 `not a formal annual penalty`，结果 `not a procurement recommendation`，也不提供 `independent physical lifecycle WtW reduction`。所有可计算方案的执行状态为 `EXECUTION_CONDITIONS_PENDING`，表示认证、兼容性、供应和交付条件仍待确认。
+1. [项目目标与总体架构](./项目目标与总体架构.md)：产品目标、核心能力和长期边界；
+2. [决策工作台设计](./docs/superpowers/specs/2026-09-17-decision-workbench-design.md)：用户路径和结果组织；
+3. [港口比例功能说明](./港口比例功能说明.md)：港口身份和范围规则；
+4. [燃料因子库规范](./燃料因子库规范.md)：燃料路径、因子和证据；
+5. [MVP 计算规格](./docs/superpowers/specs/2026-08-07-voyage-fuel-decision-calculation-spec.md)：公式、单位、状态和接口契约；
+6. `docs/validation/`：交叉验证、外部验证和业务案例证据。
 
-本期只处理 2024-2030 年两个相邻有效 Port of Call 之间的单航段；固定因子库开放 36 条航行燃料路径，`ELECTRICITY_OPS` 不进入本期。2024-2025 年 EU ETS 只纳入 CO2，2026 年起纳入 CO2、CH4 和 N2O。系统不实现正式年度 FuelEU 结算、真实年度罚款、Banking、Borrowing、Pooling、OPS 或登录和云端案例历史。
-
-这个文件夹集中保存本轮确认的产品骨架、两个固定基础，以及支撑它们的数据、法规原文、核对材料和港口可再生成链。
-
-安全使用约定：
-
-- 页面计算成功后会绑定本次成功提交的输入快照；修改航次、燃料、候选或约束输入会使旧结果失效，必须重新计算后才能导出；
-- 新版工作台默认显示百分比单位，但发送给 API 的仍是 0 到 1 的质量比例；转换保留十进制输入精度；
-- CSV/PDF 直接消费服务端保存的同一份成功计算结果，快照过期或不存在时必须重新计算；显示精度只影响页面和 PDF，不改变原始计算；
-- `candidates: []` 是合法的 B0-only 请求，继续返回基础能源、排放、EU ETS 和 FuelEU 结果，不生成新能源建议；
-- 案例结果通过 `field_reasons` 说明关键空值，CSV/PDF 同步输出原因码；
-- `B100` 只有在候选明确允许纯用时才进入报告点；未经允许的显式比例会返回候选级 `INVALID_BLEND_RATIO`；
-- 价格缺失时，预算不能验证，相关非零混兑场景标记为 `CONSTRAINT_UNVERIFIED`，不进入预算相关的条件式建议；
-- 案例货币只作为价格口径标签，系统不做换汇；FuelEU 指示性金额固定以 EUR 表示；证据状态是输入声明，系统不自动核验证书真实性。
-
-## 阅读顺序
-
-1. [项目目标与总体架构](./项目目标与总体架构.md)：现行产品骨架；
-2. [港口比例功能说明](./港口比例功能说明.md)：已经固定的港口范围和比例规则；
-3. [燃料因子库规范](./燃料因子库规范.md)：已经固定的37条燃料路径、因子值、资格分支和默认估算参数；
-4. [MVP设计](./docs/superpowers/specs/2026-08-07-voyage-fuel-decision-mvp-design.md)：把产品边界展开为开发功能和验收范围；
-5. [MVP计算规格](./docs/superpowers/specs/2026-08-07-voyage-fuel-decision-calculation-spec.md)：固定计算公式、单位、边界、状态、输出和测试向量。
-6. [外部计算验证矩阵](./docs/validation/external-validation-matrix.md)：记录公开项目功能上限、交叉实验和已解释差异。
-
-发生冲突时：产品能力和表达以《项目目标与总体架构》为准；港口身份和比例以《港口比例功能说明》为准；燃料路径、因子值、资格和证据以《燃料因子库规范》为准；计算单位、公式、状态、输出和测试契约以《MVP计算规格》为准。研究文档和核对记录用于追溯依据，不覆盖上述现行契约。
-
-## 文件结构
-
-```text
-P0-P1/
-├─ 项目目标与总体架构.md
-├─ 港口比例功能说明.md
-├─ 燃料因子库规范.md
-├─ generate-port-identity-mapping.mjs
-├─ port-identity-mapping.mjs
-├─ port-identity-mapping.test.mjs
-├─ port-scope-rates.mjs
-├─ port-scope-rates.test.mjs
-├─ docs/
-│  ├─ superpowers/specs/2026-08-07-voyage-fuel-decision-mvp-design.md
-│  ├─ superpowers/specs/2026-08-07-voyage-fuel-decision-calculation-spec.md
-│  ├─ research/航程范围与覆盖规则调研.md
-│  ├─ 核对记录/燃料因子核对记录.md
-│  └─ validation/external-validation-matrix.md
-└─ 官方参考资料/
-   ├─ 港口基础数据/
-   ├─ 航程范围规则/
-   └─ 燃料因子来源/
-```
-
-其中，港口生成、分类、查询代码和测试属于固定港口成果；它们与旧计算器代码的性质不同。
-
-本文件夹不包含旧碳税计算器实现、历史设计稿、原始截图或临时提取文件，这些内容统一放在相邻的`历史归档资料`文件夹。
-
-## 当前开发状态
-
-项目的模块状态、已验证证据、剩余任务、执行顺序和最终验收条件统一维护在[MVP交付计划与进度](./docs/superpowers/plans/2026-09-01-mvp-delivery-plan.md)。其他计划文件作为历史记录保留，不作为当前完成度依据。
-
-当前分支已经完成并验证案例级多候选计算、结构化结果与追溯、CSV/PDF报告、单用户网页工作流，以及基于现有燃料目录的新能源混兑决策摘要展示；安装后运行和最终验收状态以[MVP交付计划与进度](./docs/superpowers/plans/2026-09-01-mvp-delivery-plan.md)为准。该文件是模块状态和剩余任务的唯一事实来源。
-
-FuelEU结果仍是航次级按比例分配估算，不代表正式年度合规余额或真实年度罚款；系统不输出采购建议或独立物理生命周期WtW减排。新能源决策层复用现有燃料因子、计算、约束和推荐结果，展示新增燃料成本、EU ETS成本节省、净成本变化、FuelEU指标变化以及推荐用量/混兑比例；不新增燃料因子、不实现年度FuelEU结算，也不代表采购执行。逐字段自定义燃料因子已在Python/JSON/API层支持并要求证据，网页高级自定义模式提供最小输入适配：普通非甲烷燃料默认隐藏Cslip等设备字段，CH4/N2O可由用户明确勾选“按0估算”，气体路径可显式选择甲烷滑移是否适用，适用时才填写Cslip和滑移因子；生物燃料可在未证明资格时使用BIO_E估算，EU ETS合格生物质比例仍按0处理；未证明RFNBO资格时页面锁定普通WtT输入，避免直接套用RFNBO奖励。自定义路径和候选身份由页面会话内稳定 ID 管理，最终字段、单位和证据完整性仍由后端校验。
-
-## 浏览器验收
-
-网页端到端测试位于 `tests/e2e/`，使用 Python Playwright 启动隔离的本地 `voyage-fuel-web` 服务，并覆盖桌面 `1440x900`、移动 `390x844`、多候选比较、高级自定义燃料最小输入、RFNBO 资格保护、候选重绘状态保留、阻断候选隔离、显示精度和 CSV/PDF 导出。运行前请安装 Playwright 浏览器；也可以通过 `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` 指向已有 Chrome：
-
-```powershell
-& "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m playwright install chromium
-& "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m unittest discover -s tests/e2e -v
-```
-
-测试截图和导出证据写入 `tests/e2e/artifacts/`；其中 PDF 导出会在本地生成但已加入忽略清单，因为 ReportLab 的运行元数据会使二进制内容随运行变化。服务状态和计算结果保持浏览器内存与本地临时进程范围内，不创建案例会话文件。
-
-要验证非 editable 安装后的包和 CLI，可在临时虚拟环境中安装 `.[dev]`，并设置 `VOYAGE_FUEL_PYTHON` 指向该环境的 Python；设置 `VOYAGE_FUEL_USE_INSTALLED_PACKAGE=1` 后运行上述 E2E 命令，测试服务不会回退到仓库源码路径。
+接手时先执行 `git status --short`，启动工作台，用双候选样例完成一次计算和导出，再运行完整测试。当前工作台已完成技术验收；真实业务使用者仍需确认推荐、手动查看和航次级边界不会被误读。业务验收完成前，不应把项目描述为正式采购建议或年度合规结算工具。

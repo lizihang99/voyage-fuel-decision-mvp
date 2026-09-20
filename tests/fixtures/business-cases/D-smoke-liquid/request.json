@@ -1,0 +1,60 @@
+{
+  "reportYear": 2030,
+  "departurePort": "NLRTM",
+  "arrivalPort": "DEHAM",
+  "adjacentValidPortOfCallConfirmed": true,
+  "currency": "EUR",
+  "baseline": {
+    "pathId": "MDO",
+    "massTonnes": "1000",
+    "pricePerTonne": "700"
+  },
+  "euaPricePerTCO2e": "80",
+  "candidates": [
+    {
+      "candidateId": "smoke-hfo",
+      "pathId": "HFO",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-lfo",
+      "pathId": "LFO",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-mdo",
+      "pathId": "MDO",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-mgo",
+      "pathId": "MGO",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-methanol_ng",
+      "pathId": "METHANOL_NG",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    }
+  ]
+}

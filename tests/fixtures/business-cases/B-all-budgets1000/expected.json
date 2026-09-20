@@ -1,0 +1,4993 @@
+{
+  "reference_version": "business-reference-v1",
+  "disclaimer": "合成数据，仅用于系统验证和未来示例复用",
+  "input_sha256": "9a24c956014aa680f18bff6d1d4dd53fc12009ec90af7016b80513ed9b2e9dfc",
+  "expected_sha256": "883248a40c15eb4932333bd1c07a389da8edbc66f626caf3524ed29d0d86798d",
+  "result": {
+    "id": "B-all-budgets1000",
+    "status": "COMPARABLE",
+    "issues": [],
+    "baseline": {
+      "candidate_id": null,
+      "ratio": "0",
+      "status": "COMPARABLE",
+      "factor_status": "FIXED",
+      "execution_status": "EXECUTION_CONDITIONS_PENDING",
+      "components": [
+        {
+          "role": "BASELINE",
+          "path_id": "MDO",
+          "equipment_id": "MDO",
+          "mass_t": "1000",
+          "mass_g": "1000000000",
+          "energy_mj": "42700000",
+          "unburned_mass_g": "0",
+          "burned_mass_g": "1000000000",
+          "lcv": "427/10000",
+          "wtt": "72/5",
+          "rwd": "1",
+          "slip_percent": null,
+          "slip_fraction": "0",
+          "methane": false,
+          "biomass": "0",
+          "combustion_eq": "326089/100000",
+          "slip_eq": "0",
+          "ttw_mass_eq": "326089/100000",
+          "effective_co2_factor": "1603/500",
+          "raw_by_gas_t": {
+            "CO2": "3206",
+            "CH4": "1/20",
+            "N2O": "9/50"
+          },
+          "wtt_numerator_g": "614880000",
+          "ttw_numerator_g": "3260890000",
+          "denominator_mj": "42700000",
+          "factor_status": "FIXED",
+          "qualification": "NOT_DEMONSTRATED",
+          "zero_rating_status": "FOSSIL_TREATMENT",
+          "mode": "STATIC",
+          "source_ids": []
+        }
+      ],
+      "physical": {
+        "baseline_mass_t": "1000",
+        "candidate_mass_t": "0",
+        "total_mass_t": "1000",
+        "energy_mj": "42700000"
+      },
+      "ets": {
+        "raw_by_gas_t": {
+          "CO2": "3206",
+          "CH4": "1/20",
+          "N2O": "9/50"
+        },
+        "raw_co2e_t": "32551/10",
+        "included_gases": [
+          "CO2",
+          "CH4",
+          "N2O"
+        ],
+        "excluded_from_surrender": [],
+        "pre_scope_co2e_t": "32551/10",
+        "geo_co2e_t": "32551/10",
+        "scope_by_gas_t": {
+          "CO2": "3206",
+          "CH4": "1/20",
+          "N2O": "9/50"
+        },
+        "geo": "1",
+        "surrender": "1",
+        "effective": "1",
+        "euas": "32551/10"
+      },
+      "fueleu": {
+        "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+        "target": "107113/1250",
+        "denominator_mj": "42700000",
+        "wtt_numerator_g": "614880000",
+        "ttw_numerator_g": "3260890000",
+        "wtt_intensity": "72/5",
+        "ttw_intensity": "326089/4270",
+        "ghgi": "387577/4270",
+        "scoped_energy_mj": "42700000",
+        "balance_g": "-216789920",
+        "balance_t": "-1354937/6250",
+        "classification": "DEFICIT_ESTIMATE",
+        "penalty_eur": "2221663100160/15890657"
+      },
+      "costs": {
+        "fuel": "700000",
+        "eua": "260408",
+        "model": "960408",
+        "eua_savings": "0",
+        "reference_adjusted": null
+      },
+      "null_reasons": {
+        "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+        "components.0.slip_percent": "NOT_APPLICABLE"
+      },
+      "constraint_status": "CONSTRAINT_FEASIBLE",
+      "warnings": [],
+      "deltas": {
+        "fuel_cost": "0",
+        "eua_cost": "0",
+        "model_cost": "0",
+        "euas": "0",
+        "ghgi": "0",
+        "balance_t": "0",
+        "penalty_eur": "0",
+        "co2_t": "0",
+        "ch4_t": "0",
+        "n2o_t": "0",
+        "raw_co2e_t": "0"
+      },
+      "percent_deltas": {
+        "fuel_cost": "0",
+        "eua_cost": "0",
+        "model_cost": "0",
+        "euas": "0",
+        "ghgi": "0",
+        "balance_t": "0",
+        "penalty_eur": "0",
+        "co2_t": "0",
+        "ch4_t": "0",
+        "n2o_t": "0",
+        "raw_co2e_t": "0"
+      }
+    },
+    "candidates": {
+      "uco-limited": {
+        "status": "COMPARABLE",
+        "issues": [],
+        "report_points": [
+          {
+            "ratio": "0",
+            "roles": [
+              "B0"
+            ],
+            "scenario": {
+              "candidate_id": "uco-limited",
+              "ratio": "0",
+              "status": "COMPARABLE",
+              "factor_status": "FIXED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "1000",
+                  "mass_g": "1000000000",
+                  "energy_mj": "42700000",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "1000000000",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "3206",
+                    "CH4": "1/20",
+                    "N2O": "9/50"
+                  },
+                  "wtt_numerator_g": "614880000",
+                  "ttw_numerator_g": "3260890000",
+                  "denominator_mj": "42700000",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "1000",
+                "candidate_mass_t": "0",
+                "total_mass_t": "1000",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "3206",
+                  "CH4": "1/20",
+                  "N2O": "9/50"
+                },
+                "raw_co2e_t": "32551/10",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "32551/10",
+                "geo_co2e_t": "32551/10",
+                "scope_by_gas_t": {
+                  "CO2": "3206",
+                  "CH4": "1/20",
+                  "N2O": "9/50"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "32551/10"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "614880000",
+                "ttw_numerator_g": "3260890000",
+                "wtt_intensity": "72/5",
+                "ttw_intensity": "326089/4270",
+                "ghgi": "387577/4270",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-216789920",
+                "balance_t": "-1354937/6250",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "2221663100160/15890657"
+              },
+              "costs": {
+                "fuel": "700000",
+                "eua": "260408",
+                "model": "960408",
+                "eua_savings": "0",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_FEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "0",
+                "eua_cost": "0",
+                "model_cost": "0",
+                "euas": "0",
+                "ghgi": "0",
+                "balance_t": "0",
+                "penalty_eur": "0",
+                "co2_t": "0",
+                "ch4_t": "0",
+                "n2o_t": "0",
+                "raw_co2e_t": "0"
+              },
+              "percent_deltas": {
+                "fuel_cost": "0",
+                "eua_cost": "0",
+                "model_cost": "0",
+                "euas": "0",
+                "ghgi": "0",
+                "balance_t": "0",
+                "penalty_eur": "0",
+                "co2_t": "0",
+                "ch4_t": "0",
+                "n2o_t": "0",
+                "raw_co2e_t": "0"
+              }
+            }
+          },
+          {
+            "ratio": "7625/929166",
+            "roles": [
+              "BUDGET_BOUNDARY",
+              "CAP",
+              "MAX_IMPROVEMENT"
+            ],
+            "scenario": {
+              "candidate_id": "uco-limited",
+              "ratio": "7625/929166",
+              "status": "COMPARABLE",
+              "factor_status": "ESTIMATED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "6450787000/6497037",
+                  "mass_g": "6450787000000000/6497037",
+                  "energy_mj": "275448604900000/6497037",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "6450787000000000/6497037",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "20681223122/6497037",
+                    "CH4": "6450787/129940740",
+                    "N2O": "6450787/36094650"
+                  },
+                  "wtt_numerator_g": "440717767840000/721893",
+                  "ttw_numerator_g": "21035306820430000/6497037",
+                  "denominator_mj": "275448604900000/6497037",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                },
+                {
+                  "role": "CANDIDATE",
+                  "path_id": "UCO_FAME",
+                  "equipment_id": "UCO_FAME",
+                  "mass_t": "53375000/6497037",
+                  "mass_g": "53375000000000/6497037",
+                  "energy_mj": "1974875000000/6497037",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "53375000000000/6497037",
+                  "lcv": "37/1000",
+                  "wtt": "-22827/370",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "1",
+                  "combustion_eq": "288889/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "288889/100000",
+                  "effective_co2_factor": "0",
+                  "raw_by_gas_t": {
+                    "CO2": "0",
+                    "CH4": "10675/25988148",
+                    "N2O": "2135/1443786"
+                  },
+                  "wtt_numerator_g": "-40613037500000/2165679",
+                  "ttw_numerator_g": "154194503750000/6497037",
+                  "denominator_mj": "1974875000000/6497037",
+                  "factor_status": "ESTIMATED",
+                  "qualification": "ASSUMED_ELIGIBLE",
+                  "zero_rating_status": "ESTIMATED_ASSUMED_ELIGIBLE",
+                  "mode": "BIO_E",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "6450787000/6497037",
+                "candidate_mass_t": "53375000/6497037",
+                "total_mass_t": "2168054000/2165679",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "20681223122/6497037",
+                  "CH4": "1084027/21656790",
+                  "N2O": "1084027/6015775"
+                },
+                "raw_co2e_t": "105002887381/32485185",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "105002887381/32485185",
+                "geo_co2e_t": "105002887381/32485185",
+                "scope_by_gas_t": {
+                  "CO2": "20681223122/6497037",
+                  "CH4": "1084027/21656790",
+                  "N2O": "1084027/6015775"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "105002887381/32485185"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "1281540266020000/2165679",
+                "ttw_numerator_g": "784796345340000/240631",
+                "wtt_intensity": "150063263/10828395",
+                "ttw_intensity": "5605688181/73392455",
+                "ghgi": "59605052672/660532095",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-420531053405680/2165679",
+                "balance_t": "-5256638167571/27070987500",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "4809823923327465/38184486868"
+              },
+              "costs": {
+                "fuel": "4566257150000/6497037",
+                "eua": "1680046198096/6497037",
+                "model": "961408",
+                "eua_savings": "11834213000/6497037",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE",
+                "components.1.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_FEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "18331250000/6497037",
+                "eua_cost": "-11834213000/6497037",
+                "model_cost": "1000",
+                "euas": "-295855325/12994074",
+                "ghgi": "-979326475/1849489866",
+                "balance_t": "195865295/8662716",
+                "penalty_eur": "-204922031150942529375/14799428866838836",
+                "co2_t": "-148277500/6497037",
+                "ch4_t": "475/8662716",
+                "n2o_t": "95/481262",
+                "raw_co2e_t": "-295855325/12994074"
+              },
+              "percent_deltas": {
+                "fuel_cost": "2618750/6497037",
+                "eua_cost": "-147927662500/211485051387",
+                "model_cost": "12500/120051",
+                "euas": "-147927662500/211485051387",
+                "ghgi": "-489663237500/839367369783",
+                "balance_t": "30603952343750/2934358607223",
+                "penalty_eur": "-799851799964646875/80761091252241664",
+                "co2_t": "-4625000/6497037",
+                "ch4_t": "237500/2165679",
+                "n2o_t": "237500/2165679",
+                "raw_co2e_t": "-147927662500/211485051387"
+              }
+            }
+          },
+          {
+            "ratio": "1/100",
+            "roles": [
+              "SPECIFIED"
+            ],
+            "scenario": {
+              "candidate_id": "uco-limited",
+              "ratio": "1/100",
+              "status": "COMPARABLE",
+              "factor_status": "ESTIMATED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "42273000/42643",
+                  "mass_g": "42273000000000/42643",
+                  "energy_mj": "1805057100000/42643",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "42273000000000/42643",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "135527238/42643",
+                    "CH4": "42273/852860",
+                    "N2O": "380457/2132150"
+                  },
+                  "wtt_numerator_g": "25992822240000/42643",
+                  "ttw_numerator_g": "137847602970000/42643",
+                  "denominator_mj": "1805057100000/42643",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                },
+                {
+                  "role": "CANDIDATE",
+                  "path_id": "UCO_FAME",
+                  "equipment_id": "UCO_FAME",
+                  "mass_t": "427000/42643",
+                  "mass_g": "427000000000/42643",
+                  "energy_mj": "15799000000/42643",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "427000000000/42643",
+                  "lcv": "37/1000",
+                  "wtt": "-22827/370",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "1",
+                  "combustion_eq": "288889/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "288889/100000",
+                  "effective_co2_factor": "0",
+                  "raw_by_gas_t": {
+                    "CO2": "0",
+                    "CH4": "427/852860",
+                    "N2O": "3843/2132150"
+                  },
+                  "wtt_numerator_g": "-974712900000/42643",
+                  "ttw_numerator_g": "1233556030000/42643",
+                  "denominator_mj": "15799000000/42643",
+                  "factor_status": "ESTIMATED",
+                  "qualification": "ASSUMED_ELIGIBLE",
+                  "zero_rating_status": "ESTIMATED_ASSUMED_ELIGIBLE",
+                  "mode": "BIO_E",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "42273000/42643",
+                "candidate_mass_t": "427000/42643",
+                "total_mass_t": "42700000/42643",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "135527238/42643",
+                  "CH4": "2135/42643",
+                  "N2O": "7686/42643"
+                },
+                "raw_co2e_t": "137623808/42643",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "137623808/42643",
+                "geo_co2e_t": "137623808/42643",
+                "scope_by_gas_t": {
+                  "CO2": "135527238/42643",
+                  "CH4": "2135/42643",
+                  "N2O": "7686/42643"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "137623808/42643"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "25018109340000/42643",
+                "ttw_numerator_g": "139081159000000/42643",
+                "wtt_intensity": "2929521/213215",
+                "ttw_intensity": "3257170/42643",
+                "ghgi": "19215371/213215",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-8069380788560/42643",
+                "balance_t": "-100867259857/533037500",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "13833224208960/112547173"
+              },
+              "costs": {
+                "fuel": "29996750000/42643",
+                "eua": "11009904640/42643",
+                "model": "41006654640/42643",
+                "eua_savings": "94673704/42643",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE",
+                "components.1.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_INFEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "146650000/42643",
+                "eua_cost": "-94673704/42643",
+                "model_cost": "51976296/42643",
+                "euas": "-11834213/426430",
+                "ghgi": "-117519177/182085610",
+                "balance_t": "117519177/4264300",
+                "penalty_eur": "-737143418847418560/43620695669821",
+                "co2_t": "-1186220/42643",
+                "ch4_t": "57/852860",
+                "n2o_t": "513/2132150",
+                "raw_co2e_t": "-11834213/426430"
+              },
+              "percent_deltas": {
+                "fuel_cost": "20950/42643",
+                "eua_cost": "-1183421300/1388072293",
+                "model_cost": "72189300/568814977",
+                "euas": "-1183421300/1388072293",
+                "ghgi": "-11751917700/16527446011",
+                "balance_t": "734494856250/57778578491",
+                "penalty_eur": "-314695790150025/26035617136627",
+                "co2_t": "-37000/42643",
+                "ch4_t": "5700/42643",
+                "n2o_t": "5700/42643",
+                "raw_co2e_t": "-1183421300/1388072293"
+              }
+            }
+          },
+          {
+            "ratio": "1281/42871",
+            "roles": [
+              "SUPPLY_BOUNDARY"
+            ],
+            "scenario": {
+              "candidate_id": "uco-limited",
+              "ratio": "1281/42871",
+              "status": "COMPARABLE",
+              "factor_status": "ESTIMATED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "415900/427",
+                  "mass_g": "415900000000/427",
+                  "energy_mj": "41590000",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "415900000000/427",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "952411/305",
+                    "CH4": "4159/85400",
+                    "N2O": "37431/213500"
+                  },
+                  "wtt_numerator_g": "598896000",
+                  "ttw_numerator_g": "1356204151000/427",
+                  "denominator_mj": "41590000",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                },
+                {
+                  "role": "CANDIDATE",
+                  "path_id": "UCO_FAME",
+                  "equipment_id": "UCO_FAME",
+                  "mass_t": "30",
+                  "mass_g": "30000000",
+                  "energy_mj": "1110000",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "30000000",
+                  "lcv": "37/1000",
+                  "wtt": "-22827/370",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "1",
+                  "combustion_eq": "288889/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "288889/100000",
+                  "effective_co2_factor": "0",
+                  "raw_by_gas_t": {
+                    "CO2": "0",
+                    "CH4": "3/2000",
+                    "N2O": "27/5000"
+                  },
+                  "wtt_numerator_g": "-68481000",
+                  "ttw_numerator_g": "86666700",
+                  "denominator_mj": "1110000",
+                  "factor_status": "ESTIMATED",
+                  "qualification": "ASSUMED_ELIGIBLE",
+                  "zero_rating_status": "ESTIMATED_ASSUMED_ELIGIBLE",
+                  "mode": "BIO_E",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "415900/427",
+                "candidate_mass_t": "30",
+                "total_mass_t": "428710/427",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "952411/305",
+                  "CH4": "42871/854000",
+                  "N2O": "385839/2135000"
+                },
+                "raw_co2e_t": "1354425061/427000",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "1354425061/427000",
+                "geo_co2e_t": "1354425061/427000",
+                "scope_by_gas_t": {
+                  "CO2": "952411/305",
+                  "CH4": "42871/854000",
+                  "N2O": "385839/2135000"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "1354425061/427000"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "530415000",
+                "ttw_numerator_g": "1393210831900/427",
+                "wtt_intensity": "106083/8540",
+                "ttw_intensity": "13932108319/182329000",
+                "ghgi": "16196980369/182329000",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-57313542740/427",
+                "balance_t": "-2865677137/21350000",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "58734918599952000/664076195129"
+              },
+              "costs": {
+                "fuel": "43328500/61",
+                "eua": "2708850122/10675",
+                "model": "10291337622/10675",
+                "eua_savings": "71005278/10675",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE",
+                "components.1.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_INFEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "628500/61",
+                "eua_cost": "-71005278/10675",
+                "model_cost": "38982222/10675",
+                "euas": "-35502639/427000",
+                "ghgi": "-352557531/182329000",
+                "balance_t": "352557531/4270000",
+                "penalty_eur": "-13219930073609604455040/257380659479512433",
+                "co2_t": "-25419/305",
+                "ch4_t": "171/854000",
+                "n2o_t": "1539/2135000",
+                "raw_co2e_t": "-35502639/427000"
+              },
+              "percent_deltas": {
+                "fuel_cost": "1257/854",
+                "eua_cost": "-35502639/13899277",
+                "model_cost": "2165679/5695753",
+                "euas": "-35502639/13899277",
+                "ghgi": "-352557531/165495379",
+                "balance_t": "44069691375/1157116198",
+                "penalty_eur": "-806250614364364050/21945887990231753",
+                "co2_t": "-1110/427",
+                "ch4_t": "171/427",
+                "n2o_t": "171/427",
+                "raw_co2e_t": "-35502639/13899277"
+              }
+            }
+          },
+          {
+            "ratio": "1/20",
+            "roles": [
+              "SPECIFIED"
+            ],
+            "scenario": {
+              "candidate_id": "uco-limited",
+              "ratio": "1/20",
+              "status": "COMPARABLE",
+              "factor_status": "ESTIMATED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "8113000/8483",
+                  "mass_g": "8113000000000/8483",
+                  "energy_mj": "346425100000/8483",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "8113000000000/8483",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "26010278/8483",
+                    "CH4": "8113/169660",
+                    "N2O": "73017/424150"
+                  },
+                  "wtt_numerator_g": "4988521440000/8483",
+                  "ttw_numerator_g": "26455600570000/8483",
+                  "denominator_mj": "346425100000/8483",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                },
+                {
+                  "role": "CANDIDATE",
+                  "path_id": "UCO_FAME",
+                  "equipment_id": "UCO_FAME",
+                  "mass_t": "427000/8483",
+                  "mass_g": "427000000000/8483",
+                  "energy_mj": "15799000000/8483",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "427000000000/8483",
+                  "lcv": "37/1000",
+                  "wtt": "-22827/370",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "1",
+                  "combustion_eq": "288889/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "288889/100000",
+                  "effective_co2_factor": "0",
+                  "raw_by_gas_t": {
+                    "CO2": "0",
+                    "CH4": "427/169660",
+                    "N2O": "3843/424150"
+                  },
+                  "wtt_numerator_g": "-974712900000/8483",
+                  "ttw_numerator_g": "1233556030000/8483",
+                  "denominator_mj": "15799000000/8483",
+                  "factor_status": "ESTIMATED",
+                  "qualification": "ASSUMED_ELIGIBLE",
+                  "zero_rating_status": "ESTIMATED_ASSUMED_ELIGIBLE",
+                  "mode": "BIO_E",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "8113000/8483",
+                "candidate_mass_t": "427000/8483",
+                "total_mass_t": "8540000/8483",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "26010278/8483",
+                  "CH4": "427/8483",
+                  "N2O": "7686/42415"
+                },
+                "raw_co2e_t": "26429592/8483",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "26429592/8483",
+                "geo_co2e_t": "26429592/8483",
+                "scope_by_gas_t": {
+                  "CO2": "26010278/8483",
+                  "CH4": "427/8483",
+                  "N2O": "7686/42415"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "26429592/8483"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "4013808540000/8483",
+                "ttw_numerator_g": "27689156600000/8483",
+                "wtt_intensity": "470001/42415",
+                "ttw_intensity": "648458/8483",
+                "ghgi": "3712291/42415",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-663837121360/8483",
+                "balance_t": "-8297964017/106037500",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "7966045456320/152203931"
+              },
+              "costs": {
+                "fuel": "6084750000/8483",
+                "eua": "2114367360/8483",
+                "model": "8199117360/8483",
+                "eua_savings": "94673704/8483",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE",
+                "components.1.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_INFEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "146650000/8483",
+                "eua_cost": "-94673704/8483",
+                "model_cost": "51976296/8483",
+                "euas": "-11834213/84830",
+                "ghgi": "-117519177/36222410",
+                "balance_t": "117519177/848300",
+                "penalty_eur": "-5160003931931929920/58990742965187",
+                "co2_t": "-1186220/8483",
+                "ch4_t": "57/169660",
+                "n2o_t": "513/424150",
+                "raw_co2e_t": "-11834213/84830"
+              },
+              "percent_deltas": {
+                "fuel_cost": "20950/8483",
+                "eua_cost": "-1183421300/276130133",
+                "model_cost": "72189300/113154737",
+                "euas": "-1183421300/276130133",
+                "ghgi": "-11751917700/3287815691",
+                "balance_t": "734494856250/11493930571",
+                "penalty_eur": "-314695790150025/5029920430667",
+                "co2_t": "-37000/8483",
+                "ch4_t": "5700/8483",
+                "n2o_t": "5700/8483",
+                "raw_co2e_t": "-1183421300/276130133"
+              }
+            }
+          }
+        ],
+        "constraints": {
+          "x_budget": "7625/929166",
+          "x_supply": "1281/42871",
+          "x_cap": "7625/929166",
+          "budget_status": "VERIFIED",
+          "x_max_improvement": "7625/929166",
+          "x_target_min_unconstrained": "2709874/34764309",
+          "vertices": [
+            {
+              "baseline_mass_t": "1000",
+              "candidate_mass_t": "0",
+              "ratio": "0"
+            },
+            {
+              "baseline_mass_t": "6450787000/6497037",
+              "candidate_mass_t": "53375000/6497037",
+              "ratio": "7625/929166"
+            }
+          ]
+        },
+        "target": {
+          "status": "UNREACHABLE",
+          "reason": "TARGET_UNREACHABLE_UNDER_CONSTRAINTS",
+          "unconstrained_low": "2709874/34764309",
+          "unconstrained_high": "1",
+          "constrained_low": null,
+          "constrained_high": null
+        },
+        "optima": {
+          "cost": {
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "960408",
+            "representative_ratio": "0",
+            "ratio_interval": [
+              "0",
+              "0"
+            ],
+            "mathematical_ratio": "0",
+            "mathematical_ratio_interval": [
+              "0",
+              "0"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          },
+          "target_cost": {
+            "status": "UNAVAILABLE",
+            "reason": "TARGET_UNREACHABLE_UNDER_CONSTRAINTS",
+            "objective": null,
+            "representative_ratio": null,
+            "ratio_interval": null,
+            "mathematical_ratio": null,
+            "mathematical_ratio_interval": null,
+            "upper_inclusive": false,
+            "attained": false
+          },
+          "max_improvement": {
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "195865295/8662716",
+            "representative_ratio": "7625/929166",
+            "ratio_interval": [
+              "7625/929166",
+              "7625/929166"
+            ],
+            "mathematical_ratio": "7625/929166",
+            "mathematical_ratio_interval": [
+              "7625/929166",
+              "7625/929166"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          }
+        },
+        "break_even": {
+          "candidate_price": {
+            "status": "FINITE_NON_NEGATIVE",
+            "value": "44209213/53375"
+          },
+          "eua_price": {
+            "status": "FINITE_NON_NEGATIVE",
+            "value": "1466500000/11834213"
+          }
+        }
+      },
+      "uco-bulk": {
+        "status": "COMPARABLE",
+        "issues": [],
+        "report_points": [
+          {
+            "ratio": "0",
+            "roles": [
+              "B0"
+            ],
+            "scenario": {
+              "candidate_id": "uco-bulk",
+              "ratio": "0",
+              "status": "COMPARABLE",
+              "factor_status": "FIXED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "1000",
+                  "mass_g": "1000000000",
+                  "energy_mj": "42700000",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "1000000000",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "3206",
+                    "CH4": "1/20",
+                    "N2O": "9/50"
+                  },
+                  "wtt_numerator_g": "614880000",
+                  "ttw_numerator_g": "3260890000",
+                  "denominator_mj": "42700000",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "1000",
+                "candidate_mass_t": "0",
+                "total_mass_t": "1000",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "3206",
+                  "CH4": "1/20",
+                  "N2O": "9/50"
+                },
+                "raw_co2e_t": "32551/10",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "32551/10",
+                "geo_co2e_t": "32551/10",
+                "scope_by_gas_t": {
+                  "CO2": "3206",
+                  "CH4": "1/20",
+                  "N2O": "9/50"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "32551/10"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "614880000",
+                "ttw_numerator_g": "3260890000",
+                "wtt_intensity": "72/5",
+                "ttw_intensity": "326089/4270",
+                "ghgi": "387577/4270",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-216789920",
+                "balance_t": "-1354937/6250",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "2221663100160/15890657"
+              },
+              "costs": {
+                "fuel": "700000",
+                "eua": "260408",
+                "model": "960408",
+                "eua_savings": "0",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_FEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "0",
+                "eua_cost": "0",
+                "model_cost": "0",
+                "euas": "0",
+                "ghgi": "0",
+                "balance_t": "0",
+                "penalty_eur": "0",
+                "co2_t": "0",
+                "ch4_t": "0",
+                "n2o_t": "0",
+                "raw_co2e_t": "0"
+              },
+              "percent_deltas": {
+                "fuel_cost": "0",
+                "eua_cost": "0",
+                "model_cost": "0",
+                "euas": "0",
+                "ghgi": "0",
+                "balance_t": "0",
+                "penalty_eur": "0",
+                "co2_t": "0",
+                "ch4_t": "0",
+                "n2o_t": "0",
+                "raw_co2e_t": "0"
+              }
+            }
+          },
+          {
+            "ratio": "7625/2454166",
+            "roles": [
+              "BUDGET_BOUNDARY",
+              "CAP",
+              "MAX_IMPROVEMENT"
+            ],
+            "scenario": {
+              "candidate_id": "uco-bulk",
+              "ratio": "7625/2454166",
+              "status": "COMPARABLE",
+              "factor_status": "ESTIMATED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "17125787000/17172037",
+                  "mass_g": "17125787000000000/17172037",
+                  "energy_mj": "731271104900000/17172037",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "17125787000000000/17172037",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "54905273122/17172037",
+                    "CH4": "17125787/343440740",
+                    "N2O": "154132083/858601850"
+                  },
+                  "wtt_numerator_g": "10530303910560000/17172037",
+                  "ttw_numerator_g": "55845307570430000/17172037",
+                  "denominator_mj": "731271104900000/17172037",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                },
+                {
+                  "role": "CANDIDATE",
+                  "path_id": "UCO_FAME",
+                  "equipment_id": "UCO_FAME",
+                  "mass_t": "53375000/17172037",
+                  "mass_g": "53375000000000/17172037",
+                  "energy_mj": "1974875000000/17172037",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "53375000000000/17172037",
+                  "lcv": "37/1000",
+                  "wtt": "-22827/370",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "1",
+                  "combustion_eq": "288889/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "288889/100000",
+                  "effective_co2_factor": "0",
+                  "raw_by_gas_t": {
+                    "CO2": "0",
+                    "CH4": "10675/68688148",
+                    "N2O": "19215/34344074"
+                  },
+                  "wtt_numerator_g": "-121839112500000/17172037",
+                  "ttw_numerator_g": "154194503750000/17172037",
+                  "denominator_mj": "1974875000000/17172037",
+                  "factor_status": "ESTIMATED",
+                  "qualification": "ASSUMED_ELIGIBLE",
+                  "zero_rating_status": "ESTIMATED_ASSUMED_ELIGIBLE",
+                  "mode": "BIO_E",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "17125787000/17172037",
+                "candidate_mass_t": "53375000/17172037",
+                "total_mass_t": "17179162000/17172037",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "54905273122/17172037",
+                  "CH4": "8589581/171720370",
+                  "N2O": "77306229/429300925"
+                },
+                "raw_co2e_t": "278743849881/85860185",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "278743849881/85860185",
+                "geo_co2e_t": "278743849881/85860185",
+                "scope_by_gas_t": {
+                  "CO2": "54905273122/17172037",
+                  "CH4": "8589581/171720370",
+                  "N2O": "77306229/429300925"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "278743849881/85860185"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "10408464798060000/17172037",
+                "ttw_numerator_g": "55999502074180000/17172037",
+                "wtt_intensity": "1218789789/85860185",
+                "ttw_intensity": "399996443387/5237471285",
+                "ghgi": "474342620516/5237471285",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-3575825556217040/17172037",
+                "balance_t": "-44697819452713/214650462500",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "654376076787718320/4862011860289"
+              },
+              "costs": {
+                "fuel": "12049432150000/17172037",
+                "eua": "4459901598096/17172037",
+                "model": "961408",
+                "eua_savings": "11834213000/17172037",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE",
+                "components.1.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_FEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "29006250000/17172037",
+                "eua_cost": "-11834213000/17172037",
+                "model_cost": "1000",
+                "euas": "-295855325/34344074",
+                "ghgi": "-2937979425/14664919598",
+                "balance_t": "587595885/68688148",
+                "penalty_eur": "-9836257495245241410000/1884403970775229753",
+                "co2_t": "-148277500/17172037",
+                "ch4_t": "1425/68688148",
+                "n2o_t": "2565/34344074",
+                "raw_co2e_t": "-295855325/34344074"
+              },
+              "percent_deltas": {
+                "fuel_cost": "4143750/17172037",
+                "eua_cost": "-147927662500/558966976387",
+                "model_cost": "12500/120051",
+                "euas": "-147927662500/558966976387",
+                "ghgi": "-1468989712500/6655486584349",
+                "balance_t": "91811857031250/23267028296669",
+                "penalty_eur": "-2399555399893940625/642704367214087492",
+                "co2_t": "-4625000/17172037",
+                "ch4_t": "712500/17172037",
+                "n2o_t": "712500/17172037",
+                "raw_co2e_t": "-147927662500/558966976387"
+              }
+            }
+          },
+          {
+            "ratio": "1/100",
+            "roles": [
+              "SPECIFIED"
+            ],
+            "scenario": {
+              "candidate_id": "uco-bulk",
+              "ratio": "1/100",
+              "status": "COMPARABLE",
+              "factor_status": "ESTIMATED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "42273000/42643",
+                  "mass_g": "42273000000000/42643",
+                  "energy_mj": "1805057100000/42643",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "42273000000000/42643",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "135527238/42643",
+                    "CH4": "42273/852860",
+                    "N2O": "380457/2132150"
+                  },
+                  "wtt_numerator_g": "25992822240000/42643",
+                  "ttw_numerator_g": "137847602970000/42643",
+                  "denominator_mj": "1805057100000/42643",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                },
+                {
+                  "role": "CANDIDATE",
+                  "path_id": "UCO_FAME",
+                  "equipment_id": "UCO_FAME",
+                  "mass_t": "427000/42643",
+                  "mass_g": "427000000000/42643",
+                  "energy_mj": "15799000000/42643",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "427000000000/42643",
+                  "lcv": "37/1000",
+                  "wtt": "-22827/370",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "1",
+                  "combustion_eq": "288889/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "288889/100000",
+                  "effective_co2_factor": "0",
+                  "raw_by_gas_t": {
+                    "CO2": "0",
+                    "CH4": "427/852860",
+                    "N2O": "3843/2132150"
+                  },
+                  "wtt_numerator_g": "-974712900000/42643",
+                  "ttw_numerator_g": "1233556030000/42643",
+                  "denominator_mj": "15799000000/42643",
+                  "factor_status": "ESTIMATED",
+                  "qualification": "ASSUMED_ELIGIBLE",
+                  "zero_rating_status": "ESTIMATED_ASSUMED_ELIGIBLE",
+                  "mode": "BIO_E",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "42273000/42643",
+                "candidate_mass_t": "427000/42643",
+                "total_mass_t": "42700000/42643",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "135527238/42643",
+                  "CH4": "2135/42643",
+                  "N2O": "7686/42643"
+                },
+                "raw_co2e_t": "137623808/42643",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "137623808/42643",
+                "geo_co2e_t": "137623808/42643",
+                "scope_by_gas_t": {
+                  "CO2": "135527238/42643",
+                  "CH4": "2135/42643",
+                  "N2O": "7686/42643"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "137623808/42643"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "25018109340000/42643",
+                "ttw_numerator_g": "139081159000000/42643",
+                "wtt_intensity": "2929521/213215",
+                "ttw_intensity": "3257170/42643",
+                "ghgi": "19215371/213215",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-8069380788560/42643",
+                "balance_t": "-100867259857/533037500",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "13833224208960/112547173"
+              },
+              "costs": {
+                "fuel": "30082150000/42643",
+                "eua": "11009904640/42643",
+                "model": "41092054640/42643",
+                "eua_savings": "94673704/42643",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE",
+                "components.1.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_INFEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "232050000/42643",
+                "eua_cost": "-94673704/42643",
+                "model_cost": "137376296/42643",
+                "euas": "-11834213/426430",
+                "ghgi": "-117519177/182085610",
+                "balance_t": "117519177/4264300",
+                "penalty_eur": "-737143418847418560/43620695669821",
+                "co2_t": "-1186220/42643",
+                "ch4_t": "57/852860",
+                "n2o_t": "513/2132150",
+                "raw_co2e_t": "-11834213/426430"
+              },
+              "percent_deltas": {
+                "fuel_cost": "33150/42643",
+                "eua_cost": "-1183421300/1388072293",
+                "model_cost": "1717203700/5119334793",
+                "euas": "-1183421300/1388072293",
+                "ghgi": "-11751917700/16527446011",
+                "balance_t": "734494856250/57778578491",
+                "penalty_eur": "-314695790150025/26035617136627",
+                "co2_t": "-37000/42643",
+                "ch4_t": "5700/42643",
+                "n2o_t": "5700/42643",
+                "raw_co2e_t": "-1183421300/1388072293"
+              }
+            }
+          },
+          {
+            "ratio": "1/20",
+            "roles": [
+              "SPECIFIED"
+            ],
+            "scenario": {
+              "candidate_id": "uco-bulk",
+              "ratio": "1/20",
+              "status": "COMPARABLE",
+              "factor_status": "ESTIMATED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "8113000/8483",
+                  "mass_g": "8113000000000/8483",
+                  "energy_mj": "346425100000/8483",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "8113000000000/8483",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "26010278/8483",
+                    "CH4": "8113/169660",
+                    "N2O": "73017/424150"
+                  },
+                  "wtt_numerator_g": "4988521440000/8483",
+                  "ttw_numerator_g": "26455600570000/8483",
+                  "denominator_mj": "346425100000/8483",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                },
+                {
+                  "role": "CANDIDATE",
+                  "path_id": "UCO_FAME",
+                  "equipment_id": "UCO_FAME",
+                  "mass_t": "427000/8483",
+                  "mass_g": "427000000000/8483",
+                  "energy_mj": "15799000000/8483",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "427000000000/8483",
+                  "lcv": "37/1000",
+                  "wtt": "-22827/370",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "1",
+                  "combustion_eq": "288889/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "288889/100000",
+                  "effective_co2_factor": "0",
+                  "raw_by_gas_t": {
+                    "CO2": "0",
+                    "CH4": "427/169660",
+                    "N2O": "3843/424150"
+                  },
+                  "wtt_numerator_g": "-974712900000/8483",
+                  "ttw_numerator_g": "1233556030000/8483",
+                  "denominator_mj": "15799000000/8483",
+                  "factor_status": "ESTIMATED",
+                  "qualification": "ASSUMED_ELIGIBLE",
+                  "zero_rating_status": "ESTIMATED_ASSUMED_ELIGIBLE",
+                  "mode": "BIO_E",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "8113000/8483",
+                "candidate_mass_t": "427000/8483",
+                "total_mass_t": "8540000/8483",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "26010278/8483",
+                  "CH4": "427/8483",
+                  "N2O": "7686/42415"
+                },
+                "raw_co2e_t": "26429592/8483",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "26429592/8483",
+                "geo_co2e_t": "26429592/8483",
+                "scope_by_gas_t": {
+                  "CO2": "26010278/8483",
+                  "CH4": "427/8483",
+                  "N2O": "7686/42415"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "26429592/8483"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "4013808540000/8483",
+                "ttw_numerator_g": "27689156600000/8483",
+                "wtt_intensity": "470001/42415",
+                "ttw_intensity": "648458/8483",
+                "ghgi": "3712291/42415",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-663837121360/8483",
+                "balance_t": "-8297964017/106037500",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "7966045456320/152203931"
+              },
+              "costs": {
+                "fuel": "362950000/499",
+                "eua": "2114367360/8483",
+                "model": "8284517360/8483",
+                "eua_savings": "94673704/8483",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE",
+                "components.1.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_INFEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "13650000/499",
+                "eua_cost": "-94673704/8483",
+                "model_cost": "137376296/8483",
+                "euas": "-11834213/84830",
+                "ghgi": "-117519177/36222410",
+                "balance_t": "117519177/848300",
+                "penalty_eur": "-5160003931931929920/58990742965187",
+                "co2_t": "-1186220/8483",
+                "ch4_t": "57/169660",
+                "n2o_t": "513/424150",
+                "raw_co2e_t": "-11834213/84830"
+              },
+              "percent_deltas": {
+                "fuel_cost": "1950/499",
+                "eua_cost": "-1183421300/276130133",
+                "model_cost": "1717203700/1018392633",
+                "euas": "-1183421300/276130133",
+                "ghgi": "-11751917700/3287815691",
+                "balance_t": "734494856250/11493930571",
+                "penalty_eur": "-314695790150025/5029920430667",
+                "co2_t": "-37000/8483",
+                "ch4_t": "5700/8483",
+                "n2o_t": "5700/8483",
+                "raw_co2e_t": "-1183421300/276130133"
+              }
+            }
+          }
+        ],
+        "constraints": {
+          "x_budget": "7625/2454166",
+          "x_supply": "1",
+          "x_cap": "7625/2454166",
+          "budget_status": "VERIFIED",
+          "x_max_improvement": "7625/2454166",
+          "x_target_min_unconstrained": "2709874/34764309",
+          "vertices": [
+            {
+              "baseline_mass_t": "1000",
+              "candidate_mass_t": "0",
+              "ratio": "0"
+            },
+            {
+              "baseline_mass_t": "17125787000/17172037",
+              "candidate_mass_t": "53375000/17172037",
+              "ratio": "7625/2454166"
+            }
+          ]
+        },
+        "target": {
+          "status": "UNREACHABLE",
+          "reason": "TARGET_UNREACHABLE_UNDER_CONSTRAINTS",
+          "unconstrained_low": "2709874/34764309",
+          "unconstrained_high": "1",
+          "constrained_low": null,
+          "constrained_high": null
+        },
+        "optima": {
+          "cost": {
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "960408",
+            "representative_ratio": "0",
+            "ratio_interval": [
+              "0",
+              "0"
+            ],
+            "mathematical_ratio": "0",
+            "mathematical_ratio_interval": [
+              "0",
+              "0"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          },
+          "target_cost": {
+            "status": "UNAVAILABLE",
+            "reason": "TARGET_UNREACHABLE_UNDER_CONSTRAINTS",
+            "objective": null,
+            "representative_ratio": null,
+            "ratio_interval": null,
+            "mathematical_ratio": null,
+            "mathematical_ratio_interval": null,
+            "upper_inclusive": false,
+            "attained": false
+          },
+          "max_improvement": {
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "587595885/68688148",
+            "representative_ratio": "7625/2454166",
+            "ratio_interval": [
+              "7625/2454166",
+              "7625/2454166"
+            ],
+            "mathematical_ratio": "7625/2454166",
+            "mathematical_ratio_interval": [
+              "7625/2454166",
+              "7625/2454166"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          }
+        },
+        "break_even": {
+          "candidate_price": {
+            "status": "FINITE_NON_NEGATIVE",
+            "value": "44209213/53375"
+          },
+          "eua_price": {
+            "status": "FINITE_NON_NEGATIVE",
+            "value": "2320500000/11834213"
+          }
+        }
+      },
+      "hvo": {
+        "status": "COMPARABLE",
+        "issues": [],
+        "report_points": [
+          {
+            "ratio": "0",
+            "roles": [
+              "B0"
+            ],
+            "scenario": {
+              "candidate_id": "hvo",
+              "ratio": "0",
+              "status": "COMPARABLE",
+              "factor_status": "FIXED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "1000",
+                  "mass_g": "1000000000",
+                  "energy_mj": "42700000",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "1000000000",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "3206",
+                    "CH4": "1/20",
+                    "N2O": "9/50"
+                  },
+                  "wtt_numerator_g": "614880000",
+                  "ttw_numerator_g": "3260890000",
+                  "denominator_mj": "42700000",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "1000",
+                "candidate_mass_t": "0",
+                "total_mass_t": "1000",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "3206",
+                  "CH4": "1/20",
+                  "N2O": "9/50"
+                },
+                "raw_co2e_t": "32551/10",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "32551/10",
+                "geo_co2e_t": "32551/10",
+                "scope_by_gas_t": {
+                  "CO2": "3206",
+                  "CH4": "1/20",
+                  "N2O": "9/50"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "32551/10"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "614880000",
+                "ttw_numerator_g": "3260890000",
+                "wtt_intensity": "72/5",
+                "ttw_intensity": "326089/4270",
+                "ghgi": "387577/4270",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-216789920",
+                "balance_t": "-1354937/6250",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "2221663100160/15890657"
+              },
+              "costs": {
+                "fuel": "700000",
+                "eua": "260408",
+                "model": "960408",
+                "eua_savings": "0",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_FEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "0",
+                "eua_cost": "0",
+                "model_cost": "0",
+                "euas": "0",
+                "ghgi": "0",
+                "balance_t": "0",
+                "penalty_eur": "0",
+                "co2_t": "0",
+                "ch4_t": "0",
+                "n2o_t": "0",
+                "raw_co2e_t": "0"
+              },
+              "percent_deltas": {
+                "fuel_cost": "0",
+                "eua_cost": "0",
+                "model_cost": "0",
+                "euas": "0",
+                "ghgi": "0",
+                "balance_t": "0",
+                "penalty_eur": "0",
+                "co2_t": "0",
+                "ch4_t": "0",
+                "n2o_t": "0",
+                "raw_co2e_t": "0"
+              }
+            }
+          },
+          {
+            "ratio": "7625/871156",
+            "roles": [
+              "BUDGET_BOUNDARY",
+              "CAP",
+              "MAX_IMPROVEMENT"
+            ],
+            "scenario": {
+              "candidate_id": "hvo",
+              "ratio": "7625/871156",
+              "status": "COMPARABLE",
+              "factor_status": "ESTIMATED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "6044717000/6099717",
+                  "mass_g": "6044717000000000/6099717",
+                  "energy_mj": "258109415900000/6099717",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "6044717000000000/6099717",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "19379362702/6099717",
+                    "CH4": "6044717/121994340",
+                    "N2O": "18134151/101661950"
+                  },
+                  "wtt_numerator_g": "1238925196320000/2033239",
+                  "ttw_numerator_g": "19711157218130000/6099717",
+                  "denominator_mj": "258109415900000/6099717",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                },
+                {
+                  "role": "CANDIDATE",
+                  "path_id": "HVO",
+                  "equipment_id": "HVO",
+                  "mass_t": "53375000/6099717",
+                  "mass_g": "53375000000000/6099717",
+                  "energy_mj": "2348500000000/6099717",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "53375000000000/6099717",
+                  "lcv": "11/250",
+                  "wtt": "-2235/44",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "1",
+                  "combustion_eq": "316989/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "316989/100000",
+                  "effective_co2_factor": "0",
+                  "raw_by_gas_t": {
+                    "CO2": "0",
+                    "CH4": "10675/24398868",
+                    "N2O": "6405/4066478"
+                  },
+                  "wtt_numerator_g": "-39764375000000/2033239",
+                  "ttw_numerator_g": "56397626250000/2033239",
+                  "denominator_mj": "2348500000000/6099717",
+                  "factor_status": "ESTIMATED",
+                  "qualification": "ASSUMED_ELIGIBLE",
+                  "zero_rating_status": "ESTIMATED_ASSUMED_ELIGIBLE",
+                  "mode": "BIO_E",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "6044717000/6099717",
+                "candidate_mass_t": "53375000/6099717",
+                "total_mass_t": "469084000/469209",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "19379362702/6099717",
+                  "CH4": "117271/2346045",
+                  "N2O": "703626/3910075"
+                },
+                "raw_co2e_t": "32797965032/10166195",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "32797965032/10166195",
+                "geo_co2e_t": "32797965032/10166195",
+                "scope_by_gas_t": {
+                  "CO2": "19379362702/6099717",
+                  "CH4": "117271/2346045",
+                  "N2O": "703626/3910075"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "32797965032/10166195"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "1199160821320000/2033239",
+                "ttw_numerator_g": "1529257699760000/469209",
+                "wtt_intensity": "140416958/10166195",
+                "ttw_intensity": "10923269284/143108745",
+                "ghgi": "167698804006/1860413685",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-1159089564202640/6099717",
+                "balance_t": "-14488619552533/76246462500",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "424226780498166240/3437825482123"
+              },
+              "costs": {
+                "fuel": "1430004800000/2033239",
+                "eua": "524767440512/2033239",
+                "model": "961408",
+                "eua_savings": "4704261000/2033239",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE",
+                "components.1.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_FEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "6737500000/2033239",
+                "eua_cost": "-4704261000/2033239",
+                "model_cost": "1000",
+                "euas": "-117606525/4066478",
+                "ghgi": "-3265351925/5209158318",
+                "balance_t": "653070385/24398868",
+                "penalty_eur": "-21864579495409316820000/1332422086884785971",
+                "co2_t": "-176330000/6099717",
+                "ch4_t": "-25/1876836",
+                "n2o_t": "-15/312806",
+                "raw_co2e_t": "-117606525/4066478"
+              },
+              "percent_deltas": {
+                "fuel_cost": "962500/2033239",
+                "eua_cost": "-58803262500/66183962689",
+                "model_cost": "12500/120051",
+                "euas": "-58803262500/66183962689",
+                "ghgi": "-1632675962500/2364110015709",
+                "balance_t": "102042247656250/8264732252829",
+                "penalty_eur": "-2666932510661753125/227221314403477622",
+                "co2_t": "-5500000/6099717",
+                "ch4_t": "-12500/469209",
+                "n2o_t": "-12500/469209",
+                "raw_co2e_t": "-58803262500/66183962689"
+              }
+            }
+          },
+          {
+            "ratio": "1/100",
+            "roles": [
+              "SPECIFIED"
+            ],
+            "scenario": {
+              "candidate_id": "hvo",
+              "ratio": "1/100",
+              "status": "COMPARABLE",
+              "factor_status": "ESTIMATED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "3843000/3883",
+                  "mass_g": "3843000000000/3883",
+                  "energy_mj": "164096100000/3883",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "3843000000000/3883",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "12320658/3883",
+                    "CH4": "3843/77660",
+                    "N2O": "34587/194150"
+                  },
+                  "wtt_numerator_g": "2362983840000/3883",
+                  "ttw_numerator_g": "12531600270000/3883",
+                  "denominator_mj": "164096100000/3883",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                },
+                {
+                  "role": "CANDIDATE",
+                  "path_id": "HVO",
+                  "equipment_id": "HVO",
+                  "mass_t": "427000/42713",
+                  "mass_g": "427000000000/42713",
+                  "energy_mj": "1708000000/3883",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "427000000000/42713",
+                  "lcv": "11/250",
+                  "wtt": "-2235/44",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "1",
+                  "combustion_eq": "316989/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "316989/100000",
+                  "effective_co2_factor": "0",
+                  "raw_by_gas_t": {
+                    "CO2": "0",
+                    "CH4": "427/854260",
+                    "N2O": "3843/2135650"
+                  },
+                  "wtt_numerator_g": "-954345000000/42713",
+                  "ttw_numerator_g": "1353543030000/42713",
+                  "denominator_mj": "1708000000/3883",
+                  "factor_status": "ESTIMATED",
+                  "qualification": "ASSUMED_ELIGIBLE",
+                  "zero_rating_status": "ESTIMATED_ASSUMED_ELIGIBLE",
+                  "mode": "BIO_E",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "3843000/3883",
+                "candidate_mass_t": "427000/42713",
+                "total_mass_t": "42700000/42713",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "12320658/3883",
+                  "CH4": "2135/42713",
+                  "N2O": "7686/42713"
+                },
+                "raw_co2e_t": "137623808/42713",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "137623808/42713",
+                "geo_co2e_t": "137623808/42713",
+                "scope_by_gas_t": {
+                  "CO2": "12320658/3883",
+                  "CH4": "2135/42713",
+                  "N2O": "7686/42713"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "137623808/42713"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "25038477240000/42713",
+                "ttw_numerator_g": "139201146000000/42713",
+                "wtt_intensity": "2931906/213565",
+                "ttw_intensity": "3259980/42713",
+                "ghgi": "1748346/19415",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-723055189360/3883",
+                "balance_t": "-9038189867/48537500",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "1446110378720/11947031"
+              },
+              "costs": {
+                "fuel": "2732800000/3883",
+                "eua": "11009904640/42713",
+                "model": "41070704640/42713",
+                "eua_savings": "112902264/42713",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE",
+                "components.1.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_INFEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "14700000/3883",
+                "eua_cost": "-112902264/42713",
+                "model_cost": "48797736/42713",
+                "euas": "-14112783/427130",
+                "ghgi": "-11874007/16580410",
+                "balance_t": "11874007/388300",
+                "penalty_eur": "-86893510165561120/4630394433887",
+                "co2_t": "-128240/3883",
+                "ch4_t": "-13/854260",
+                "n2o_t": "-117/2135650",
+                "raw_co2e_t": "-14112783/427130"
+              },
+              "percent_deltas": {
+                "fuel_cost": "2100/3883",
+                "eua_cost": "-1411278300/1390350863",
+                "model_cost": "203323900/1709246121",
+                "euas": "-1411278300/1390350863",
+                "ghgi": "-1187400700/1504961491",
+                "balance_t": "74212543750/5261220371",
+                "penalty_eur": "-31796512794775/2368898684202",
+                "co2_t": "-4000/3883",
+                "ch4_t": "-1300/42713",
+                "n2o_t": "-1300/42713",
+                "raw_co2e_t": "-1411278300/1390350863"
+              }
+            }
+          },
+          {
+            "ratio": "1/20",
+            "roles": [
+              "SPECIFIED"
+            ],
+            "scenario": {
+              "candidate_id": "hvo",
+              "ratio": "1/20",
+              "status": "COMPARABLE",
+              "factor_status": "ESTIMATED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "8113000/8553",
+                  "mass_g": "8113000000000/8553",
+                  "energy_mj": "346425100000/8553",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "8113000000000/8553",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "26010278/8553",
+                    "CH4": "8113/171060",
+                    "N2O": "24339/142550"
+                  },
+                  "wtt_numerator_g": "1662840480000/2851",
+                  "ttw_numerator_g": "26455600570000/8553",
+                  "denominator_mj": "346425100000/8553",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                },
+                {
+                  "role": "CANDIDATE",
+                  "path_id": "HVO",
+                  "equipment_id": "HVO",
+                  "mass_t": "427000/8553",
+                  "mass_g": "427000000000/8553",
+                  "energy_mj": "18788000000/8553",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "427000000000/8553",
+                  "lcv": "11/250",
+                  "wtt": "-2235/44",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "1",
+                  "combustion_eq": "316989/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "316989/100000",
+                  "effective_co2_factor": "0",
+                  "raw_by_gas_t": {
+                    "CO2": "0",
+                    "CH4": "427/171060",
+                    "N2O": "1281/142550"
+                  },
+                  "wtt_numerator_g": "-318115000000/2851",
+                  "ttw_numerator_g": "451181010000/2851",
+                  "denominator_mj": "18788000000/8553",
+                  "factor_status": "ESTIMATED",
+                  "qualification": "ASSUMED_ELIGIBLE",
+                  "zero_rating_status": "ESTIMATED_ASSUMED_ELIGIBLE",
+                  "mode": "BIO_E",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "8113000/8553",
+                "candidate_mass_t": "427000/8553",
+                "total_mass_t": "8540000/8553",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "26010278/8553",
+                  "CH4": "427/8553",
+                  "N2O": "2562/14255"
+                },
+                "raw_co2e_t": "8809864/2851",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "8809864/2851",
+                "geo_co2e_t": "8809864/2851",
+                "scope_by_gas_t": {
+                  "CO2": "26010278/8553",
+                  "CH4": "427/8553",
+                  "N2O": "2562/14255"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "8809864/2851"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "1344725480000/2851",
+                "ttw_numerator_g": "27809143600000/8553",
+                "wtt_intensity": "157462/14255",
+                "ttw_intensity": "651268/8553",
+                "ghgi": "3728726/42765",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-548063415760/8553",
+                "balance_t": "-6850792697/106912500",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "3288380494560/76438883"
+              },
+              "costs": {
+                "fuel": "2049600000/2851",
+                "eua": "704789120/2851",
+                "model": "2754389120/2851",
+                "eua_savings": "37634088/2851",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE",
+                "components.1.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_INFEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "53900000/2851",
+                "eua_cost": "-37634088/2851",
+                "model_cost": "16265912/2851",
+                "euas": "-4704261/28510",
+                "ghgi": "-130614077/36521310",
+                "balance_t": "130614077/855300",
+                "penalty_eur": "-2867485835463516960/29625952956491",
+                "co2_t": "-1410640/8553",
+                "ch4_t": "-13/171060",
+                "n2o_t": "-39/142550",
+                "raw_co2e_t": "-4704261/28510"
+              },
+              "percent_deltas": {
+                "fuel_cost": "7700/2851",
+                "eua_cost": "-470426100/92802901",
+                "model_cost": "203323900/342265401",
+                "euas": "-470426100/92802901",
+                "ghgi": "-13061407700/3314946081",
+                "balance_t": "816337981250/11588776161",
+                "penalty_eur": "-349761640742525/5052188820262",
+                "co2_t": "-44000/8553",
+                "ch4_t": "-1300/8553",
+                "n2o_t": "-1300/8553",
+                "raw_co2e_t": "-470426100/92802901"
+              }
+            }
+          }
+        ],
+        "constraints": {
+          "x_budget": "7625/871156",
+          "x_supply": "1",
+          "x_cap": "7625/871156",
+          "budget_status": "VERIFIED",
+          "x_max_improvement": "7625/871156",
+          "x_target_min_unconstrained": "2709874/38153469",
+          "vertices": [
+            {
+              "baseline_mass_t": "1000",
+              "candidate_mass_t": "0",
+              "ratio": "0"
+            },
+            {
+              "baseline_mass_t": "6044717000/6099717",
+              "candidate_mass_t": "53375000/6099717",
+              "ratio": "7625/871156"
+            }
+          ]
+        },
+        "target": {
+          "status": "UNREACHABLE",
+          "reason": "TARGET_UNREACHABLE_UNDER_CONSTRAINTS",
+          "unconstrained_low": "2709874/38153469",
+          "unconstrained_high": "1",
+          "constrained_low": null,
+          "constrained_high": null
+        },
+        "optima": {
+          "cost": {
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "960408",
+            "representative_ratio": "0",
+            "ratio_interval": [
+              "0",
+              "0"
+            ],
+            "mathematical_ratio": "0",
+            "mathematical_ratio_interval": [
+              "0",
+              "0"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          },
+          "target_cost": {
+            "status": "UNAVAILABLE",
+            "reason": "TARGET_UNREACHABLE_UNDER_CONSTRAINTS",
+            "objective": null,
+            "representative_ratio": null,
+            "ratio_interval": null,
+            "mathematical_ratio": null,
+            "mathematical_ratio_interval": null,
+            "upper_inclusive": false,
+            "attained": false
+          },
+          "max_improvement": {
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "653070385/24398868",
+            "representative_ratio": "7625/871156",
+            "ratio_interval": [
+              "7625/871156",
+              "7625/871156"
+            ],
+            "mathematical_ratio": "7625/871156",
+            "mathematical_ratio_interval": [
+              "7625/871156",
+              "7625/871156"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          }
+        },
+        "break_even": {
+          "candidate_price": {
+            "status": "FINITE_NON_NEGATIVE",
+            "value": "52612783/53375"
+          },
+          "eua_price": {
+            "status": "FINITE_NON_NEGATIVE",
+            "value": "539000000/4704261"
+          }
+        }
+      },
+      "bio": {
+        "status": "COMPARABLE",
+        "issues": [],
+        "report_points": [
+          {
+            "ratio": "0",
+            "roles": [
+              "B0"
+            ],
+            "scenario": {
+              "candidate_id": "bio",
+              "ratio": "0",
+              "status": "COMPARABLE",
+              "factor_status": "FIXED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "1000",
+                  "mass_g": "1000000000",
+                  "energy_mj": "42700000",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "1000000000",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "3206",
+                    "CH4": "1/20",
+                    "N2O": "9/50"
+                  },
+                  "wtt_numerator_g": "614880000",
+                  "ttw_numerator_g": "3260890000",
+                  "denominator_mj": "42700000",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "1000",
+                "candidate_mass_t": "0",
+                "total_mass_t": "1000",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "3206",
+                  "CH4": "1/20",
+                  "N2O": "9/50"
+                },
+                "raw_co2e_t": "32551/10",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "32551/10",
+                "geo_co2e_t": "32551/10",
+                "scope_by_gas_t": {
+                  "CO2": "3206",
+                  "CH4": "1/20",
+                  "N2O": "9/50"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "32551/10"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "614880000",
+                "ttw_numerator_g": "3260890000",
+                "wtt_intensity": "72/5",
+                "ttw_intensity": "326089/4270",
+                "ghgi": "387577/4270",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-216789920",
+                "balance_t": "-1354937/6250",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "2221663100160/15890657"
+              },
+              "costs": {
+                "fuel": "700000",
+                "eua": "260408",
+                "model": "960408",
+                "eua_savings": "0",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_FEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "0",
+                "eua_cost": "0",
+                "model_cost": "0",
+                "euas": "0",
+                "ghgi": "0",
+                "balance_t": "0",
+                "penalty_eur": "0",
+                "co2_t": "0",
+                "ch4_t": "0",
+                "n2o_t": "0",
+                "raw_co2e_t": "0"
+              },
+              "percent_deltas": {
+                "fuel_cost": "0",
+                "eua_cost": "0",
+                "model_cost": "0",
+                "euas": "0",
+                "ghgi": "0",
+                "balance_t": "0",
+                "penalty_eur": "0",
+                "co2_t": "0",
+                "ch4_t": "0",
+                "n2o_t": "0",
+                "raw_co2e_t": "0"
+              }
+            }
+          },
+          {
+            "ratio": "7625/2835416",
+            "roles": [
+              "BUDGET_BOUNDARY",
+              "CAP",
+              "MAX_IMPROVEMENT"
+            ],
+            "scenario": {
+              "candidate_id": "bio",
+              "ratio": "7625/2835416",
+              "status": "COMPARABLE",
+              "factor_status": "ESTIMATED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "19794537000/19840787",
+                  "mass_g": "19794537000000000/19840787",
+                  "energy_mj": "845226729900000/19840787",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "19794537000000000/19840787",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "63461285622/19840787",
+                    "CH4": "19794537/396815740",
+                    "N2O": "178150833/992039350"
+                  },
+                  "wtt_numerator_g": "12171264910560000/19840787",
+                  "ttw_numerator_g": "64547807757930000/19840787",
+                  "denominator_mj": "845226729900000/19840787",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                },
+                {
+                  "role": "CANDIDATE",
+                  "path_id": "BIODIESEL",
+                  "equipment_id": "BIODIESEL",
+                  "mass_t": "53375000/19840787",
+                  "mass_g": "53375000000000/19840787",
+                  "energy_mj": "1974875000000/19840787",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "53375000000000/19840787",
+                  "lcv": "37/1000",
+                  "wtt": "-1539/37",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "1",
+                  "combustion_eq": "288889/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "288889/100000",
+                  "effective_co2_factor": "0",
+                  "raw_by_gas_t": {
+                    "CO2": "0",
+                    "CH4": "10675/79363148",
+                    "N2O": "19215/39681574"
+                  },
+                  "wtt_numerator_g": "-82144125000000/19840787",
+                  "ttw_numerator_g": "154194503750000/19840787",
+                  "denominator_mj": "1974875000000/19840787",
+                  "factor_status": "ESTIMATED",
+                  "qualification": "ASSUMED_ELIGIBLE",
+                  "zero_rating_status": "ESTIMATED_ASSUMED_ELIGIBLE",
+                  "mode": "BIO_E",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "19794537000/19840787",
+                "candidate_mass_t": "53375000/19840787",
+                "total_mass_t": "19847912000/19840787",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "63461285622/19840787",
+                  "CH4": "4961978/99203935",
+                  "N2O": "89315604/496019675"
+                },
+                "raw_co2e_t": "322179090506/99203935",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "322179090506/99203935",
+                "geo_co2e_t": "322179090506/99203935",
+                "scope_by_gas_t": {
+                  "CO2": "63461285622/19840787",
+                  "CH4": "4961978/99203935",
+                  "N2O": "89315604/496019675"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "322179090506/99203935"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "12089120785560000/19840787",
+                "ttw_numerator_g": "64702002261680000/19840787",
+                "wtt_intensity": "1415587914/99203935",
+                "ttw_intensity": "462157159012/6051440035",
+                "ghgi": "548508021766/6051440035",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-4194078642717040/19840787",
+                "balance_t": "-52425983033963/248009837500",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "1535032783234436640/11244414446203"
+              },
+              "costs": {
+                "fuel": "13920225900000/19840787",
+                "eua": "5154865448096/19840787",
+                "model": "961408",
+                "eua_savings": "11834213000/19840787",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE",
+                "components.1.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_FEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "31675000000/19840787",
+                "eua_cost": "-11834213000/19840787",
+                "model_cost": "1000",
+                "euas": "-295855325/39681574",
+                "ghgi": "-2144079675/16944032098",
+                "balance_t": "428815935/79363148",
+                "penalty_eur": "-14356615021986909420000/4358076417816020131",
+                "co2_t": "-148277500/19840787",
+                "ch4_t": "1425/79363148",
+                "n2o_t": "2565/39681574",
+                "raw_co2e_t": "-295855325/39681574"
+              },
+              "percent_deltas": {
+                "fuel_cost": "4525000/19840787",
+                "eua_cost": "-147927662500/645837457637",
+                "model_cost": "12500/120051",
+                "euas": "-147927662500/645837457637",
+                "ghgi": "-1072039837500/7689832703099",
+                "balance_t": "67002489843750/26883016415419",
+                "penalty_eur": "-1751148397490596875/743193813487558742",
+                "co2_t": "-4625000/19840787",
+                "ch4_t": "712500/19840787",
+                "n2o_t": "712500/19840787",
+                "raw_co2e_t": "-147927662500/645837457637"
+              }
+            }
+          },
+          {
+            "ratio": "1/100",
+            "roles": [
+              "SPECIFIED"
+            ],
+            "scenario": {
+              "candidate_id": "bio",
+              "ratio": "1/100",
+              "status": "COMPARABLE",
+              "factor_status": "ESTIMATED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "42273000/42643",
+                  "mass_g": "42273000000000/42643",
+                  "energy_mj": "1805057100000/42643",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "42273000000000/42643",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "135527238/42643",
+                    "CH4": "42273/852860",
+                    "N2O": "380457/2132150"
+                  },
+                  "wtt_numerator_g": "25992822240000/42643",
+                  "ttw_numerator_g": "137847602970000/42643",
+                  "denominator_mj": "1805057100000/42643",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                },
+                {
+                  "role": "CANDIDATE",
+                  "path_id": "BIODIESEL",
+                  "equipment_id": "BIODIESEL",
+                  "mass_t": "427000/42643",
+                  "mass_g": "427000000000/42643",
+                  "energy_mj": "15799000000/42643",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "427000000000/42643",
+                  "lcv": "37/1000",
+                  "wtt": "-1539/37",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "1",
+                  "combustion_eq": "288889/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "288889/100000",
+                  "effective_co2_factor": "0",
+                  "raw_by_gas_t": {
+                    "CO2": "0",
+                    "CH4": "427/852860",
+                    "N2O": "3843/2132150"
+                  },
+                  "wtt_numerator_g": "-657153000000/42643",
+                  "ttw_numerator_g": "1233556030000/42643",
+                  "denominator_mj": "15799000000/42643",
+                  "factor_status": "ESTIMATED",
+                  "qualification": "ASSUMED_ELIGIBLE",
+                  "zero_rating_status": "ESTIMATED_ASSUMED_ELIGIBLE",
+                  "mode": "BIO_E",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "42273000/42643",
+                "candidate_mass_t": "427000/42643",
+                "total_mass_t": "42700000/42643",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "135527238/42643",
+                  "CH4": "2135/42643",
+                  "N2O": "7686/42643"
+                },
+                "raw_co2e_t": "137623808/42643",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "137623808/42643",
+                "geo_co2e_t": "137623808/42643",
+                "scope_by_gas_t": {
+                  "CO2": "135527238/42643",
+                  "CH4": "2135/42643",
+                  "N2O": "7686/42643"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "137623808/42643"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "25335669240000/42643",
+                "ttw_numerator_g": "139081159000000/42643",
+                "wtt_intensity": "2966706/213215",
+                "ttw_intensity": "3257170/42643",
+                "ghgi": "19252556/213215",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-8386940688560/42643",
+                "balance_t": "-104836758607/533037500",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "25160822065680/197338699"
+              },
+              "costs": {
+                "fuel": "30103500000/42643",
+                "eua": "11009904640/42643",
+                "model": "41113404640/42643",
+                "eua_savings": "94673704/42643",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE",
+                "components.1.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_INFEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "253400000/42643",
+                "eua_cost": "-94673704/42643",
+                "model_cost": "158726296/42643",
+                "euas": "-11834213/426430",
+                "ghgi": "-85763187/182085610",
+                "balance_t": "85763187/4264300",
+                "penalty_eur": "-941417378490944880/76483940942323",
+                "co2_t": "-1186220/42643",
+                "ch4_t": "57/852860",
+                "n2o_t": "513/2132150",
+                "raw_co2e_t": "-11834213/426430"
+              },
+              "percent_deltas": {
+                "fuel_cost": "36200/42643",
+                "eua_cost": "-1183421300/1388072293",
+                "model_cost": "1984078700/5119334793",
+                "euas": "-1183421300/1388072293",
+                "ghgi": "-8576318700/16527446011",
+                "balance_t": "536019918750/57778578491",
+                "penalty_eur": "-229658806228275/26086000468972",
+                "co2_t": "-37000/42643",
+                "ch4_t": "5700/42643",
+                "n2o_t": "5700/42643",
+                "raw_co2e_t": "-1183421300/1388072293"
+              }
+            }
+          },
+          {
+            "ratio": "1/20",
+            "roles": [
+              "SPECIFIED"
+            ],
+            "scenario": {
+              "candidate_id": "bio",
+              "ratio": "1/20",
+              "status": "COMPARABLE",
+              "factor_status": "ESTIMATED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "8113000/8483",
+                  "mass_g": "8113000000000/8483",
+                  "energy_mj": "346425100000/8483",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "8113000000000/8483",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "26010278/8483",
+                    "CH4": "8113/169660",
+                    "N2O": "73017/424150"
+                  },
+                  "wtt_numerator_g": "4988521440000/8483",
+                  "ttw_numerator_g": "26455600570000/8483",
+                  "denominator_mj": "346425100000/8483",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                },
+                {
+                  "role": "CANDIDATE",
+                  "path_id": "BIODIESEL",
+                  "equipment_id": "BIODIESEL",
+                  "mass_t": "427000/8483",
+                  "mass_g": "427000000000/8483",
+                  "energy_mj": "15799000000/8483",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "427000000000/8483",
+                  "lcv": "37/1000",
+                  "wtt": "-1539/37",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "1",
+                  "combustion_eq": "288889/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "288889/100000",
+                  "effective_co2_factor": "0",
+                  "raw_by_gas_t": {
+                    "CO2": "0",
+                    "CH4": "427/169660",
+                    "N2O": "3843/424150"
+                  },
+                  "wtt_numerator_g": "-657153000000/8483",
+                  "ttw_numerator_g": "1233556030000/8483",
+                  "denominator_mj": "15799000000/8483",
+                  "factor_status": "ESTIMATED",
+                  "qualification": "ASSUMED_ELIGIBLE",
+                  "zero_rating_status": "ESTIMATED_ASSUMED_ELIGIBLE",
+                  "mode": "BIO_E",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "8113000/8483",
+                "candidate_mass_t": "427000/8483",
+                "total_mass_t": "8540000/8483",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "26010278/8483",
+                  "CH4": "427/8483",
+                  "N2O": "7686/42415"
+                },
+                "raw_co2e_t": "26429592/8483",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "26429592/8483",
+                "geo_co2e_t": "26429592/8483",
+                "scope_by_gas_t": {
+                  "CO2": "26010278/8483",
+                  "CH4": "427/8483",
+                  "N2O": "7686/42415"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "26429592/8483"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "4331368440000/8483",
+                "ttw_numerator_g": "27689156600000/8483",
+                "wtt_intensity": "507186/42415",
+                "ttw_intensity": "648458/8483",
+                "ghgi": "3749476/42415",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-981397021360/8483",
+                "balance_t": "-12267462767/106037500",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "2944191064080/38432129"
+              },
+              "costs": {
+                "fuel": "6191500000/8483",
+                "eua": "2114367360/8483",
+                "model": "8305867360/8483",
+                "eua_savings": "94673704/8483",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE",
+                "components.1.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_INFEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "253400000/8483",
+                "eua_cost": "-94673704/8483",
+                "model_cost": "158726296/8483",
+                "euas": "-11834213/84830",
+                "ghgi": "-85763187/36222410",
+                "balance_t": "85763187/848300",
+                "penalty_eur": "-941417378490944880/14895409261433",
+                "co2_t": "-1186220/8483",
+                "ch4_t": "57/169660",
+                "n2o_t": "513/424150",
+                "raw_co2e_t": "-11834213/84830"
+              },
+              "percent_deltas": {
+                "fuel_cost": "36200/8483",
+                "eua_cost": "-1183421300/276130133",
+                "model_cost": "1984078700/1018392633",
+                "euas": "-1183421300/276130133",
+                "ghgi": "-8576318700/3287815691",
+                "balance_t": "536019918750/11493930571",
+                "penalty_eur": "-229658806228275/5080303763012",
+                "co2_t": "-37000/8483",
+                "ch4_t": "5700/8483",
+                "n2o_t": "5700/8483",
+                "raw_co2e_t": "-1183421300/276130133"
+              }
+            }
+          }
+        ],
+        "constraints": {
+          "x_budget": "7625/2835416",
+          "x_supply": "1",
+          "x_cap": "7625/2835416",
+          "budget_status": "VERIFIED",
+          "x_max_improvement": "7625/2835416",
+          "x_target_min_unconstrained": "2709874/25468059",
+          "vertices": [
+            {
+              "baseline_mass_t": "1000",
+              "candidate_mass_t": "0",
+              "ratio": "0"
+            },
+            {
+              "baseline_mass_t": "19794537000/19840787",
+              "candidate_mass_t": "53375000/19840787",
+              "ratio": "7625/2835416"
+            }
+          ]
+        },
+        "target": {
+          "status": "UNREACHABLE",
+          "reason": "TARGET_UNREACHABLE_UNDER_CONSTRAINTS",
+          "unconstrained_low": "2709874/25468059",
+          "unconstrained_high": "1",
+          "constrained_low": null,
+          "constrained_high": null
+        },
+        "optima": {
+          "cost": {
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "960408",
+            "representative_ratio": "0",
+            "ratio_interval": [
+              "0",
+              "0"
+            ],
+            "mathematical_ratio": "0",
+            "mathematical_ratio_interval": [
+              "0",
+              "0"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          },
+          "target_cost": {
+            "status": "UNAVAILABLE",
+            "reason": "TARGET_UNREACHABLE_UNDER_CONSTRAINTS",
+            "objective": null,
+            "representative_ratio": null,
+            "ratio_interval": null,
+            "mathematical_ratio": null,
+            "mathematical_ratio_interval": null,
+            "upper_inclusive": false,
+            "attained": false
+          },
+          "max_improvement": {
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "428815935/79363148",
+            "representative_ratio": "7625/2835416",
+            "ratio_interval": [
+              "7625/2835416",
+              "7625/2835416"
+            ],
+            "mathematical_ratio": "7625/2835416",
+            "mathematical_ratio_interval": [
+              "7625/2835416",
+              "7625/2835416"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          }
+        },
+        "break_even": {
+          "candidate_price": {
+            "status": "FINITE_NON_NEGATIVE",
+            "value": "44209213/53375"
+          },
+          "eua_price": {
+            "status": "FINITE_NON_NEGATIVE",
+            "value": "2534000000/11834213"
+          }
+        }
+      },
+      "e-diesel": {
+        "status": "COMPARABLE",
+        "issues": [],
+        "report_points": [
+          {
+            "ratio": "0",
+            "roles": [
+              "B0"
+            ],
+            "scenario": {
+              "candidate_id": "e-diesel",
+              "ratio": "0",
+              "status": "COMPARABLE",
+              "factor_status": "FIXED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "1000",
+                  "mass_g": "1000000000",
+                  "energy_mj": "42700000",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "1000000000",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "3206",
+                    "CH4": "1/20",
+                    "N2O": "9/50"
+                  },
+                  "wtt_numerator_g": "614880000",
+                  "ttw_numerator_g": "3260890000",
+                  "denominator_mj": "42700000",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "1000",
+                "candidate_mass_t": "0",
+                "total_mass_t": "1000",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "3206",
+                  "CH4": "1/20",
+                  "N2O": "9/50"
+                },
+                "raw_co2e_t": "32551/10",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "32551/10",
+                "geo_co2e_t": "32551/10",
+                "scope_by_gas_t": {
+                  "CO2": "3206",
+                  "CH4": "1/20",
+                  "N2O": "9/50"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "32551/10"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "614880000",
+                "ttw_numerator_g": "3260890000",
+                "wtt_intensity": "72/5",
+                "ttw_intensity": "326089/4270",
+                "ghgi": "387577/4270",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-216789920",
+                "balance_t": "-1354937/6250",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "2221663100160/15890657"
+              },
+              "costs": {
+                "fuel": "700000",
+                "eua": "260408",
+                "model": "960408",
+                "eua_savings": "0",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_FEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "0",
+                "eua_cost": "0",
+                "model_cost": "0",
+                "euas": "0",
+                "ghgi": "0",
+                "balance_t": "0",
+                "penalty_eur": "0",
+                "co2_t": "0",
+                "ch4_t": "0",
+                "n2o_t": "0",
+                "raw_co2e_t": "0"
+              },
+              "percent_deltas": {
+                "fuel_cost": "0",
+                "eua_cost": "0",
+                "model_cost": "0",
+                "euas": "0",
+                "ghgi": "0",
+                "balance_t": "0",
+                "penalty_eur": "0",
+                "co2_t": "0",
+                "ch4_t": "0",
+                "n2o_t": "0",
+                "raw_co2e_t": "0"
+              }
+            }
+          },
+          {
+            "ratio": "1/900",
+            "roles": [
+              "BUDGET_BOUNDARY",
+              "CAP",
+              "MAX_IMPROVEMENT"
+            ],
+            "scenario": {
+              "candidate_id": "e-diesel",
+              "ratio": "1/900",
+              "status": "COMPARABLE",
+              "factor_status": "ESTIMATED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "8990/9",
+                  "mass_g": "8990000000/9",
+                  "energy_mj": "383873000/9",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "8990000000/9",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "1441097/450",
+                    "CH4": "899/18000",
+                    "N2O": "899/5000"
+                  },
+                  "wtt_numerator_g": "614196800",
+                  "ttw_numerator_g": "29315401100/9",
+                  "denominator_mj": "383873000/9",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                },
+                {
+                  "role": "CANDIDATE",
+                  "path_id": "E_DIESEL",
+                  "equipment_id": "E_DIESEL",
+                  "mass_t": "10/9",
+                  "mass_g": "10000000/9",
+                  "energy_mj": "427000/9",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "10000000/9",
+                  "lcv": "427/10000",
+                  "wtt": "-45",
+                  "rwd": "2",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "1603/450",
+                    "CH4": "1/18000",
+                    "N2O": "1/5000"
+                  },
+                  "wtt_numerator_g": "-2135000",
+                  "ttw_numerator_g": "32608900/9",
+                  "denominator_mj": "854000/9",
+                  "factor_status": "ESTIMATED",
+                  "qualification": "ASSUMED_ELIGIBLE",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "RFNBO_E",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "8990/9",
+                "candidate_mass_t": "10/9",
+                "total_mass_t": "1000",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "3206",
+                  "CH4": "1/20",
+                  "N2O": "9/50"
+                },
+                "raw_co2e_t": "32551/10",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "32551/10",
+                "geo_co2e_t": "32551/10",
+                "scope_by_gas_t": {
+                  "CO2": "3206",
+                  "CH4": "1/20",
+                  "N2O": "9/50"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "32551/10"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "384727000/9",
+                "wtt_numerator_g": "612061800",
+                "ttw_numerator_g": "3260890000",
+                "wtt_intensity": "64503/4505",
+                "ttw_intensity": "29348010/384727",
+                "ghgi": "174282831/1923635",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-188915567920/901",
+                "balance_t": "-2361444599/11262500",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "322667790007360/2381865357"
+              },
+              "costs": {
+                "fuel": "701000",
+                "eua": "260408",
+                "model": "961408",
+                "eua_savings": "0",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE",
+                "components.1.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_FEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "1000",
+                "eua_cost": "0",
+                "model_cost": "1000",
+                "euas": "0",
+                "ghgi": "-128243/769454",
+                "balance_t": "128243/18020",
+                "penalty_eur": "-4007297493691217600/923156229469989",
+                "co2_t": "0",
+                "ch4_t": "0",
+                "n2o_t": "0",
+                "raw_co2e_t": "0"
+              },
+              "percent_deltas": {
+                "fuel_cost": "1/7",
+                "eua_cost": "0",
+                "model_cost": "12500/120051",
+                "euas": "0",
+                "ghgi": "-64121500/349206877",
+                "balance_t": "4007593750/1220798237",
+                "penalty_eur": "-733185284999125/236142256186647",
+                "co2_t": "0",
+                "ch4_t": "0",
+                "n2o_t": "0",
+                "raw_co2e_t": "0"
+              }
+            }
+          },
+          {
+            "ratio": "1/100",
+            "roles": [
+              "SPECIFIED"
+            ],
+            "scenario": {
+              "candidate_id": "e-diesel",
+              "ratio": "1/100",
+              "status": "COMPARABLE",
+              "factor_status": "ESTIMATED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "990",
+                  "mass_g": "990000000",
+                  "energy_mj": "42273000",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "990000000",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "158697/50",
+                    "CH4": "99/2000",
+                    "N2O": "891/5000"
+                  },
+                  "wtt_numerator_g": "608731200",
+                  "ttw_numerator_g": "3228281100",
+                  "denominator_mj": "42273000",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                },
+                {
+                  "role": "CANDIDATE",
+                  "path_id": "E_DIESEL",
+                  "equipment_id": "E_DIESEL",
+                  "mass_t": "10",
+                  "mass_g": "10000000",
+                  "energy_mj": "427000",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "10000000",
+                  "lcv": "427/10000",
+                  "wtt": "-45",
+                  "rwd": "2",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "1603/50",
+                    "CH4": "1/2000",
+                    "N2O": "9/5000"
+                  },
+                  "wtt_numerator_g": "-19215000",
+                  "ttw_numerator_g": "32608900",
+                  "denominator_mj": "854000",
+                  "factor_status": "ESTIMATED",
+                  "qualification": "ASSUMED_ELIGIBLE",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "RFNBO_E",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "990",
+                "candidate_mass_t": "10",
+                "total_mass_t": "1000",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "3206",
+                  "CH4": "1/20",
+                  "N2O": "9/50"
+                },
+                "raw_co2e_t": "32551/10",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "32551/10",
+                "geo_co2e_t": "32551/10",
+                "scope_by_gas_t": {
+                  "CO2": "3206",
+                  "CH4": "1/20",
+                  "N2O": "9/50"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "32551/10"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "43127000",
+                "wtt_numerator_g": "589516200",
+                "ttw_numerator_g": "3260890000",
+                "wtt_intensity": "6903/505",
+                "ttw_intensity": "3260890/43127",
+                "ghgi": "19252031/215635",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-15483631920/101",
+                "balance_t": "-193545399/1262500",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "79338129958080/789333271"
+              },
+              "costs": {
+                "fuel": "709000",
+                "eua": "260408",
+                "model": "969408",
+                "eua_savings": "0",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE",
+                "components.1.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_INFEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "9000",
+                "eua_cost": "0",
+                "model_cost": "9000",
+                "euas": "0",
+                "ghgi": "-128243/86254",
+                "balance_t": "128243/2020",
+                "penalty_eur": "-12021892481073652800/305927421174367",
+                "co2_t": "0",
+                "ch4_t": "0",
+                "n2o_t": "0",
+                "raw_co2e_t": "0"
+              },
+              "percent_deltas": {
+                "fuel_cost": "9/7",
+                "eua_cost": "0",
+                "model_cost": "12500/13339",
+                "euas": "0",
+                "ghgi": "-64121500/39145277",
+                "balance_t": "4007593750/136848637",
+                "penalty_eur": "-733185284999125/26085289127047",
+                "co2_t": "0",
+                "ch4_t": "0",
+                "n2o_t": "0",
+                "raw_co2e_t": "0"
+              }
+            }
+          },
+          {
+            "ratio": "1/20",
+            "roles": [
+              "SPECIFIED"
+            ],
+            "scenario": {
+              "candidate_id": "e-diesel",
+              "ratio": "1/20",
+              "status": "COMPARABLE",
+              "factor_status": "ESTIMATED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "950",
+                  "mass_g": "950000000",
+                  "energy_mj": "40565000",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "950000000",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "30457/10",
+                    "CH4": "19/400",
+                    "N2O": "171/1000"
+                  },
+                  "wtt_numerator_g": "584136000",
+                  "ttw_numerator_g": "3097845500",
+                  "denominator_mj": "40565000",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                },
+                {
+                  "role": "CANDIDATE",
+                  "path_id": "E_DIESEL",
+                  "equipment_id": "E_DIESEL",
+                  "mass_t": "50",
+                  "mass_g": "50000000",
+                  "energy_mj": "2135000",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "50000000",
+                  "lcv": "427/10000",
+                  "wtt": "-45",
+                  "rwd": "2",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "1603/10",
+                    "CH4": "1/400",
+                    "N2O": "9/1000"
+                  },
+                  "wtt_numerator_g": "-96075000",
+                  "ttw_numerator_g": "163044500",
+                  "denominator_mj": "4270000",
+                  "factor_status": "ESTIMATED",
+                  "qualification": "ASSUMED_ELIGIBLE",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "RFNBO_E",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "950",
+                "candidate_mass_t": "50",
+                "total_mass_t": "1000",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "3206",
+                  "CH4": "1/20",
+                  "N2O": "9/50"
+                },
+                "raw_co2e_t": "32551/10",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "32551/10",
+                "geo_co2e_t": "32551/10",
+                "scope_by_gas_t": {
+                  "CO2": "3206",
+                  "CH4": "1/20",
+                  "N2O": "9/50"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "32551/10"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "44835000",
+                "wtt_numerator_g": "488061000",
+                "ttw_numerator_g": "3260890000",
+                "wtt_intensity": "381/35",
+                "ttw_intensity": "652178/8967",
+                "ghgi": "3748951/44835",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "1859561680/21",
+                "balance_t": "23244521/262500",
+                "classification": "SURPLUS_ESTIMATE",
+                "penalty_eur": "0"
+              },
+              "costs": {
+                "fuel": "745000",
+                "eua": "260408",
+                "model": "1005408",
+                "eua_savings": "0",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE",
+                "components.1.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_INFEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "45000",
+                "eua_cost": "0",
+                "model_cost": "45000",
+                "euas": "0",
+                "ghgi": "-128243/17934",
+                "balance_t": "128243/420",
+                "penalty_eur": "-2221663100160/15890657",
+                "co2_t": "0",
+                "ch4_t": "0",
+                "n2o_t": "0",
+                "raw_co2e_t": "0"
+              },
+              "percent_deltas": {
+                "fuel_cost": "45/7",
+                "eua_cost": "0",
+                "model_cost": "62500/13339",
+                "euas": "0",
+                "ghgi": "-64121500/8139117",
+                "balance_t": "4007593750/28453677",
+                "penalty_eur": "-100",
+                "co2_t": "0",
+                "ch4_t": "0",
+                "n2o_t": "0",
+                "raw_co2e_t": "0"
+              }
+            }
+          }
+        ],
+        "constraints": {
+          "x_budget": "1/900",
+          "x_supply": "1",
+          "x_cap": "1/900",
+          "budget_status": "VERIFIED",
+          "x_max_improvement": "1/900",
+          "x_target_min_unconstrained": "2709874/77442001",
+          "vertices": [
+            {
+              "baseline_mass_t": "1000",
+              "candidate_mass_t": "0",
+              "ratio": "0"
+            },
+            {
+              "baseline_mass_t": "8990/9",
+              "candidate_mass_t": "10/9",
+              "ratio": "1/900"
+            }
+          ]
+        },
+        "target": {
+          "status": "UNREACHABLE",
+          "reason": "TARGET_UNREACHABLE_UNDER_CONSTRAINTS",
+          "unconstrained_low": "2709874/77442001",
+          "unconstrained_high": "1",
+          "constrained_low": null,
+          "constrained_high": null
+        },
+        "optima": {
+          "cost": {
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "960408",
+            "representative_ratio": "0",
+            "ratio_interval": [
+              "0",
+              "0"
+            ],
+            "mathematical_ratio": "0",
+            "mathematical_ratio_interval": [
+              "0",
+              "0"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          },
+          "target_cost": {
+            "status": "UNAVAILABLE",
+            "reason": "TARGET_UNREACHABLE_UNDER_CONSTRAINTS",
+            "objective": null,
+            "representative_ratio": null,
+            "ratio_interval": null,
+            "mathematical_ratio": null,
+            "mathematical_ratio_interval": null,
+            "upper_inclusive": false,
+            "attained": false
+          },
+          "max_improvement": {
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "128243/18020",
+            "representative_ratio": "1/900",
+            "ratio_interval": [
+              "1/900",
+              "1/900"
+            ],
+            "mathematical_ratio": "1/900",
+            "mathematical_ratio_interval": [
+              "1/900",
+              "1/900"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          }
+        },
+        "break_even": {
+          "candidate_price": {
+            "status": "FINITE_NON_NEGATIVE",
+            "value": "700"
+          },
+          "eua_price": {
+            "status": "NO_FINITE_THRESHOLD",
+            "value": null
+          }
+        }
+      },
+      "uco-high": {
+        "status": "COMPARABLE",
+        "issues": [],
+        "report_points": [
+          {
+            "ratio": "0",
+            "roles": [
+              "B0"
+            ],
+            "scenario": {
+              "candidate_id": "uco-high",
+              "ratio": "0",
+              "status": "COMPARABLE",
+              "factor_status": "FIXED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "1000",
+                  "mass_g": "1000000000",
+                  "energy_mj": "42700000",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "1000000000",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "3206",
+                    "CH4": "1/20",
+                    "N2O": "9/50"
+                  },
+                  "wtt_numerator_g": "614880000",
+                  "ttw_numerator_g": "3260890000",
+                  "denominator_mj": "42700000",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "1000",
+                "candidate_mass_t": "0",
+                "total_mass_t": "1000",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "3206",
+                  "CH4": "1/20",
+                  "N2O": "9/50"
+                },
+                "raw_co2e_t": "32551/10",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "32551/10",
+                "geo_co2e_t": "32551/10",
+                "scope_by_gas_t": {
+                  "CO2": "3206",
+                  "CH4": "1/20",
+                  "N2O": "9/50"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "32551/10"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "614880000",
+                "ttw_numerator_g": "3260890000",
+                "wtt_intensity": "72/5",
+                "ttw_intensity": "326089/4270",
+                "ghgi": "387577/4270",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-216789920",
+                "balance_t": "-1354937/6250",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "2221663100160/15890657"
+              },
+              "costs": {
+                "fuel": "700000",
+                "eua": "260408",
+                "model": "960408",
+                "eua_savings": "0",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_FEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "0",
+                "eua_cost": "0",
+                "model_cost": "0",
+                "euas": "0",
+                "ghgi": "0",
+                "balance_t": "0",
+                "penalty_eur": "0",
+                "co2_t": "0",
+                "ch4_t": "0",
+                "n2o_t": "0",
+                "raw_co2e_t": "0"
+              },
+              "percent_deltas": {
+                "fuel_cost": "0",
+                "eua_cost": "0",
+                "model_cost": "0",
+                "euas": "0",
+                "ghgi": "0",
+                "balance_t": "0",
+                "penalty_eur": "0",
+                "co2_t": "0",
+                "ch4_t": "0",
+                "n2o_t": "0",
+                "raw_co2e_t": "0"
+              }
+            }
+          },
+          {
+            "ratio": "7625/4360416",
+            "roles": [
+              "BUDGET_BOUNDARY",
+              "CAP",
+              "MAX_IMPROVEMENT"
+            ],
+            "scenario": {
+              "candidate_id": "uco-high",
+              "ratio": "7625/4360416",
+              "status": "COMPARABLE",
+              "factor_status": "ESTIMATED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "823501000/824751",
+                  "mass_g": "823501000000000/824751",
+                  "energy_mj": "35163492700000/824751",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "823501000000000/824751",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "2640144206/824751",
+                    "CH4": "823501/16495020",
+                    "N2O": "823501/4581950"
+                  },
+                  "wtt_numerator_g": "56261588320000/91639",
+                  "ttw_numerator_g": "2685346175890000/824751",
+                  "denominator_mj": "35163492700000/824751",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                },
+                {
+                  "role": "CANDIDATE",
+                  "path_id": "UCO_FAME",
+                  "equipment_id": "UCO_FAME",
+                  "mass_t": "53375000/30515787",
+                  "mass_g": "53375000000000/30515787",
+                  "energy_mj": "53375000000/824751",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "53375000000000/30515787",
+                  "lcv": "37/1000",
+                  "wtt": "-22827/370",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "1",
+                  "combustion_eq": "288889/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "288889/100000",
+                  "effective_co2_factor": "0",
+                  "raw_by_gas_t": {
+                    "CO2": "0",
+                    "CH4": "10675/122063148",
+                    "N2O": "2135/6781286"
+                  },
+                  "wtt_numerator_g": "-40613037500000/10171929",
+                  "ttw_numerator_g": "154194503750000/30515787",
+                  "denominator_mj": "53375000000/824751",
+                  "factor_status": "ESTIMATED",
+                  "qualification": "ASSUMED_ELIGIBLE",
+                  "zero_rating_status": "ESTIMATED_ASSUMED_ELIGIBLE",
+                  "mode": "BIO_E",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "823501000/824751",
+                "candidate_mass_t": "53375000/30515787",
+                "total_mass_t": "10174304000/10171929",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "2640144206/824751",
+                  "CH4": "2543576/50859645",
+                  "N2O": "15261456/84766075"
+                },
+                "raw_co2e_t": "495920053006/152578935",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "495920053006/152578935",
+                "geo_co2e_t": "495920053006/152578935",
+                "scope_by_gas_t": {
+                  "CO2": "2640144206/824751",
+                  "CH4": "2543576/50859645",
+                  "N2O": "15261456/84766075"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "495920053006/152578935"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "6204423266020000/10171929",
+                "ttw_numerator_g": "11056889223520000/3390643",
+                "wtt_intensity": "726513263/50859645",
+                "ttw_intensity": "78977780168/1034146115",
+                "ghgi": "281250649547/3102438345",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-2156205350405680/10171929",
+                "balance_t": "-26952566880071/127149112500",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "225477473785279680/1647325233061"
+              },
+              "costs": {
+                "fuel": "21403400900000/30515787",
+                "eua": "7934720848096/30515787",
+                "model": "961408",
+                "eua_savings": "11834213000/30515787",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE",
+                "components.1.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_FEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "42350000000/30515787",
+                "eua_cost": "-11834213000/30515787",
+                "model_cost": "1000",
+                "euas": "-295855325/61031574",
+                "ghgi": "-979326475/8686827366",
+                "balance_t": "195865295/40687716",
+                "penalty_eur": "-1873572856237188840000/638465371854083197",
+                "co2_t": "-4007500/824751",
+                "ch4_t": "475/40687716",
+                "n2o_t": "285/6781286",
+                "raw_co2e_t": "-295855325/61031574"
+              },
+              "percent_deltas": {
+                "fuel_cost": "6050000/30515787",
+                "eua_cost": "-147927662500/993319382637",
+                "model_cost": "12500/120051",
+                "euas": "-147927662500/993319382637",
+                "ghgi": "-489663237500/3942405726033",
+                "balance_t": "30603952343750/13782322963473",
+                "penalty_eur": "-799851799964646875/381076911345263539",
+                "co2_t": "-125000/824751",
+                "ch4_t": "237500/10171929",
+                "n2o_t": "237500/10171929",
+                "raw_co2e_t": "-147927662500/993319382637"
+              }
+            }
+          },
+          {
+            "ratio": "1/100",
+            "roles": [
+              "SPECIFIED"
+            ],
+            "scenario": {
+              "candidate_id": "uco-high",
+              "ratio": "1/100",
+              "status": "COMPARABLE",
+              "factor_status": "ESTIMATED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "42273000/42643",
+                  "mass_g": "42273000000000/42643",
+                  "energy_mj": "1805057100000/42643",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "42273000000000/42643",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "135527238/42643",
+                    "CH4": "42273/852860",
+                    "N2O": "380457/2132150"
+                  },
+                  "wtt_numerator_g": "25992822240000/42643",
+                  "ttw_numerator_g": "137847602970000/42643",
+                  "denominator_mj": "1805057100000/42643",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                },
+                {
+                  "role": "CANDIDATE",
+                  "path_id": "UCO_FAME",
+                  "equipment_id": "UCO_FAME",
+                  "mass_t": "427000/42643",
+                  "mass_g": "427000000000/42643",
+                  "energy_mj": "15799000000/42643",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "427000000000/42643",
+                  "lcv": "37/1000",
+                  "wtt": "-22827/370",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "1",
+                  "combustion_eq": "288889/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "288889/100000",
+                  "effective_co2_factor": "0",
+                  "raw_by_gas_t": {
+                    "CO2": "0",
+                    "CH4": "427/852860",
+                    "N2O": "3843/2132150"
+                  },
+                  "wtt_numerator_g": "-974712900000/42643",
+                  "ttw_numerator_g": "1233556030000/42643",
+                  "denominator_mj": "15799000000/42643",
+                  "factor_status": "ESTIMATED",
+                  "qualification": "ASSUMED_ELIGIBLE",
+                  "zero_rating_status": "ESTIMATED_ASSUMED_ELIGIBLE",
+                  "mode": "BIO_E",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "42273000/42643",
+                "candidate_mass_t": "427000/42643",
+                "total_mass_t": "42700000/42643",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "135527238/42643",
+                  "CH4": "2135/42643",
+                  "N2O": "7686/42643"
+                },
+                "raw_co2e_t": "137623808/42643",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "137623808/42643",
+                "geo_co2e_t": "137623808/42643",
+                "scope_by_gas_t": {
+                  "CO2": "135527238/42643",
+                  "CH4": "2135/42643",
+                  "N2O": "7686/42643"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "137623808/42643"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "25018109340000/42643",
+                "ttw_numerator_g": "139081159000000/42643",
+                "wtt_intensity": "2929521/213215",
+                "ttw_intensity": "3257170/42643",
+                "ghgi": "19215371/213215",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-8069380788560/42643",
+                "balance_t": "-100867259857/533037500",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "13833224208960/112547173"
+              },
+              "costs": {
+                "fuel": "30188900000/42643",
+                "eua": "11009904640/42643",
+                "model": "41198804640/42643",
+                "eua_savings": "94673704/42643",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE",
+                "components.1.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_INFEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "338800000/42643",
+                "eua_cost": "-94673704/42643",
+                "model_cost": "244126296/42643",
+                "euas": "-11834213/426430",
+                "ghgi": "-117519177/182085610",
+                "balance_t": "117519177/4264300",
+                "penalty_eur": "-737143418847418560/43620695669821",
+                "co2_t": "-1186220/42643",
+                "ch4_t": "57/852860",
+                "n2o_t": "513/2132150",
+                "raw_co2e_t": "-11834213/426430"
+              },
+              "percent_deltas": {
+                "fuel_cost": "48400/42643",
+                "eua_cost": "-1183421300/1388072293",
+                "model_cost": "339064300/568814977",
+                "euas": "-1183421300/1388072293",
+                "ghgi": "-11751917700/16527446011",
+                "balance_t": "734494856250/57778578491",
+                "penalty_eur": "-314695790150025/26035617136627",
+                "co2_t": "-37000/42643",
+                "ch4_t": "5700/42643",
+                "n2o_t": "5700/42643",
+                "raw_co2e_t": "-1183421300/1388072293"
+              }
+            }
+          },
+          {
+            "ratio": "1/20",
+            "roles": [
+              "SPECIFIED"
+            ],
+            "scenario": {
+              "candidate_id": "uco-high",
+              "ratio": "1/20",
+              "status": "COMPARABLE",
+              "factor_status": "ESTIMATED",
+              "execution_status": "EXECUTION_CONDITIONS_PENDING",
+              "components": [
+                {
+                  "role": "BASELINE",
+                  "path_id": "MDO",
+                  "equipment_id": "MDO",
+                  "mass_t": "8113000/8483",
+                  "mass_g": "8113000000000/8483",
+                  "energy_mj": "346425100000/8483",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "8113000000000/8483",
+                  "lcv": "427/10000",
+                  "wtt": "72/5",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "0",
+                  "combustion_eq": "326089/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "326089/100000",
+                  "effective_co2_factor": "1603/500",
+                  "raw_by_gas_t": {
+                    "CO2": "26010278/8483",
+                    "CH4": "8113/169660",
+                    "N2O": "73017/424150"
+                  },
+                  "wtt_numerator_g": "4988521440000/8483",
+                  "ttw_numerator_g": "26455600570000/8483",
+                  "denominator_mj": "346425100000/8483",
+                  "factor_status": "FIXED",
+                  "qualification": "NOT_DEMONSTRATED",
+                  "zero_rating_status": "FOSSIL_TREATMENT",
+                  "mode": "STATIC",
+                  "source_ids": []
+                },
+                {
+                  "role": "CANDIDATE",
+                  "path_id": "UCO_FAME",
+                  "equipment_id": "UCO_FAME",
+                  "mass_t": "427000/8483",
+                  "mass_g": "427000000000/8483",
+                  "energy_mj": "15799000000/8483",
+                  "unburned_mass_g": "0",
+                  "burned_mass_g": "427000000000/8483",
+                  "lcv": "37/1000",
+                  "wtt": "-22827/370",
+                  "rwd": "1",
+                  "slip_percent": null,
+                  "slip_fraction": "0",
+                  "methane": false,
+                  "biomass": "1",
+                  "combustion_eq": "288889/100000",
+                  "slip_eq": "0",
+                  "ttw_mass_eq": "288889/100000",
+                  "effective_co2_factor": "0",
+                  "raw_by_gas_t": {
+                    "CO2": "0",
+                    "CH4": "427/169660",
+                    "N2O": "3843/424150"
+                  },
+                  "wtt_numerator_g": "-974712900000/8483",
+                  "ttw_numerator_g": "1233556030000/8483",
+                  "denominator_mj": "15799000000/8483",
+                  "factor_status": "ESTIMATED",
+                  "qualification": "ASSUMED_ELIGIBLE",
+                  "zero_rating_status": "ESTIMATED_ASSUMED_ELIGIBLE",
+                  "mode": "BIO_E",
+                  "source_ids": []
+                }
+              ],
+              "physical": {
+                "baseline_mass_t": "8113000/8483",
+                "candidate_mass_t": "427000/8483",
+                "total_mass_t": "8540000/8483",
+                "energy_mj": "42700000"
+              },
+              "ets": {
+                "raw_by_gas_t": {
+                  "CO2": "26010278/8483",
+                  "CH4": "427/8483",
+                  "N2O": "7686/42415"
+                },
+                "raw_co2e_t": "26429592/8483",
+                "included_gases": [
+                  "CO2",
+                  "CH4",
+                  "N2O"
+                ],
+                "excluded_from_surrender": [],
+                "pre_scope_co2e_t": "26429592/8483",
+                "geo_co2e_t": "26429592/8483",
+                "scope_by_gas_t": {
+                  "CO2": "26010278/8483",
+                  "CH4": "427/8483",
+                  "N2O": "7686/42415"
+                },
+                "geo": "1",
+                "surrender": "1",
+                "effective": "1",
+                "euas": "26429592/8483"
+              },
+              "fueleu": {
+                "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+                "target": "107113/1250",
+                "denominator_mj": "42700000",
+                "wtt_numerator_g": "4013808540000/8483",
+                "ttw_numerator_g": "27689156600000/8483",
+                "wtt_intensity": "470001/42415",
+                "ttw_intensity": "648458/8483",
+                "ghgi": "3712291/42415",
+                "scoped_energy_mj": "42700000",
+                "balance_g": "-663837121360/8483",
+                "balance_t": "-8297964017/106037500",
+                "classification": "DEFICIT_ESTIMATE",
+                "penalty_eur": "7966045456320/152203931"
+              },
+              "costs": {
+                "fuel": "6276900000/8483",
+                "eua": "2114367360/8483",
+                "model": "8391267360/8483",
+                "eua_savings": "94673704/8483",
+                "reference_adjusted": null
+              },
+              "null_reasons": {
+                "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+                "components.0.slip_percent": "NOT_APPLICABLE",
+                "components.1.slip_percent": "NOT_APPLICABLE"
+              },
+              "constraint_status": "CONSTRAINT_INFEASIBLE",
+              "warnings": [],
+              "deltas": {
+                "fuel_cost": "338800000/8483",
+                "eua_cost": "-94673704/8483",
+                "model_cost": "244126296/8483",
+                "euas": "-11834213/84830",
+                "ghgi": "-117519177/36222410",
+                "balance_t": "117519177/848300",
+                "penalty_eur": "-5160003931931929920/58990742965187",
+                "co2_t": "-1186220/8483",
+                "ch4_t": "57/169660",
+                "n2o_t": "513/424150",
+                "raw_co2e_t": "-11834213/84830"
+              },
+              "percent_deltas": {
+                "fuel_cost": "48400/8483",
+                "eua_cost": "-1183421300/276130133",
+                "model_cost": "339064300/113154737",
+                "euas": "-1183421300/276130133",
+                "ghgi": "-11751917700/3287815691",
+                "balance_t": "734494856250/11493930571",
+                "penalty_eur": "-314695790150025/5029920430667",
+                "co2_t": "-37000/8483",
+                "ch4_t": "5700/8483",
+                "n2o_t": "5700/8483",
+                "raw_co2e_t": "-1183421300/276130133"
+              }
+            }
+          }
+        ],
+        "constraints": {
+          "x_budget": "7625/4360416",
+          "x_supply": "1",
+          "x_cap": "7625/4360416",
+          "budget_status": "VERIFIED",
+          "x_max_improvement": "7625/4360416",
+          "x_target_min_unconstrained": "2709874/34764309",
+          "vertices": [
+            {
+              "baseline_mass_t": "1000",
+              "candidate_mass_t": "0",
+              "ratio": "0"
+            },
+            {
+              "baseline_mass_t": "823501000/824751",
+              "candidate_mass_t": "53375000/30515787",
+              "ratio": "7625/4360416"
+            }
+          ]
+        },
+        "target": {
+          "status": "UNREACHABLE",
+          "reason": "TARGET_UNREACHABLE_UNDER_CONSTRAINTS",
+          "unconstrained_low": "2709874/34764309",
+          "unconstrained_high": "1",
+          "constrained_low": null,
+          "constrained_high": null
+        },
+        "optima": {
+          "cost": {
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "960408",
+            "representative_ratio": "0",
+            "ratio_interval": [
+              "0",
+              "0"
+            ],
+            "mathematical_ratio": "0",
+            "mathematical_ratio_interval": [
+              "0",
+              "0"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          },
+          "target_cost": {
+            "status": "UNAVAILABLE",
+            "reason": "TARGET_UNREACHABLE_UNDER_CONSTRAINTS",
+            "objective": null,
+            "representative_ratio": null,
+            "ratio_interval": null,
+            "mathematical_ratio": null,
+            "mathematical_ratio_interval": null,
+            "upper_inclusive": false,
+            "attained": false
+          },
+          "max_improvement": {
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "195865295/40687716",
+            "representative_ratio": "7625/4360416",
+            "ratio_interval": [
+              "7625/4360416",
+              "7625/4360416"
+            ],
+            "mathematical_ratio": "7625/4360416",
+            "mathematical_ratio_interval": [
+              "7625/4360416",
+              "7625/4360416"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          }
+        },
+        "break_even": {
+          "candidate_price": {
+            "status": "FINITE_NON_NEGATIVE",
+            "value": "44209213/53375"
+          },
+          "eua_price": {
+            "status": "FINITE_NON_NEGATIVE",
+            "value": "3388000000/11834213"
+          }
+        }
+      }
+    },
+    "economics": {
+      "ranking": [
+        {
+          "candidate_id": null,
+          "ratio": "0",
+          "model_cost": "960408"
+        },
+        {
+          "candidate_id": "bio",
+          "ratio": "7625/2835416",
+          "model_cost": "961408"
+        },
+        {
+          "candidate_id": "e-diesel",
+          "ratio": "1/900",
+          "model_cost": "961408"
+        },
+        {
+          "candidate_id": "hvo",
+          "ratio": "7625/871156",
+          "model_cost": "961408"
+        },
+        {
+          "candidate_id": "uco-bulk",
+          "ratio": "7625/2454166",
+          "model_cost": "961408"
+        },
+        {
+          "candidate_id": "uco-high",
+          "ratio": "7625/4360416",
+          "model_cost": "961408"
+        },
+        {
+          "candidate_id": "uco-limited",
+          "ratio": "7625/929166",
+          "model_cost": "961408"
+        }
+      ],
+      "cost_minimum": {
+        "status": "AVAILABLE",
+        "reason": null,
+        "objective": "960408",
+        "winners": [
+          {
+            "candidate_id": null,
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "960408",
+            "representative_ratio": "0",
+            "ratio_interval": [
+              "0",
+              "0"
+            ],
+            "mathematical_ratio": "0",
+            "mathematical_ratio_interval": [
+              "0",
+              "0"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          },
+          {
+            "candidate_id": "uco-limited",
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "960408",
+            "representative_ratio": "0",
+            "ratio_interval": [
+              "0",
+              "0"
+            ],
+            "mathematical_ratio": "0",
+            "mathematical_ratio_interval": [
+              "0",
+              "0"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          },
+          {
+            "candidate_id": "uco-bulk",
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "960408",
+            "representative_ratio": "0",
+            "ratio_interval": [
+              "0",
+              "0"
+            ],
+            "mathematical_ratio": "0",
+            "mathematical_ratio_interval": [
+              "0",
+              "0"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          },
+          {
+            "candidate_id": "hvo",
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "960408",
+            "representative_ratio": "0",
+            "ratio_interval": [
+              "0",
+              "0"
+            ],
+            "mathematical_ratio": "0",
+            "mathematical_ratio_interval": [
+              "0",
+              "0"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          },
+          {
+            "candidate_id": "bio",
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "960408",
+            "representative_ratio": "0",
+            "ratio_interval": [
+              "0",
+              "0"
+            ],
+            "mathematical_ratio": "0",
+            "mathematical_ratio_interval": [
+              "0",
+              "0"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          },
+          {
+            "candidate_id": "e-diesel",
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "960408",
+            "representative_ratio": "0",
+            "ratio_interval": [
+              "0",
+              "0"
+            ],
+            "mathematical_ratio": "0",
+            "mathematical_ratio_interval": [
+              "0",
+              "0"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          },
+          {
+            "candidate_id": "uco-high",
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "960408",
+            "representative_ratio": "0",
+            "ratio_interval": [
+              "0",
+              "0"
+            ],
+            "mathematical_ratio": "0",
+            "mathematical_ratio_interval": [
+              "0",
+              "0"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          }
+        ]
+      },
+      "target_cost_minimum": {
+        "status": "UNAVAILABLE",
+        "reason": "NO_FEASIBLE_TARGET",
+        "objective": null,
+        "winners": []
+      },
+      "max_improvement": {
+        "status": "AVAILABLE",
+        "reason": null,
+        "objective": "653070385/24398868",
+        "winners": [
+          {
+            "candidate_id": "hvo",
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "653070385/24398868",
+            "representative_ratio": "7625/871156",
+            "ratio_interval": [
+              "7625/871156",
+              "7625/871156"
+            ],
+            "mathematical_ratio": "7625/871156",
+            "mathematical_ratio_interval": [
+              "7625/871156",
+              "7625/871156"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          }
+        ]
+      },
+      "lines": [
+        {
+          "id": "B0",
+          "candidate_id": null,
+          "ratio": "0",
+          "cost": "960408",
+          "improvement": "0"
+        },
+        {
+          "id": "uco-limited@7625/929166",
+          "candidate_id": "uco-limited",
+          "ratio": "7625/929166",
+          "cost": "961408",
+          "improvement": "195865295/8662716"
+        },
+        {
+          "id": "uco-bulk@7625/2454166",
+          "candidate_id": "uco-bulk",
+          "ratio": "7625/2454166",
+          "cost": "961408",
+          "improvement": "587595885/68688148"
+        },
+        {
+          "id": "hvo@7625/871156",
+          "candidate_id": "hvo",
+          "ratio": "7625/871156",
+          "cost": "961408",
+          "improvement": "653070385/24398868"
+        },
+        {
+          "id": "bio@7625/2835416",
+          "candidate_id": "bio",
+          "ratio": "7625/2835416",
+          "cost": "961408",
+          "improvement": "428815935/79363148"
+        },
+        {
+          "id": "e-diesel@1/900",
+          "candidate_id": "e-diesel",
+          "ratio": "1/900",
+          "cost": "961408",
+          "improvement": "128243/18020"
+        },
+        {
+          "id": "uco-high@7625/4360416",
+          "candidate_id": "uco-high",
+          "ratio": "7625/4360416",
+          "cost": "961408",
+          "improvement": "195865295/40687716"
+        }
+      ],
+      "switch_points": [
+        {
+          "value": "4879773600/130614077",
+          "winners": [
+            "B0",
+            "hvo@7625/871156"
+          ]
+        }
+      ],
+      "intervals": [
+        {
+          "lower": "0",
+          "upper": "4879773600/130614077",
+          "winners": [
+            "B0"
+          ]
+        },
+        {
+          "lower": "4879773600/130614077",
+          "upper": null,
+          "winners": [
+            "hvo@7625/871156"
+          ]
+        }
+      ]
+    }
+  }
+}

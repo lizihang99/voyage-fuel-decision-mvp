@@ -1,0 +1,26 @@
+{
+  "id": "D-confirmation-false",
+  "family": "D",
+  "name": "未确认有效挂靠",
+  "purpose": "案例级必要确认失败，返回HTTP422",
+  "compact": false,
+  "synthetic": true,
+  "assumptions": [
+    "全部案例为合成测试，报价、供应量、预算和资格声明不代表市场或真实认证。",
+    "冻结本地规范独立声明因子；不读取生产因子表、参考计算器或历史输出。",
+    "仅验证同等物理能源下的法规情景；不证明设备适配、燃料可得性或混兑兼容性。",
+    "因子和范围快照仅描述预定输入；整个案例在确认步骤阻断。"
+  ],
+  "coverage": [
+    "invalid_case",
+    "confirmation"
+  ],
+  "expected_issues": [
+    {
+      "code": "PORT_OF_CALL_CONFIRMATION_REQUIRED",
+      "scope": "CASE",
+      "candidate_id": null
+    }
+  ],
+  "expected_http_status": 422
+}

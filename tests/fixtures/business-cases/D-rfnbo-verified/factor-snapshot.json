@@ -1,0 +1,49 @@
+{
+  "scope": {
+    "geo": "1",
+    "surrender": "1",
+    "fueleu": "1"
+  },
+  "baseline": {
+    "path_id": "MDO",
+    "lcv": "0.0427",
+    "wtt": "14.4",
+    "co2": "3.206",
+    "ch4": "0.00005",
+    "n2o": "0.00018",
+    "slip": null,
+    "methane": false,
+    "rwd": "1",
+    "biomass": "0",
+    "factor_status": "FIXED",
+    "qualification": "NOT_DEMONSTRATED",
+    "mode": "STATIC",
+    "equipment_id": "MDO",
+    "csf_co2": "0",
+    "csf_ch4": "0",
+    "csf_n2o": "0"
+  },
+  "candidates": {
+    "renewable": {
+      "path_id": "E_DIESEL",
+      "lcv": "0.0427",
+      "wtt": "-266/5",
+      "co2": "3.206",
+      "ch4": "0.00005",
+      "n2o": "0.00018",
+      "slip": null,
+      "methane": false,
+      "rwd": "2",
+      "biomass": "0",
+      "factor_status": "VERIFIED",
+      "qualification": "VERIFIED_ELIGIBLE",
+      "mode": "RFNBO_E",
+      "equipment_id": "E_DIESEL",
+      "csf_co2": "0",
+      "csf_ch4": "0",
+      "csf_n2o": "0",
+      "e": "20",
+      "eu": "73.2"
+    }
+  }
+}

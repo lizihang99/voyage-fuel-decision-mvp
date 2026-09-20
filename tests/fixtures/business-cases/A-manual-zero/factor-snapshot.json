@@ -1,0 +1,38 @@
+{
+  "scope": {
+    "geo": "1",
+    "surrender": "1",
+    "fueleu": "1"
+  },
+  "baseline": {
+    "path_id": "SYNTHETIC_ZERO",
+    "lcv": "0.04",
+    "wtt": "0",
+    "co2": "0",
+    "ch4": "0",
+    "n2o": "0",
+    "slip": null,
+    "methane": false,
+    "rwd": "1",
+    "biomass": "0",
+    "factor_status": "ESTIMATED",
+    "qualification": "NOT_DEMONSTRATED",
+    "mode": "STATIC",
+    "equipment_id": "SYNTHETIC_TEST_ICE",
+    "csf_co2": "0",
+    "csf_ch4": "0",
+    "csf_n2o": "0",
+    "source_ids": [
+      "SYNTHETIC:SYNTHETIC_ZERO:lcv",
+      "SYNTHETIC:SYNTHETIC_ZERO:cfCO2",
+      "SYNTHETIC:SYNTHETIC_ZERO:cfCH4",
+      "SYNTHETIC:SYNTHETIC_ZERO:cfN2O",
+      "SYNTHETIC:SYNTHETIC_ZERO:cslip",
+      "SYNTHETIC:SYNTHETIC_ZERO:methaneSlipApplicable",
+      "SYNTHETIC:SYNTHETIC_ZERO:rwd",
+      "SYNTHETIC:SYNTHETIC_ZERO:eligibleBiomassFraction",
+      "SYNTHETIC:SYNTHETIC_ZERO:wtT"
+    ]
+  },
+  "candidates": {}
+}

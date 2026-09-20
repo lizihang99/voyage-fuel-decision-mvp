@@ -44,6 +44,18 @@ class WorkbenchPageContractTests(unittest.TestCase):
         self.assertIn('data-view="legacy"', response.text)
         self.assertIn('id="scenario-comparison-table"', response.text)
 
+    def test_views_use_purpose_names_and_share_details_markup(self):
+        for view in ("legacy", "workbench"):
+            html = self.client.get("/", params={"view": view}).text
+            for label in ("旧版", "新版", "经典版"):
+                self.assertNotIn(label, html)
+            self.assertEqual(html.count('id="example-result-status"'), 1)
+            self.assertEqual(html.count('id="scenario-comparison-table"'), 1)
+        html = self.client.get("/", params={"view": "workbench"}).text
+        self.assertIn('id="calculation-details"', html)
+        self.assertIn("查看计算明细", html)
+        self.assertNotIn('href="/?view=legacy"', html)
+
     def test_invalid_view_is_rejected(self):
         response = self.client.get("/", params={"view": "../legacy"})
 

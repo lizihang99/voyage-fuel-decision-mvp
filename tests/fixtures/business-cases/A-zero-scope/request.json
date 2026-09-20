@@ -1,0 +1,14 @@
+{
+  "reportYear": 2030,
+  "departurePort": "CNSHG",
+  "arrivalPort": "SGSIN",
+  "adjacentValidPortOfCallConfirmed": true,
+  "currency": "EUR",
+  "baseline": {
+    "pathId": "MDO",
+    "massTonnes": "1000",
+    "pricePerTonne": "700"
+  },
+  "euaPricePerTCO2e": "80",
+  "candidates": []
+}

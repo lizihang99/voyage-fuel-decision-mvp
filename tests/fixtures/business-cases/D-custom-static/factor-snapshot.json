@@ -1,0 +1,58 @@
+{
+  "scope": {
+    "geo": "1",
+    "surrender": "1",
+    "fueleu": "1"
+  },
+  "baseline": {
+    "path_id": "MDO",
+    "lcv": "0.0427",
+    "wtt": "14.4",
+    "co2": "3.206",
+    "ch4": "0.00005",
+    "n2o": "0.00018",
+    "slip": null,
+    "methane": false,
+    "rwd": "1",
+    "biomass": "0",
+    "factor_status": "FIXED",
+    "qualification": "NOT_DEMONSTRATED",
+    "mode": "STATIC",
+    "equipment_id": "MDO",
+    "csf_co2": "0",
+    "csf_ch4": "0",
+    "csf_n2o": "0"
+  },
+  "candidates": {
+    "custom": {
+      "path_id": "SYNTHETIC_STATIC",
+      "lcv": "0.04",
+      "wtt": "10",
+      "co2": "3",
+      "ch4": "0",
+      "n2o": "0",
+      "slip": null,
+      "methane": false,
+      "rwd": "1",
+      "biomass": "0",
+      "factor_status": "ESTIMATED",
+      "qualification": "NOT_DEMONSTRATED",
+      "mode": "STATIC",
+      "equipment_id": "SYNTHETIC_TEST_ICE",
+      "csf_co2": "0",
+      "csf_ch4": "0",
+      "csf_n2o": "0",
+      "source_ids": [
+        "SYNTHETIC:SYNTHETIC_STATIC:lcv",
+        "SYNTHETIC:SYNTHETIC_STATIC:cfCO2",
+        "SYNTHETIC:SYNTHETIC_STATIC:cfCH4",
+        "SYNTHETIC:SYNTHETIC_STATIC:cfN2O",
+        "SYNTHETIC:SYNTHETIC_STATIC:cslip",
+        "SYNTHETIC:SYNTHETIC_STATIC:methaneSlipApplicable",
+        "SYNTHETIC:SYNTHETIC_STATIC:rwd",
+        "SYNTHETIC:SYNTHETIC_STATIC:eligibleBiomassFraction",
+        "SYNTHETIC:SYNTHETIC_STATIC:wtT"
+      ]
+    }
+  }
+}

@@ -23,7 +23,11 @@ class WorkbenchFlowTests(BrowserAppMixin, unittest.TestCase):
             page.locator("#workbench-goal-cards button").filter(has_text="达到 GHGI 参考线").click()
             page.locator("#workbench-scenario-table .workbench-scenario-row.selected").wait_for()
             page.locator("#workbench-selected-detail").filter(has_text="当前方案投入产出").wait_for()
-            page.locator("#workbench-sensitivity").filter(has_text="敏感性与边界").wait_for()
+            sensitivity = page.locator("#workbench-sensitivity")
+            sensitivity.filter(has_text="用量限制与价格影响").wait_for()
+            self.assertFalse(sensitivity.evaluate("(node) => node.open"))
+            sensitivity.locator("summary").click()
+            self.assertIn("什么价格更划算", page.locator("#workbench-sensitivity").inner_text())
             self.assertEqual(page.locator(".workbench-scatter .quadrant").count(), 4)
             self.assertGreater(page.locator(".workbench-scatter .plot-point").count(), 0)
             self.assertGreater(page.locator(".workbench-threshold-lanes").count(), 0)
@@ -81,7 +85,27 @@ class WorkbenchFlowTests(BrowserAppMixin, unittest.TestCase):
             self.assertEqual([row["scenario_id"] for row in result["scenarios"]], ["B0"])
             page.locator("#workbench-root").wait_for(state="visible")
             self.assertFalse(page.locator("#export-csv").is_disabled())
-            self.assertIn("B0-only", page.locator("#workbench-sensitivity").inner_text())
+            page.locator("#workbench-sensitivity summary").click()
+            self.assertIn("尚未添加替代燃料", page.locator("#workbench-sensitivity").inner_text())
+            self.assertNotIn("B0-only", page.locator("#workbench-sensitivity").inner_text())
+        finally:
+            context.close()
+
+    def test_blocked_candidate_shows_reasons_in_price_section(self):
+        context, page = self.new_workbench_page()
+        try:
+            self.fill_case(page, include_rfnbo=False)
+            page.locator(".candidate-row").first.locator('[data-field="pathId"]').evaluate(
+                "select => { select.add(new Option('UNKNOWN_PATH', 'UNKNOWN_PATH')); select.value = 'UNKNOWN_PATH'; }"
+            )
+            result = self.calculate(page, view="workbench")
+            self.assertEqual(result["candidate_results"][0]["calculation_status"], "BLOCKED")
+            page.locator("#workbench-sensitivity summary").click()
+            text = page.locator("#workbench-sensitivity").inner_text()
+            self.assertIn("替代燃料暂时无法参与比较", text)
+            self.assertNotIn("尚未添加替代燃料", text)
+            for issue in result["candidate_results"][0]["issues"]:
+                self.assertIn(issue["message"], text)
         finally:
             context.close()
 
@@ -117,7 +141,7 @@ class WorkbenchFlowTests(BrowserAppMixin, unittest.TestCase):
             self.assertIn("当前模型成本最低", visible_text)
             self.assertIn("执行条件待确认", visible_text)
             self.assertIn("核心结论", visible_text)
-            self.assertIn("敏感性与边界", visible_text)
+            self.assertIn("用量限制与价格影响", visible_text)
         finally:
             context.close()
 
@@ -136,6 +160,45 @@ class WorkbenchFlowTests(BrowserAppMixin, unittest.TestCase):
             self.assertEqual(candidate["specifiedBlendRatios"], ["0.022130676682982508109"])
         finally:
             context.close()
+
+    def test_calculation_details_reuse_result_and_clear_on_edit(self):
+        for width, height in ((1440, 900), (390, 844)):
+            with self.subTest(width=width):
+                context, page = self.new_workbench_page(width, height)
+                try:
+                    calls = []
+                    page.on("request", lambda request: calls.append(request.url)
+                            if request.url.endswith("/api/calculate") else None)
+                    self.fill_case(page, include_rfnbo=False)
+                    result = self.calculate(page, view="workbench")
+                    details = page.locator("#calculation-details")
+                    self.assertFalse(details.evaluate("(node) => node.open"))
+                    details.locator("summary").click()
+                    self.assertTrue(page.locator("#overview-metrics").is_visible())
+                    self.assertEqual(details.locator("form, input, select").count(), 0)
+                    details.get_by_role("tab", name="场景明细").click()
+                    self.assertEqual(
+                        page.locator("#scenario-comparison-table tbody tr").count(),
+                        len(result["scenarios"]),
+                    )
+                    details.get_by_role("tab", name="计算依据").click()
+                    self.assertTrue(page.locator("#calculation-basis").is_visible())
+                    self.assertFalse(page.evaluate(
+                        "document.documentElement.scrollWidth > document.documentElement.clientWidth"
+                    ))
+                    page.screenshot(path=f"output/calculation-details-{width}.png", full_page=True)
+                    details.locator("summary").click()
+                    details.locator("summary").focus()
+                    page.keyboard.press("Enter")
+                    self.assertTrue(details.evaluate("(node) => node.open"))
+                    self.assertEqual(len(calls), 1)
+                    page.locator("#baseline-mass").fill("101")
+                    self.assertFalse(details.is_visible())
+                    self.assertFalse(details.evaluate("(node) => node.open"))
+                    self.assertNotIn("因子回溯", page.locator("#calculation-basis").inner_text())
+                    self.assertTrue(page.locator("#export-csv").is_disabled())
+                finally:
+                    context.close()
 
 
 if __name__ == "__main__":

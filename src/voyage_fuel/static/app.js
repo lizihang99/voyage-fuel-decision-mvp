@@ -12,6 +12,17 @@
     nextCandidateSerial: 1,
     workbench: null,
     submittedInput: null,
+    availableFuelIds: new Set(),
+    exampleCatalog: null,
+    example: null,
+    applyingExample: false,
+    loadingExample: false,
+    activeRequestId: null,
+    guideApi: null,
+    guideView: null,
+    guideState: null,
+    guideDisplay: null,
+    guideDisplayConfig: null,
   };
 
   const $ = (id) => document.getElementById(id);
@@ -86,6 +97,102 @@
     return displayValuesModule;
   }
 
+  let teachingGuideModules = null;
+
+  async function loadTeachingGuideModules() {
+    if (!teachingGuideModules) {
+      teachingGuideModules = Promise.all([
+        import("/static/teaching-guide.mjs"),
+        import("/static/teaching-guide-view.mjs"),
+      ]).then(([guideApi, viewApi]) => ({ guideApi, viewApi }));
+    }
+    return teachingGuideModules;
+  }
+
+  function teachingGuideIntro() {
+    if (
+      !state.guideState
+      || state.guideState.phase !== "ready"
+      || !state.guideState.visible
+    ) return "";
+    if (state.guideState.caseId === "A-2025") {
+      return "这一例看什么？2025年上海至鹿特丹，以1000吨MDO作为合成用量。先看不更换燃料时的成本，再看FuelEU合规情况。B0是比较用的基准方案。合成数据与资格假设，仅供示例；航次级估算不代表真实认证、采购建议或年度结算。";
+    }
+    if (state.guideState.caseId === "B-default") {
+      return "这一例看什么？2030年鹿特丹至汉堡，比较六个燃料报价与条件。每个候选分别与MDO组成方案，在相同能源需求下比较成本和合规表现。合成数据与资格假设，仅供示例；航次级估算不代表真实认证、采购建议或年度结算。";
+    }
+    return "";
+  }
+
+  function renderTeachingGuide() {
+    const intro = $("teaching-guide-intro");
+    const introText = teachingGuideIntro();
+    if (intro) {
+      intro.textContent = introText;
+      intro.hidden = !introText;
+    }
+    if (!state.guideView || !state.guideState) return;
+    const notes = state.guideApi && state.guideDisplay && state.example?.request
+      ? state.guideApi.buildGuideNotes({
+        state: state.guideState,
+        display: state.guideDisplay,
+        displayConfig: state.guideDisplayConfig || state.display,
+        submittedInput: state.submittedInput,
+        frozenRequest: state.example.request,
+      })
+      : [];
+    state.guideView.render({ state: state.guideState, notes });
+  }
+
+  function dispatchTeachingGuide(event) {
+    if (!state.guideApi || !state.guideState) return;
+    state.guideState = state.guideApi.reduceGuide(state.guideState, event);
+    renderTeachingGuide();
+  }
+
+  async function initializeTeachingGuide() {
+    if (!isWorkbench()) return;
+    try {
+      const modules = await loadTeachingGuideModules();
+      state.guideApi = modules.guideApi;
+      state.guideState = modules.guideApi.createGuideState();
+      const toggle = $("teaching-guide-toggle");
+      if (toggle) toggle.disabled = false;
+      state.guideView = modules.viewApi.createTeachingGuideView({
+        root: document,
+        onVisibilityChange: (visible) => {
+          if (toggle) toggle.checked = visible;
+        },
+      });
+      if (
+        state.example
+        && !state.example.modified
+        && state.submittedInput
+        && state.example.request
+        && modules.guideApi.sameExampleRequest(state.submittedInput, state.example.request)
+      ) {
+        state.guideState = modules.guideApi.reduceGuide(state.guideState, {
+          type: "APPLIED",
+          caseId: state.example.caseId,
+          requestId: state.activeRequestId,
+        });
+        state.guideState = modules.guideApi.reduceGuide(state.guideState, {
+          type: "RESOLVED",
+          requestId: state.activeRequestId,
+          matched: true,
+        });
+      }
+      renderTeachingGuide();
+    } catch (error) {
+      state.guideApi = null;
+      state.guideView = null;
+      state.guideState = null;
+      const toggle = $("teaching-guide-toggle");
+      if (toggle) toggle.hidden = true;
+      console.error("teaching guide initialization failed", error);
+    }
+  }
+
   async function percentDisplay(value) {
     if (!isWorkbench()) return value;
     const { ratioToPercentInput } = await loadDisplayValues();
@@ -131,17 +238,260 @@
     return body;
   }
 
+  const EXAMPLE_REQUEST_KEYS = new Set([
+    "reportYear", "departurePort", "arrivalPort", "adjacentValidPortOfCallConfirmed",
+    "currency", "baseline", "euaPricePerTCO2e", "candidates",
+  ]);
+  const EXAMPLE_BASELINE_KEYS = new Set(["pathId", "massTonnes", "pricePerTonne"]);
+  const EXAMPLE_CANDIDATE_KEYS = new Set([
+    "candidateId", "pathId", "pricePerTonne", "specifiedBlendRatios", "maxBlendRatio",
+    "candidateAllowsPureUse", "candidateSupplyTonnes", "incrementalBudget",
+    "complianceImprovementValue", "qualificationStatus", "eligibleBiomassFraction", "e", "eu",
+  ]);
+  const DECIMAL_PATTERN = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/;
+
+  function validationError(message) {
+    const error = new Error(message);
+    error.exampleValidation = true;
+    return error;
+  }
+
+  function assertPlainObject(value, label) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) throw validationError(label + "必须是对象");
+  }
+
+  function assertKeys(value, allowed, label) {
+    Object.keys(value).forEach((key) => {
+      if (!allowed.has(key)) throw validationError(label + "包含不支持的字段 " + key);
+    });
+  }
+
+  function assertDecimal(value, label, { nullable = false, min = null, max = null } = {}) {
+    if (nullable && value === null) return;
+    if (typeof value !== "string" || !DECIMAL_PATTERN.test(value.trim())) throw validationError(label + "必须使用十进制字符串");
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric) || (min !== null && numeric < min) || (max !== null && numeric > max)) {
+      throw validationError(label + "超出允许范围");
+    }
+  }
+
+  function validateExampleRequest(request, label) {
+    assertPlainObject(request, label + ".request");
+    assertKeys(request, EXAMPLE_REQUEST_KEYS, label + ".request");
+    if (!Number.isInteger(request.reportYear) || request.reportYear < 2024 || request.reportYear > 2030) throw validationError(label + "报告年份无效");
+    ["departurePort", "arrivalPort"].forEach((fieldName) => {
+      if (typeof request[fieldName] !== "string" || !/^[A-Z0-9]{5}$/.test(request[fieldName])) throw validationError(label + "." + fieldName + "无效");
+    });
+    if (typeof request.adjacentValidPortOfCallConfirmed !== "boolean") throw validationError(label + "相邻港确认值无效");
+    if (!["EUR", "USD", "GBP"].includes(request.currency)) throw validationError(label + "货币无效");
+    assertPlainObject(request.baseline, label + ".baseline");
+    assertKeys(request.baseline, EXAMPLE_BASELINE_KEYS, label + ".baseline");
+    if (typeof request.baseline.pathId !== "string" || !state.availableFuelIds.has(request.baseline.pathId)) throw validationError(label + "基准燃料路径无效");
+    assertDecimal(request.baseline.massTonnes, label + ".baseline.massTonnes", { min: Number.MIN_VALUE });
+    assertDecimal(request.baseline.pricePerTonne, label + ".baseline.pricePerTonne", { nullable: true, min: 0 });
+    assertDecimal(request.euaPricePerTCO2e, label + ".euaPricePerTCO2e", { nullable: true, min: 0 });
+    if (!Array.isArray(request.candidates)) throw validationError(label + ".candidates必须是数组");
+    const ids = new Set();
+    request.candidates.forEach((candidate, index) => {
+      const candidateLabel = label + ".candidates[" + index + "]";
+      assertPlainObject(candidate, candidateLabel);
+      assertKeys(candidate, EXAMPLE_CANDIDATE_KEYS, candidateLabel);
+      if (typeof candidate.candidateId !== "string" || !candidate.candidateId.trim() || ids.has(candidate.candidateId)) throw validationError(candidateLabel + ".candidateId为空或重复");
+      ids.add(candidate.candidateId);
+      if (typeof candidate.pathId !== "string" || !state.availableFuelIds.has(candidate.pathId)) throw validationError(candidateLabel + ".pathId无效");
+      assertDecimal(candidate.pricePerTonne, candidateLabel + ".pricePerTonne", { nullable: true, min: 0 });
+      if (!Array.isArray(candidate.specifiedBlendRatios) || !candidate.specifiedBlendRatios.length) throw validationError(candidateLabel + ".specifiedBlendRatios无效");
+      candidate.specifiedBlendRatios.forEach((ratio, ratioIndex) => assertDecimal(ratio, candidateLabel + ".specifiedBlendRatios[" + ratioIndex + "]", { min: 0, max: 1 }));
+      assertDecimal(candidate.maxBlendRatio, candidateLabel + ".maxBlendRatio", { min: 0, max: 1 });
+      if (typeof candidate.candidateAllowsPureUse !== "boolean") throw validationError(candidateLabel + ".candidateAllowsPureUse无效");
+      ["candidateSupplyTonnes", "incrementalBudget", "complianceImprovementValue"].forEach((fieldName) => {
+        if (Object.prototype.hasOwnProperty.call(candidate, fieldName)) {
+          assertDecimal(candidate[fieldName], candidateLabel + "." + fieldName, { nullable: true, min: 0 });
+        }
+      });
+      if (candidate.qualificationStatus !== undefined && !["NOT_DEMONSTRATED", "ASSUMED_ELIGIBLE", "VERIFIED_ELIGIBLE", "INELIGIBLE"].includes(candidate.qualificationStatus)) throw validationError(candidateLabel + ".qualificationStatus无效");
+      if (candidate.eligibleBiomassFraction !== undefined) assertDecimal(candidate.eligibleBiomassFraction, candidateLabel + ".eligibleBiomassFraction", { min: 0, max: 1 });
+      if (candidate.e !== undefined) assertDecimal(candidate.e, candidateLabel + ".e", { min: 0 });
+      if (candidate.eu !== undefined) assertDecimal(candidate.eu, candidateLabel + ".eu", { min: 0 });
+      if (candidate.pathId.startsWith("E_") && candidate.qualificationStatus === "VERIFIED_ELIGIBLE" && (candidate.e === undefined || candidate.eu === undefined)) throw validationError(candidateLabel + "已核验 RFNBO 必须同时提供 E 和 eu");
+    });
+    return request;
+  }
+
+  function validateExamplesResource(resource) {
+    assertPlainObject(resource, "示例资源");
+    if (resource.version !== 1) throw validationError("示例资源版本不支持");
+    assertPlainObject(resource.examples, "示例资源.examples");
+    ["basic", "comparison"].forEach((key) => {
+      const example = resource.examples[key];
+      assertPlainObject(example, "示例 " + key);
+      if (typeof example.name !== "string" || !example.name.trim()) throw validationError("示例 " + key + "缺少名称");
+      if (typeof example.caseId !== "string" || !example.caseId.trim()) throw validationError("示例 " + key + "缺少案例 ID");
+      if (example.synthetic !== true) throw validationError("示例 " + key + "必须标记为合成数据");
+      if (Object.prototype.hasOwnProperty.call(example, "expected") || Object.prototype.hasOwnProperty.call(example, "result")) throw validationError("示例 " + key + "不能包含标准答案");
+      validateExampleRequest(example.request, "示例 " + key);
+    });
+    return resource;
+  }
+
+  function setExampleError(message = "") {
+    const target = $("example-error");
+    if (target) target.textContent = message;
+  }
+
+  function setExampleStatus() {
+    const status = $("example-status");
+    const resultStatus = $("example-result-status");
+    if (!state.example) {
+      if (status) status.hidden = true;
+      if (resultStatus) resultStatus.hidden = true;
+      return;
+    }
+    const suffix = state.example.modified ? "已修改" : state.example.name;
+    const value = "合成示例 · " + suffix;
+    [status, resultStatus].forEach((target) => {
+      if (!target) return;
+      target.textContent = value;
+      target.hidden = false;
+    });
+  }
+
+  function closeExampleMenu({ restoreFocus = false } = {}) {
+    const menu = $("example-menu");
+    const button = $("try-examples");
+    if (menu) menu.hidden = true;
+    if (button) button.setAttribute("aria-expanded", "false");
+    if (restoreFocus && button) button.focus();
+  }
+
+  function toggleExampleMenu() {
+    const menu = $("example-menu");
+    const button = $("try-examples");
+    if (!menu || !button || button.disabled) return;
+    const open = menu.hidden;
+    menu.hidden = !open;
+    button.setAttribute("aria-expanded", String(open));
+    if (open) menu.querySelector("[data-example]")?.focus();
+  }
+
+  async function loadTeachingExamples() {
+    try {
+      const resource = validateExamplesResource(await fetchJson("/static/teaching-examples.json"));
+      state.exampleCatalog = resource;
+      const button = $("try-examples");
+      if (button) button.disabled = false;
+      setExampleError("");
+    } catch (error) {
+      state.exampleCatalog = null;
+      const button = $("try-examples");
+      if (button) button.disabled = true;
+      setExampleError("示例暂不可用：" + (error.message || "资源加载失败"));
+    }
+  }
+
+  async function applyExampleRequest(example) {
+    const request = JSON.parse(JSON.stringify(example.request));
+    const nextCandidates = request.candidates.map((candidate, index) => ({
+      candidateId: candidate.candidateId,
+      pricePerTonne: candidate.pricePerTonne ?? null,
+      specifiedBlendRatios: candidate.specifiedBlendRatios,
+      maxBlendRatio: candidate.maxBlendRatio,
+      candidateAllowsPureUse: candidate.candidateAllowsPureUse,
+      candidateSupplyTonnes: candidate.candidateSupplyTonnes ?? "",
+      incrementalBudget: candidate.incrementalBudget ?? "",
+      complianceImprovementValue: candidate.complianceImprovementValue ?? "",
+      candidateMode: "builtin",
+      customPathId: "CUSTOM_FUEL_" + (index + 1),
+      builtinDraft: {
+        pathId: candidate.pathId,
+        qualificationStatus: candidate.qualificationStatus || "NOT_DEMONSTRATED",
+        eligibleBiomassFraction: candidate.eligibleBiomassFraction || "",
+        e: candidate.e || "",
+        eu: candidate.eu || "",
+      },
+      customDraft: defaultCustomDraft(index + 1),
+    }));
+    const candidateMarkup = (await Promise.all(nextCandidates.map(candidateTemplate))).join("");
+    state.applyingExample = true;
+    try {
+      $("report-year").value = String(request.reportYear);
+      $("departure-port-search").value = request.departurePort;
+      $("arrival-port-search").value = request.arrivalPort;
+      state.ports.departure = request.departurePort;
+      state.ports.arrival = request.arrivalPort;
+      $("departure-port-options").innerHTML = "";
+      $("arrival-port-options").innerHTML = "";
+      $("adjacent-port-confirmation").checked = request.adjacentValidPortOfCallConfirmed;
+      $("case-currency").value = request.currency;
+      $("baseline-mode").value = "builtin";
+      $("baseline-fuel").value = request.baseline.pathId;
+      $("baseline-mass").value = request.baseline.massTonnes;
+      $("baseline-price").value = request.baseline.pricePerTonne ?? "";
+      $("eua-price").value = request.euaPricePerTCO2e ?? "";
+      syncBaselineCustomEditor();
+      state.candidates = nextCandidates;
+      $("candidate-collection").innerHTML = candidateMarkup;
+      populateFuelSelects([...state.availableFuelIds]);
+      document.querySelectorAll(".candidate-row").forEach(syncCustomRow);
+    } finally {
+      state.applyingExample = false;
+    }
+  }
+
+  async function loadExample(key) {
+    if (state.loadingExample) return;
+    const example = state.exampleCatalog?.examples?.[key];
+    if (!example) {
+      setExampleError("示例资源尚未准备好，请稍后重试。");
+      return;
+    }
+    try {
+      validateExampleRequest(example.request, "示例 " + key);
+    } catch (error) {
+      setExampleError("示例不可用：" + error.message);
+      closeExampleMenu();
+      return;
+    }
+    if (state.example?.modified && !window.confirm("当前示例已被修改，重新加载将替换当前输入并清除当前结果。继续吗？")) {
+      closeExampleMenu();
+      return;
+    }
+    state.loadingExample = true;
+    closeExampleMenu();
+    setExampleError("");
+    try {
+      await applyExampleRequest(example);
+      clearResults();
+      state.example = {
+        key,
+        name: example.name,
+        caseId: example.caseId,
+        request: JSON.parse(JSON.stringify(example.request)),
+        modified: false,
+      };
+      setExampleStatus();
+      await calculate({ preventDefault() {} });
+    } catch (error) {
+      setExampleError("示例加载失败：" + (error.message || "无法替换当前输入"));
+    } finally {
+      state.loadingExample = false;
+    }
+  }
+
   async function candidateTemplate(candidate, index) {
     const mode = candidate.candidateMode || "builtin";
-    const customType = candidate.customFuelType || "non_methane";
-    const methaneSlip = candidate.methaneSlipApplicable === undefined
+    const builtin = candidate.builtinDraft || candidate;
+    const custom = candidate.customDraft || candidate;
+    const customType = custom.customFuelType || "non_methane";
+    const methaneSlip = custom.methaneSlipApplicable === undefined
       ? customType === "gas"
-      : candidate.methaneSlipApplicable === true || candidate.methaneSlipApplicable === "true";
-    const profile = candidate.customProfile || "ordinary";
-    const wtTMode = candidate.wtTMode || "STATIC";
-    const qualification = candidate.qualificationStatus || "NOT_DEMONSTRATED";
-    const verification = candidate.verificationStatus || "ESTIMATED";
-    const sourceType = candidate.sourceType || "SUPPLIER_SPEC";
+      : custom.methaneSlipApplicable === true || custom.methaneSlipApplicable === "true";
+    const profile = custom.customProfile || "ordinary";
+    const wtTMode = custom.wtTMode || "STATIC";
+    const qualification = custom.qualificationStatus || "NOT_DEMONSTRATED";
+    const verification = custom.verificationStatus || "ESTIMATED";
+    const sourceType = custom.sourceType || "SUPPLIER_SPEC";
+    const builtinQualification = builtin.qualificationStatus || "NOT_DEMONSTRATED";
     return `<article class="candidate-row" data-index="${index}" data-custom-path-id="${esc(candidate.customPathId || "")}">
       <div class="candidate-row-header">
         <h3>候选燃料 ${index + 1}</h3>
@@ -153,7 +503,7 @@
           <option value="builtin"${selected(mode, "builtin")}>目录燃料</option>
           <option value="custom"${selected(mode, "custom")}>高级自定义</option>
         </select></label>
-        <label class="builtin-path-field">燃料路径<select data-field="pathId" class="candidate-fuel" data-desired-path="${esc(candidate.pathId || "UCO_FAME")}"></select></label>
+        <label class="builtin-path-field">燃料路径<select data-field="pathId" class="candidate-fuel" data-desired-path="${esc(builtin.pathId || "UCO_FAME")}"></select></label>
         <label>价格 / t<input data-field="pricePerTonne" type="number" min="0" step="any" value="${esc(candidate.pricePerTonne)}"></label>
       </div>
       <div class="candidate-grid">
@@ -162,9 +512,23 @@
         <label>供应量 (t)<input data-field="candidateSupplyTonnes" type="number" min="0" step="any" value="${esc(candidate.candidateSupplyTonnes)}"></label>
         <label>增量预算<input data-field="incrementalBudget" type="number" min="0" step="any" value="${esc(candidate.incrementalBudget)}"></label>
       </div>
+      <details class="builtin-editor">
+        <summary>目录资格与批次参数</summary>
+        <div class="custom-grid builtin-qualification-grid">
+          <label>资格状态<select data-field="builtinQualificationStatus">
+            <option value="NOT_DEMONSTRATED"${selected(builtinQualification, "NOT_DEMONSTRATED")}>未证明</option>
+            <option value="ASSUMED_ELIGIBLE"${selected(builtinQualification, "ASSUMED_ELIGIBLE")}>假设合格</option>
+            <option value="VERIFIED_ELIGIBLE"${selected(builtinQualification, "VERIFIED_ELIGIBLE")}>已核验合格</option>
+            <option value="INELIGIBLE"${selected(builtinQualification, "INELIGIBLE")}>不合格</option>
+          </select></label>
+          <label data-builtin-block="E">E (gCO2eq/MJ)<input data-field="builtinE" type="number" step="any" value="${esc(builtin.e)}"></label>
+          <label data-builtin-block="eu">eu (gCO2eq/MJ)<input data-field="builtinEu" type="number" step="any" value="${esc(builtin.eu)}"></label>
+          <label data-builtin-block="eligibleBiomassFraction">合格生物质质量分数<input data-field="builtinEligibleBiomassFraction" type="number" min="0" max="1" step="any" value="${esc(builtin.eligibleBiomassFraction)}"></label>
+        </div>
+      </details>
       <div class="custom-editor" hidden>
         <div class="custom-grid">
-          <label>自定义燃料名称 *<input data-field="customFuelName" value="${esc(candidate.customFuelName)}" autocomplete="off"></label>
+          <label>自定义燃料名称 *<input data-field="customFuelName" value="${esc(custom.customFuelName)}" autocomplete="off"></label>
           <label>燃料用途<select data-field="customProfile">
             <option value="ordinary"${selected(profile, "ordinary")}>普通燃料</option>
             <option value="biofuel"${selected(profile, "biofuel")}>生物燃料</option>
@@ -182,22 +546,22 @@
           </select></label>
         </div>
         <div class="custom-grid">
-          <label>LCV (MJ/gFuel) *<input data-field="lcv" type="number" min="0" step="any" value="${esc(candidate.lcv)}"></label>
-          <label data-custom-block="wtT">WtT (gCO2eq/MJ) *<input data-field="wtT" type="number" step="any" value="${esc(candidate.wtT)}"></label>
-          <label data-custom-block="E">E (gCO2eq/MJ) *<input data-field="e" type="number" step="any" value="${esc(candidate.e)}"></label>
-          <label data-custom-block="eu">eu (gCO2eq/MJ) *<input data-field="eu" type="number" step="any" value="${esc(candidate.eu)}"></label>
+          <label>LCV (MJ/gFuel) *<input data-field="lcv" type="number" min="0" step="any" value="${esc(custom.lcv)}"></label>
+          <label data-custom-block="wtT">WtT (gCO2eq/MJ) *<input data-field="wtT" type="number" step="any" value="${esc(custom.wtT)}"></label>
+          <label data-custom-block="E">E (gCO2eq/MJ) *<input data-field="e" type="number" step="any" value="${esc(custom.e)}"></label>
+          <label data-custom-block="eu">eu (gCO2eq/MJ) *<input data-field="eu" type="number" step="any" value="${esc(custom.eu)}"></label>
         </div>
         <div class="custom-grid">
-          <label>CO2 因子 (gGHG/gFuel) *<input data-field="cfCO2" type="number" step="any" value="${esc(candidate.cfCO2)}"></label>
+          <label>CO2 因子 (gGHG/gFuel) *<input data-field="cfCO2" type="number" step="any" value="${esc(custom.cfCO2)}"></label>
           <div class="factor-input">
             <label for="candidate-${index}-cfCH4">CH4 因子 (gGHG/gFuel) *</label>
-            <input id="candidate-${index}-cfCH4" data-field="cfCH4" type="number" step="any" value="${esc(candidate.cfCH4)}">
-            <label class="inline-check"><input data-field="cfCH4ZeroEstimate" type="checkbox"${checked(candidate.cfCH4ZeroEstimate)}>按 0 估算</label>
+            <input id="candidate-${index}-cfCH4" data-field="cfCH4" type="number" step="any" value="${esc(custom.cfCH4)}">
+            <label class="inline-check"><input data-field="cfCH4ZeroEstimate" type="checkbox"${checked(custom.cfCH4ZeroEstimate)}>按 0 估算</label>
           </div>
           <div class="factor-input">
             <label for="candidate-${index}-cfN2O">N2O 因子 (gGHG/gFuel) *</label>
-            <input id="candidate-${index}-cfN2O" data-field="cfN2O" type="number" step="any" value="${esc(candidate.cfN2O)}">
-            <label class="inline-check"><input data-field="cfN2OZeroEstimate" type="checkbox"${checked(candidate.cfN2OZeroEstimate)}>按 0 估算</label>
+            <input id="candidate-${index}-cfN2O" data-field="cfN2O" type="number" step="any" value="${esc(custom.cfN2O)}">
+            <label class="inline-check"><input data-field="cfN2OZeroEstimate" type="checkbox"${checked(custom.cfN2OZeroEstimate)}>按 0 估算</label>
           </div>
           <label class="qualification-field">资格状态<select data-field="qualificationStatus">
             <option value="NOT_DEMONSTRATED"${selected(qualification, "NOT_DEMONSTRATED")}>未证明</option>
@@ -206,23 +570,23 @@
           </select></label>
         </div>
         <div class="custom-grid qualification-details">
-          <label data-custom-block="eligibleBiomassFraction">生物质质量分数<input data-field="eligibleBiomassFraction" type="number" min="0" max="1" step="any" value="${esc(candidate.eligibleBiomassFraction)}"></label>
-          <label data-custom-block="rwd">RWD（规则）<input data-field="rwd" type="text" value="${esc(candidate.rwd || "1")}" readonly></label>
+          <label data-custom-block="eligibleBiomassFraction">生物质质量分数<input data-field="eligibleBiomassFraction" type="number" min="0" max="1" step="any" value="${esc(custom.eligibleBiomassFraction)}"></label>
+          <label data-custom-block="rwd">RWD（规则）<input data-field="rwd" type="text" value="${esc(custom.rwd || "1")}" readonly></label>
           <div class="gas-fields" hidden>
             <label>甲烷滑移适用<select data-field="methaneSlipApplicable">
               <option value="false"${selected(String(methaneSlip), "false")}>不适用</option>
               <option value="true"${selected(String(methaneSlip), "true")}>适用</option>
             </select></label>
-            <label data-gas-field="cslip">Cslip (%) *<input data-field="cslip" type="number" min="0" max="100" step="any" value="${esc(candidate.cslip && candidate.cslip !== "NA" ? candidate.cslip : "")}"></label>
+            <label data-gas-field="cslip">Cslip (%) *<input data-field="cslip" type="number" min="0" max="100" step="any" value="${esc(custom.cslip && custom.cslip !== "NA" ? custom.cslip : "")}"></label>
             <div class="slip-factor-fields" hidden>
-              <label>滑移 CO2 因子<input data-field="csfCO2" type="number" step="any" value="${esc(candidate.csfCO2)}"></label>
-              <label>滑移 CH4 因子<input data-field="csfCH4" type="number" step="any" value="${esc(candidate.csfCH4)}"></label>
-              <label>滑移 N2O 因子<input data-field="csfN2O" type="number" step="any" value="${esc(candidate.csfN2O)}"></label>
+              <label>滑移 CO2 因子<input data-field="csfCO2" type="number" step="any" value="${esc(custom.csfCO2)}"></label>
+              <label>滑移 CH4 因子<input data-field="csfCH4" type="number" step="any" value="${esc(custom.csfCH4)}"></label>
+              <label>滑移 N2O 因子<input data-field="csfN2O" type="number" step="any" value="${esc(custom.csfN2O)}"></label>
             </div>
           </div>
         </div>
         <div class="custom-grid evidence-fields">
-          <label>来源编号 *<input data-field="sourceId" value="${esc(candidate.sourceId)}" placeholder="例如 SUP-123"></label>
+          <label>来源编号 *<input data-field="sourceId" value="${esc(custom.sourceId)}" placeholder="例如 SUP-123"></label>
           <label>来源类型<select data-field="sourceType">
             <option value="SUPPLIER_SPEC"${selected(sourceType, "SUPPLIER_SPEC")}>供应商规格</option>
             <option value="LAB_CERTIFICATE"${selected(sourceType, "LAB_CERTIFICATE")}>实验室/认证</option>
@@ -255,6 +619,54 @@
     return `CUSTOM_${slug || `FUEL_${index + 1}`}`;
   }
   function isEligible(qualification) { return qualification === "ASSUMED_ELIGIBLE" || qualification === "VERIFIED_ELIGIBLE"; }
+
+  function defaultCustomDraft(serial) {
+    return {
+      customFuelName: `自定义燃料 ${serial}`,
+      customProfile: "ordinary",
+      customFuelType: "non_methane",
+      methaneSlipApplicable: false,
+      wtTMode: "STATIC",
+      lcv: "0.040",
+      wtT: "100",
+      e: "",
+      eu: "",
+      cfCO2: "3.000",
+      cfCH4: "0",
+      cfN2O: "0",
+      cfCH4ZeroEstimate: false,
+      cfN2OZeroEstimate: false,
+      qualificationStatus: "NOT_DEMONSTRATED",
+      eligibleBiomassFraction: "0",
+      rwd: "1",
+      cslip: "NA",
+      csfCO2: "",
+      csfCH4: "",
+      csfN2O: "",
+      sourceId: "UI_DEFAULT_ESTIMATE",
+      sourceType: "SUPPLIER_SPEC",
+      verificationStatus: "ESTIMATED",
+    };
+  }
+
+  function syncBuiltinRow(row) {
+    const builtin = fieldValue(row, "candidateMode") !== "custom";
+    const editor = row.querySelector(".builtin-editor");
+    if (editor) editor.hidden = !builtin;
+    if (!builtin) return;
+    const pathId = fieldValue(row, "pathId");
+    const qualification = fieldValue(row, "builtinQualificationStatus", "NOT_DEMONSTRATED");
+    const rfnbo = pathId.startsWith("E_");
+    const biomass = ["UCO_FAME", "HVO", "BIODIESEL", "BIO_LNG"].includes(pathId);
+    const e = field(row, "builtinE");
+    const eu = field(row, "builtinEu");
+    const fraction = field(row, "builtinEligibleBiomassFraction");
+    row.querySelectorAll('[data-builtin-block="E"]').forEach((label) => { label.hidden = !(rfnbo || biomass || Boolean(e?.value)); });
+    row.querySelectorAll('[data-builtin-block="eu"]').forEach((label) => { label.hidden = !(rfnbo && qualification === "VERIFIED_ELIGIBLE") && !eu?.value; });
+    row.querySelectorAll('[data-builtin-block="eligibleBiomassFraction"]').forEach((label) => { label.hidden = !biomass && !fraction?.value; });
+    if (e) e.required = rfnbo && qualification === "VERIFIED_ELIGIBLE";
+    if (eu) eu.required = rfnbo && qualification === "VERIFIED_ELIGIBLE";
+  }
 
   function syncBaselineCustomEditor() {
     const custom = $("baseline-mode")?.value === "custom";
@@ -368,6 +780,7 @@
     const builtinPath = row.querySelector(".builtin-path-field");
     if (editor) editor.hidden = !custom;
     if (builtinPath) builtinPath.hidden = custom;
+    syncBuiltinRow(row);
     if (!custom) return;
 
     const profile = fieldValue(row, "customProfile", "ordinary");
@@ -448,14 +861,15 @@
     return records;
   }
 
-  async function readCandidates() {
-    return Promise.all([...document.querySelectorAll(".candidate-row")].map(async (row, index) => {
+  function addOptional(target, key, value) {
+    if (value !== null && value !== undefined && value !== "") target[key] = value;
+  }
+
+  async function candidateCommon(row) {
       const maxBlendRatio = fieldValue(row, "maxBlendRatio") || (isWorkbench() ? "100" : "1");
       const specifiedRatios = fieldValue(row, "specifiedBlendRatios").split(",").map((value) => value.trim()).filter(Boolean);
-      const common = {
+      return {
         candidateId: fieldValue(row, "candidateId").trim(),
-        candidateMode: fieldValue(row, "candidateMode", "builtin"),
-        customPathId: row.dataset.customPathId || "",
         pricePerTonne: fieldValue(row, "pricePerTonne") || null,
         specifiedBlendRatios: isWorkbench()
           ? await Promise.all(specifiedRatios.map((value) => percentToRatioValue(value)))
@@ -466,7 +880,71 @@
         incrementalBudget: fieldValue(row, "incrementalBudget") || null,
         complianceImprovementValue: fieldValue(row, "complianceImprovementValue") || null,
       };
-      if (fieldValue(row, "candidateMode") !== "custom") return { ...common, pathId: fieldValue(row, "pathId") };
+  }
+
+  async function captureCandidateStates() {
+    return Promise.all([...document.querySelectorAll(".candidate-row")].map(async (row, index) => ({
+      ...(await candidateCommon(row)),
+      candidateMode: fieldValue(row, "candidateMode", "builtin"),
+      customPathId: row.dataset.customPathId || customPathId(fieldValue(row, "candidateId"), index),
+      builtinDraft: {
+        pathId: fieldValue(row, "pathId"),
+        qualificationStatus: fieldValue(row, "builtinQualificationStatus", "NOT_DEMONSTRATED"),
+        e: fieldValue(row, "builtinE"),
+        eu: fieldValue(row, "builtinEu"),
+        eligibleBiomassFraction: fieldValue(row, "builtinEligibleBiomassFraction"),
+      },
+      customDraft: {
+        customFuelName: fieldValue(row, "customFuelName"),
+        customProfile: fieldValue(row, "customProfile", "ordinary"),
+        customFuelType: fieldValue(row, "customFuelType", "non_methane"),
+        wtTMode: fieldValue(row, "wtTMode", "STATIC"),
+        lcv: fieldValue(row, "lcv"),
+        wtT: fieldValue(row, "wtT"),
+        e: fieldValue(row, "e"),
+        eu: fieldValue(row, "eu"),
+        cfCO2: fieldValue(row, "cfCO2"),
+        cfCH4: fieldValue(row, "cfCH4"),
+        cfN2O: fieldValue(row, "cfN2O"),
+        cfCH4ZeroEstimate: Boolean(field(row, "cfCH4ZeroEstimate")?.checked),
+        cfN2OZeroEstimate: Boolean(field(row, "cfN2OZeroEstimate")?.checked),
+        qualificationStatus: fieldValue(row, "qualificationStatus", "NOT_DEMONSTRATED"),
+        eligibleBiomassFraction: fieldValue(row, "eligibleBiomassFraction"),
+        rwd: fieldValue(row, "rwd", "1"),
+        methaneSlipApplicable: fieldValue(row, "methaneSlipApplicable", "false"),
+        cslip: fieldValue(row, "cslip"),
+        csfCO2: fieldValue(row, "csfCO2"),
+        csfCH4: fieldValue(row, "csfCH4"),
+        csfN2O: fieldValue(row, "csfN2O"),
+        sourceId: fieldValue(row, "sourceId"),
+        sourceType: fieldValue(row, "sourceType", "SUPPLIER_SPEC"),
+        verificationStatus: fieldValue(row, "verificationStatus", "ESTIMATED"),
+      },
+    })));
+  }
+
+  async function readCandidates() {
+    return Promise.all([...document.querySelectorAll(".candidate-row")].map(async (row, index) => {
+      const commonValues = await candidateCommon(row);
+      const common = {
+        candidateId: commonValues.candidateId,
+        pathId: fieldValue(row, "pathId"),
+        pricePerTonne: commonValues.pricePerTonne,
+        specifiedBlendRatios: commonValues.specifiedBlendRatios,
+        maxBlendRatio: commonValues.maxBlendRatio,
+        candidateAllowsPureUse: commonValues.candidateAllowsPureUse,
+      };
+      addOptional(common, "candidateSupplyTonnes", commonValues.candidateSupplyTonnes);
+      addOptional(common, "incrementalBudget", commonValues.incrementalBudget);
+      addOptional(common, "complianceImprovementValue", commonValues.complianceImprovementValue);
+      if (fieldValue(row, "candidateMode") !== "custom") {
+        const qualification = fieldValue(row, "builtinQualificationStatus", "NOT_DEMONSTRATED");
+        if (qualification !== "NOT_DEMONSTRATED") common.qualificationStatus = qualification;
+        addOptional(common, "eligibleBiomassFraction", fieldValue(row, "builtinEligibleBiomassFraction"));
+        addOptional(common, "e", fieldValue(row, "builtinE"));
+        addOptional(common, "eu", fieldValue(row, "builtinEu"));
+        return common;
+      }
 
       const profile = fieldValue(row, "customProfile", "ordinary");
       const qualification = fieldValue(row, "qualificationStatus", "NOT_DEMONSTRATED");
@@ -493,10 +971,6 @@
         ...common,
         custom: true,
         customFuelName: fieldValue(row, "customFuelName").trim(),
-        customProfile: profile,
-        customFuelType: fieldValue(row, "customFuelType", "non_methane"),
-        cfCH4ZeroEstimate: Boolean(field(row, "cfCH4ZeroEstimate")?.checked),
-        cfN2OZeroEstimate: Boolean(field(row, "cfN2OZeroEstimate")?.checked),
         pathId: stablePathId,
         customPathId: stablePathId,
         equipmentId: methanePath ? "CUSTOM_GAS" : "CUSTOM_NON_METHANE",
@@ -520,27 +994,37 @@
         sourceType: fieldValue(row, "sourceType", "SUPPLIER_SPEC"),
         verificationStatus: fieldValue(row, "verificationStatus", "ESTIMATED"),
       };
-      custom.sourceEvidence = evidenceRecords(custom, [...new Set(requiredFields)]);
+      custom.sourceEvidence = evidenceRecords({
+        ...custom,
+        cfCH4ZeroEstimate: Boolean(field(row, "cfCH4ZeroEstimate")?.checked),
+        cfN2OZeroEstimate: Boolean(field(row, "cfN2OZeroEstimate")?.checked),
+      }, [...new Set(requiredFields)]);
       return custom;
     }));
   }
 
-  async function loadFuels() {
-    const data = await fetchJson("/api/fuels");
+  function populateFuelSelects(pathIds) {
     document.querySelectorAll("select.candidate-fuel, #baseline-fuel").forEach((select) => {
       const current = select.value || select.dataset.desiredPath || (select.id === "baseline-fuel" ? "MDO" : "UCO_FAME");
-      select.innerHTML = data.pathIds.map((id) => `<option value="${esc(id)}">${esc(id)}</option>`).join("");
-      if (data.pathIds.includes(current)) select.value = current;
+      select.innerHTML = pathIds.map((id) => `<option value="${esc(id)}">${esc(id)}</option>`).join("");
+      if (pathIds.includes(current)) select.value = current;
     });
+  }
+  async function loadFuels() {
+    const data = await fetchJson("/api/fuels");
+    if (!Array.isArray(data.pathIds) || !data.pathIds.length) throw new Error("fuel catalog unavailable");
+    state.availableFuelIds = new Set(data.pathIds);
+    populateFuelSelects(data.pathIds);
     document.querySelectorAll(".candidate-row").forEach(syncCustomRow);
   }
   async function renderCandidates() {
     $("candidate-collection").innerHTML = (await Promise.all(state.candidates.map(candidateTemplate))).join("");
     document.querySelectorAll(".candidate-row").forEach(syncCustomRow);
-    loadFuels().catch(() => {});
+    if (state.availableFuelIds.size) populateFuelSelects([...state.availableFuelIds]);
+    else await loadFuels();
   }
   async function addCandidate() {
-    if (document.querySelectorAll(".candidate-row").length) state.candidates = await readCandidates();
+    if (document.querySelectorAll(".candidate-row").length) state.candidates = await captureCandidateStates();
     const existingIds = new Set(state.candidates.map((candidate) => candidate.candidateId));
     let serial = state.nextCandidateSerial;
     while (existingIds.has(`candidate-${serial}`)) serial += 1;
@@ -557,35 +1041,22 @@
       incrementalBudget: "",
       complianceImprovementValue: "",
       candidateAllowsPureUse: false,
-      customFuelName: `自定义燃料 ${serial}`,
-      customProfile: "ordinary",
-      customFuelType: "non_methane",
-      methaneSlipApplicable: false,
-      wtTMode: "STATIC",
-      lcv: "0.040",
-      wtT: "100",
-      e: "",
-      eu: "",
-      cfCO2: "3.000",
-      cfCH4: "0",
-      cfN2O: "0",
-      cfCH4ZeroEstimate: false,
-      cfN2OZeroEstimate: false,
-      qualificationStatus: "NOT_DEMONSTRATED",
-      eligibleBiomassFraction: "0",
-      rwd: "1",
-      cslip: "NA",
-      csfCO2: "",
-      csfCH4: "",
-      csfN2O: "",
-      sourceId: "UI_DEFAULT_ESTIMATE",
-      sourceType: "SUPPLIER_SPEC",
-      verificationStatus: "ESTIMATED",
+      builtinDraft: {
+        pathId: "UCO_FAME",
+        qualificationStatus: "NOT_DEMONSTRATED",
+        eligibleBiomassFraction: "",
+        e: "",
+        eu: "",
+      },
+      customDraft: defaultCustomDraft(serial),
     });
     await renderCandidates();
   }
 
   async function payload() {
+    if (state.example && !state.example.modified && state.example.request) {
+      return JSON.parse(JSON.stringify(state.example.request));
+    }
     return {
       reportYear: Number($("report-year").value),
       departurePort: state.ports.departure || $("departure-port-search").value.trim(),
@@ -620,10 +1091,16 @@
     state.result = null;
     state.resultSnapshotId = null;
     state.submittedInput = null;
+    state.guideDisplay = null;
+    state.guideDisplayConfig = null;
     setExportEnabled(false);
+    const details = $("calculation-details");
+    if (details) {
+      details.open = false;
+      details.hidden = true;
+    }
     if (state.workbench) {
       state.workbench.clear("计算失败 · 未生成结果");
-      return;
     }
     const status = $("result-run-status");
     const boundary = $("result-boundary-summary");
@@ -651,13 +1128,23 @@
     if (scenarioTable) {
       scenarioTable.querySelector("tbody").innerHTML = '<tr><td colspan="26" class="empty-state">暂无场景。</td></tr>';
     }
+    renderTeachingGuide();
   }
   function setExportEnabled(enabled) {
     $("export-csv").disabled = !enabled;
     $("export-pdf").disabled = !enabled;
   }
   function invalidateResults() {
+    if (state.applyingExample) return;
+    if (state.example && !state.example.modified) {
+      state.example.modified = true;
+      setExampleStatus();
+    }
     state.requestSerial += 1;
+    state.activeRequestId = null;
+    state.guideDisplay = null;
+    state.guideDisplayConfig = null;
+    dispatchTeachingGuide({ type: "INVALIDATED" });
     if (!state.result && !state.calculating) return;
     state.calculating = false;
     clearResults();
@@ -741,8 +1228,13 @@
   function renderResults(result) {
     if (state.workbench) {
       state.workbench.render(result, state.submittedInput, state.display);
-      return;
     }
+    renderCalculationDetails(result);
+  }
+
+  function renderCalculationDetails(result) {
+    const details = $("calculation-details");
+    if (details) details.hidden = !result.baseline_scenario;
     const baseline = result.baseline_scenario;
     const resultStatus = $("result-run-status");
     const resultBoundary = $("result-boundary-summary");
@@ -816,7 +1308,15 @@
   async function calculate(event) {
     event.preventDefault();
     const requestId = ++state.requestSerial;
+    state.activeRequestId = requestId;
     clearResults();
+    if (state.example && !state.example.modified) {
+      dispatchTeachingGuide({
+        type: "APPLIED",
+        caseId: state.example.caseId,
+        requestId,
+      });
+    }
     renderIssues([]);
     state.calculating = true;
     if (state.workbench) {
@@ -835,12 +1335,19 @@
       state.result = result;
       state.submittedInput = submitted;
       state.resultSnapshotId = result.baseline_scenario ? result.result_snapshot_id : null;
+      const matched = Boolean(
+        state.example
+        && !state.example.modified
+        && state.guideApi?.sameExampleRequest(submitted, state.example.request)
+      );
+      dispatchTeachingGuide({ type: "RESOLVED", requestId, matched });
       renderResults(state.result);
       setExportEnabled(Boolean(state.resultSnapshotId));
       const issues = [...(state.result.issues || []), ...(state.result.candidate_results || []).flatMap((candidate) => candidate.issues || [])];
       renderIssues(issues);
     } catch (error) {
       if (requestId !== state.requestSerial) return;
+      dispatchTeachingGuide({ type: "FAILED", requestId });
       clearResults();
       renderIssues((error.body && error.body.issues) || [{ code: "NETWORK_ERROR", scope: "CASE", field: "case", blocking: true, message: "无法连接计算服务" }]);
     } finally {
@@ -895,8 +1402,16 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    addCandidate().catch(() => {});
-    loadFuels().catch(() => {});
+    const initializeInputs = async () => {
+      try {
+        await loadFuels();
+        await addCandidate();
+        await loadTeachingExamples();
+      } catch (error) {
+        setExampleError("示例暂不可用：" + (error.message || "初始化失败"));
+      }
+    };
+    initializeInputs();
     setupLookup("departure");
     setupLookup("arrival");
     $("baseline-mode").addEventListener("change", syncBaselineCustomEditor);
@@ -909,7 +1424,7 @@
     $("candidate-collection").addEventListener("click", async (event) => {
       if (event.target.closest(".remove-candidate")) {
         const row = event.target.closest(".candidate-row");
-        state.candidates = await readCandidates();
+        state.candidates = await captureCandidateStates();
         const index = [...document.querySelectorAll(".candidate-row")].indexOf(row);
         if (index >= 0) state.candidates.splice(index, 1);
         await renderCandidates();
@@ -919,6 +1434,12 @@
     $("candidate-collection").addEventListener("change", (event) => {
       const row = event.target.closest(".candidate-row");
       if (!row) return;
+      if (event.target.matches('[data-field="pathId"]')) {
+        field(row, "builtinQualificationStatus").value = "NOT_DEMONSTRATED";
+        field(row, "builtinE").value = "";
+        field(row, "builtinEu").value = "";
+        field(row, "builtinEligibleBiomassFraction").value = "";
+      }
       if (event.target.matches('[data-field="customFuelType"]')) {
         const methaneField = field(row, "methaneSlipApplicable");
         if (methaneField) methaneField.value = event.target.value === "gas" ? "true" : "false";
@@ -927,10 +1448,30 @@
     });
     $("candidate-collection").addEventListener("input", (event) => { const row = event.target.closest(".candidate-row"); if (row && (event.target.matches('[data-field="cslip"]') || event.target.matches('[data-field="cfCH4"]') || event.target.matches('[data-field="cfN2O"]'))) syncCustomRow(row); });
     $("case-form").addEventListener("submit", calculate);
+    $("teaching-guide-toggle")?.addEventListener("change", (event) => {
+      dispatchTeachingGuide({ type: "VISIBILITY", visible: event.target.checked });
+    });
+    $("try-examples").addEventListener("click", toggleExampleMenu);
+    $("example-menu").addEventListener("click", (event) => {
+      const option = event.target.closest("[data-example]");
+      if (option) loadExample(option.dataset.example);
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !$("example-menu").hidden) closeExampleMenu({ restoreFocus: true });
+    });
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest(".example-picker")) closeExampleMenu();
+    });
     $("export-csv").addEventListener("click", () => exportResult("csv"));
     $("export-pdf").addEventListener("click", () => exportResult("pdf"));
     document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => { document.querySelectorAll(".tab").forEach((item) => { item.classList.toggle("active", item === tab); item.setAttribute("aria-selected", item === tab); }); document.querySelectorAll(".tab-panel").forEach((panel) => { panel.hidden = panel.id !== tab.dataset.tab; panel.classList.toggle("active", panel.id === tab.dataset.tab); }); }));
-    ["mass", "energy", "ratio", "price"].forEach((kind) => { $(`precision-${kind}`).addEventListener("input", (event) => { state.display[kind] = Math.max(0, Math.min(9, Number(event.target.value) || 0)); if (state.result) state.workbench ? state.workbench.setDisplay(state.display) : renderResults(state.result); }); });
+    ["mass", "energy", "ratio", "price"].forEach((kind) => { $(`precision-${kind}`).addEventListener("input", (event) => {
+      state.display[kind] = Math.max(0, Math.min(9, Number(event.target.value) || 0));
+      if (state.result) {
+        if (state.workbench) state.workbench.setDisplay(state.display);
+        renderCalculationDetails(state.result);
+      }
+    }); });
 
     if (document.body.dataset.view === "workbench") {
       const root = $("workbench-root");
@@ -940,16 +1481,22 @@
           const { createWorkbenchView } = await import("/static/workbench-view.mjs");
           state.workbench = createWorkbenchView(root, {
             onEditInputs: () => $("input-heading")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+            onRendered: ({ display, displayConfig }) => {
+              state.guideDisplay = display;
+              state.guideDisplayConfig = displayConfig;
+              renderTeachingGuide();
+            },
           });
+          initializeTeachingGuide();
           $("calculate-command").disabled = false;
         } catch (error) {
           state.workbench = null;
           if (root) {
             root.hidden = false;
             const content = root.querySelector("#workbench-content");
-            if (content) content.innerHTML = '<div class="workbench-empty"><strong>新版工作台加载失败</strong><p><a href="/?view=legacy">返回旧版计算器</a></p></div>';
+            if (content) content.innerHTML = '<div class="workbench-empty"><strong>决策工作台加载失败</strong><p><a href="/?view=legacy">打开航次计算器</a></p></div>';
           }
-          renderIssues([{ code: "WORKBENCH_LOAD_ERROR", scope: "CASE", field: "workbench", blocking: true, message: "新版工作台脚本未能加载，请返回旧版继续使用。" }]);
+          renderIssues([{ code: "WORKBENCH_LOAD_ERROR", scope: "CASE", field: "workbench", blocking: true, message: "决策工作台脚本未能加载，请刷新页面或打开航次计算器。" }]);
         }
       };
       initializeWorkbench();

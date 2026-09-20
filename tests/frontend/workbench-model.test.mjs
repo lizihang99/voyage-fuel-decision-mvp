@@ -170,6 +170,8 @@ test("display model keeps all report scenarios and maps the selected B0 delta vi
     x_cost_min: "0",
     warning_codes: [],
   };
+  source.candidate_results[0].voyage_result.constraints.incremental_budget = null;
+  source.candidate_results[0].voyage_result.constraints.candidate_supply_tonnes = null;
   source.candidate_results[0].voyage_result.economics = {
     pc_break_even: "604.06",
     pe_break_even: "495.44",
@@ -195,6 +197,14 @@ test("display model keeps all report scenarios and maps the selected B0 delta vi
   assert.equal(display.selectedDetail.changes.find((row) => row.key === "model_cost").delta, "8136.09");
   assert.equal(display.selectedDetail.recommendation, null);
   assert.equal(display.sensitivity.candidates[0].thresholds.find((row) => row.key === "x_max_improvement").value, "0.3");
+  assert.match(
+    display.sensitivity.candidates[0].thresholds.find((row) => row.key === "x_budget").unavailableBecause,
+    /未填写增量预算/,
+  );
+  assert.match(
+    display.sensitivity.candidates[0].thresholds.find((row) => row.key === "x_supply").unavailableBecause,
+    /未填写供应量/,
+  );
   assert.equal(display.sensitivity.candidates[0].pcBreakEven, "604.06");
   assert.equal(display.sensitivity.candidates[0].currentPrice, "1000");
   assert.equal(display.sensitivity.candidates[0].currentEuaPrice, "80");
@@ -268,6 +278,6 @@ test("threshold lanes separate dense boundaries into readable rows", () => {
   assert.match(svg, /workbench-threshold-lanes/);
   assert.match(svg, /预算边界/);
   assert.match(svg, /供应量边界/);
-  assert.match(svg, /实际报告点/);
+  assert.match(svg, /本次已计算的方案/);
   assert.match(svg, /0\.3000%/);
 });

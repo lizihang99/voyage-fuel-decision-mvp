@@ -1,0 +1,98 @@
+{
+  "reportYear": 2030,
+  "departurePort": "NLRTM",
+  "arrivalPort": "DEHAM",
+  "adjacentValidPortOfCallConfirmed": true,
+  "currency": "EUR",
+  "baseline": {
+    "pathId": "MDO",
+    "massTonnes": "1000",
+    "pricePerTonne": "700"
+  },
+  "euaPricePerTCO2e": "0",
+  "candidates": [
+    {
+      "candidateId": "uco-limited",
+      "pathId": "UCO_FAME",
+      "pricePerTonne": "950",
+      "specifiedBlendRatios": [
+        "0.01",
+        "0.05"
+      ],
+      "maxBlendRatio": "0.5",
+      "candidateAllowsPureUse": false,
+      "candidateSupplyTonnes": "30",
+      "qualificationStatus": "ASSUMED_ELIGIBLE",
+      "eligibleBiomassFraction": "1",
+      "e": "14.9"
+    },
+    {
+      "candidateId": "uco-bulk",
+      "pathId": "UCO_FAME",
+      "pricePerTonne": "1150",
+      "specifiedBlendRatios": [
+        "0.01",
+        "0.05"
+      ],
+      "maxBlendRatio": "0.5",
+      "candidateAllowsPureUse": false,
+      "qualificationStatus": "ASSUMED_ELIGIBLE",
+      "eligibleBiomassFraction": "1",
+      "e": "14.9"
+    },
+    {
+      "candidateId": "hvo",
+      "pathId": "HVO",
+      "pricePerTonne": "1100",
+      "specifiedBlendRatios": [
+        "0.01",
+        "0.05"
+      ],
+      "maxBlendRatio": "0.5",
+      "candidateAllowsPureUse": false,
+      "qualificationStatus": "ASSUMED_ELIGIBLE",
+      "eligibleBiomassFraction": "1",
+      "e": "20"
+    },
+    {
+      "candidateId": "bio",
+      "pathId": "BIODIESEL",
+      "pricePerTonne": "1200",
+      "specifiedBlendRatios": [
+        "0.01",
+        "0.05"
+      ],
+      "maxBlendRatio": "0.5",
+      "candidateAllowsPureUse": false,
+      "qualificationStatus": "ASSUMED_ELIGIBLE",
+      "eligibleBiomassFraction": "1",
+      "e": "35"
+    },
+    {
+      "candidateId": "e-diesel",
+      "pathId": "E_DIESEL",
+      "pricePerTonne": "1600",
+      "specifiedBlendRatios": [
+        "0.01",
+        "0.05"
+      ],
+      "maxBlendRatio": "0.7",
+      "candidateAllowsPureUse": false,
+      "qualificationStatus": "ASSUMED_ELIGIBLE"
+    },
+    {
+      "candidateId": "uco-high",
+      "pathId": "UCO_FAME",
+      "pricePerTonne": "1400",
+      "specifiedBlendRatios": [
+        "0.01",
+        "0.05"
+      ],
+      "maxBlendRatio": "0.5",
+      "candidateAllowsPureUse": false,
+      "qualificationStatus": "ASSUMED_ELIGIBLE",
+      "eligibleBiomassFraction": "1",
+      "e": "14.9"
+    }
+  ]
+}

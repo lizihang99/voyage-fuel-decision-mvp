@@ -15,13 +15,13 @@ const GOAL_META = Object.freeze({
 });
 
 const THRESHOLD_META = Object.freeze([
-  ["x_budget", "预算边界", "预算"],
-  ["x_supply", "供应量边界", "供应"],
-  ["x_cap", "最大混兑边界", "最大混兑"],
-  ["x_target_min", "最低达标比例", "最低达标"],
-  ["x_target_min_cost", "达标最低成本比例", "达标最低成本"],
-  ["x_max_improvement", "最大改善边界", "最大改善"],
-  ["x_cost_min", "当前成本最低比例", "成本最低"],
+  ["x_budget", "预算允许的最高使用比例", "预算上限"],
+  ["x_supply", "供应量允许的最高使用比例", "供应上限"],
+  ["x_cap", "同时满足限制时最高可用比例", "可用上限"],
+  ["x_target_min", "达到 GHGI 目标至少需要的比例", "达标所需"],
+  ["x_target_min_cost", "达到目标且成本最低时的比例", "达标最低成本"],
+  ["x_max_improvement", "合规改善最大时可用比例", "最大改善"],
+  ["x_cost_min", "燃料和碳成本最低时的比例", "成本最低"],
 ]);
 
 function recommendationFor(result, goal, scenarioId) {
@@ -219,12 +219,21 @@ function buildSensitivity(result, submittedInput, scenarioById) {
       currentEuaPrice: submittedInput?.euaPricePerTCO2e ?? null,
       targetStatus: constraints.target_status || null,
       warnings: constraints.warning_codes || [],
-      thresholds: THRESHOLD_META.map(([key, label, shortLabel]) => ({
-        key,
-        label,
-        shortLabel,
-        value: constraints[key] ?? null,
-      })),
+      thresholds: THRESHOLD_META.map(([key, label, shortLabel]) => {
+        const input = candidateInput(submittedInput, candidate.candidate_id);
+        const unavailableBecause = key === "x_budget" && input?.incrementalBudget == null
+          ? "未填写增量预算，不代表预算允许使用全部燃料"
+          : key === "x_supply" && input?.supplyTonnes == null
+            ? "未填写供应量，不代表供应量满足全部需求"
+            : null;
+        return {
+          key,
+          label,
+          shortLabel,
+          value: unavailableBecause ? null : constraints[key] ?? null,
+          unavailableBecause,
+        };
+      }),
       pcBreakEven: economics.pc_break_even ?? null,
       peBreakEven: economics.pe_break_even ?? null,
       peBreakEvenStatus: economics.pe_break_even_status || null,

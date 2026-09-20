@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>演示案例说明</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">合成案例</p>
+      <h1>演示案例说明</h1>
+    </div>
+    <a class="button secondary" href="/?view=workbench">返回决策工作台</a>
+  </header>
+  <main class="page-shell guide-shell">
+    <p class="guide-intro">两个案例用于快速熟悉现有计算流程。加载后会直接计算结果，页面中的框选和短说明会告诉你当前应该看哪里。</p>
+
+    <section class="guide-section">
+      <h2>基础计算</h2>
+      <p>2025 年航次使用 1000 吨 MDO，只计算 B0。先看燃料成本、EUA 成本和模型成本的组成，再看 FuelEU GHGI、参考线、合规余额和指示性金额。</p>
+      <ul>
+        <li>B0 是后续比较使用的基准方案。</li>
+        <li>FuelEU 指示性金额单独显示，不计入模型成本，也不代表年度最终罚款。</li>
+        <li>没有候选燃料时，达到参考线的方案可能显示为暂无，这不等同于计算失败。</li>
+      </ul>
+    </section>
+
+    <section class="guide-section">
+      <h2>多燃料比较</h2>
+      <p>2030 年航次包含六个独立候选，每个候选分别与同一 B0 基准组成方案，并在相同能源需求下比较。先看三类推荐为什么可能不同，再结合供应和报价条件理解方案选择。</p>
+      <ul>
+        <li>当前模型成本最低、达到参考线的最低成本和最大合规改善是不同目标。</li>
+        <li>报价便宜不等于能够达到参考线，供应量和使用比例同样会限制方案。</li>
+        <li>方案表里的“当前查看”与“系统推荐”含义不同。</li>
+      </ul>
+    </section>
+
+    <section class="guide-section">
+      <h2>开始自己的计算</h2>
+      <ol>
+        <li>核对报告年份、起讫港口、币种及范围相关确认。</li>
+        <li>填写实际基准燃料、用量、燃料价格和 EUA 价格。</li>
+        <li>需要比较时添加候选报价、最大比例、供应量或预算，并核实资格与因子假设；基础计算可以不添加候选。</li>
+        <li>点击“计算航次结果”，按业务目标阅读推荐，再通过现有 CSV/PDF 按钮保存结果。输入修改后需要重新计算。</li>
+      </ol>
+    </section>
+
+    <section class="guide-boundary" aria-label="案例边界">
+      <h2>使用边界</h2>
+      <ul>
+        <li>价格、用量、供应和资格均为合成输入，仅用于系统验证和示例复用，不代表真实市场报价或供应条件。</li>
+        <li>1000 吨是测试能源设定，不代表该航线的典型油耗。</li>
+        <li>“假设合格”和“已核验合格”不代表真实认证。</li>
+        <li>结果属于航次级 FuelEU/EU ETS 估算，不是正式年度罚款，也不构成采购建议。</li>
+        <li>用户自由修改后的结果不会自动获得独立核验结论；需要先确认输入假设，再用于真实业务判断。</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

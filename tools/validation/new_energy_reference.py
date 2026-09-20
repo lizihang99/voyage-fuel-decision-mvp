@@ -37,7 +37,8 @@ def business_values(case, ratio):
     ghgi = book["ghgi"] if balance is not None else None
     penalty = (
         -balance * 1000000 * 2400 / (ghgi * 41000)
-        if balance is not None and balance < 0 else None
+        if balance is not None and balance < 0 else F(0)
+        if balance is not None else None
     )
     return {
         "ratio": F(ratio),

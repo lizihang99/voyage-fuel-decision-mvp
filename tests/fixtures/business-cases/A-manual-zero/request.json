@@ -1,0 +1,83 @@
+{
+  "reportYear": 2030,
+  "departurePort": "NLRTM",
+  "arrivalPort": "DEHAM",
+  "adjacentValidPortOfCallConfirmed": true,
+  "currency": "EUR",
+  "baseline": {
+    "custom": true,
+    "pathId": "SYNTHETIC_ZERO",
+    "equipmentId": "SYNTHETIC_TEST_ICE",
+    "wtTMode": "STATIC",
+    "lcv": "0.04",
+    "cfCO2": "0",
+    "cfCH4": "0",
+    "cfN2O": "0",
+    "cslip": "NA",
+    "methaneSlipApplicable": false,
+    "rwd": "1",
+    "eligibleBiomassFraction": "0",
+    "qualificationStatus": "NOT_DEMONSTRATED",
+    "wtT": "0",
+    "sourceEvidence": {
+      "lcv": {
+        "sourceId": "SYNTHETIC:SYNTHETIC_ZERO:lcv",
+        "sourceType": "SA",
+        "unit": "MJ/gFuel",
+        "verificationStatus": "ESTIMATED"
+      },
+      "cfCO2": {
+        "sourceId": "SYNTHETIC:SYNTHETIC_ZERO:cfCO2",
+        "sourceType": "SA",
+        "unit": "gGHG/gFuel",
+        "verificationStatus": "ESTIMATED"
+      },
+      "cfCH4": {
+        "sourceId": "SYNTHETIC:SYNTHETIC_ZERO:cfCH4",
+        "sourceType": "SA",
+        "unit": "gGHG/gFuel",
+        "verificationStatus": "ESTIMATED"
+      },
+      "cfN2O": {
+        "sourceId": "SYNTHETIC:SYNTHETIC_ZERO:cfN2O",
+        "sourceType": "SA",
+        "unit": "gGHG/gFuel",
+        "verificationStatus": "ESTIMATED"
+      },
+      "cslip": {
+        "sourceId": "SYNTHETIC:SYNTHETIC_ZERO:cslip",
+        "sourceType": "SA",
+        "unit": "%",
+        "verificationStatus": "ESTIMATED"
+      },
+      "methaneSlipApplicable": {
+        "sourceId": "SYNTHETIC:SYNTHETIC_ZERO:methaneSlipApplicable",
+        "sourceType": "SA",
+        "unit": "boolean",
+        "verificationStatus": "ESTIMATED"
+      },
+      "rwd": {
+        "sourceId": "SYNTHETIC:SYNTHETIC_ZERO:rwd",
+        "sourceType": "SA",
+        "unit": "ratio",
+        "verificationStatus": "ESTIMATED"
+      },
+      "eligibleBiomassFraction": {
+        "sourceId": "SYNTHETIC:SYNTHETIC_ZERO:eligibleBiomassFraction",
+        "sourceType": "SA",
+        "unit": "fraction",
+        "verificationStatus": "ESTIMATED"
+      },
+      "wtT": {
+        "sourceId": "SYNTHETIC:SYNTHETIC_ZERO:wtT",
+        "sourceType": "SA",
+        "unit": "gCO2eq/MJ",
+        "verificationStatus": "ESTIMATED"
+      }
+    },
+    "massTonnes": "1000",
+    "pricePerTonne": "0"
+  },
+  "euaPricePerTCO2e": "0",
+  "candidates": []
+}

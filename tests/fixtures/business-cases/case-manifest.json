@@ -1,0 +1,700 @@
+{
+  "schema_version": 1,
+  "reference_version": "business-reference-v1",
+  "disclaimer": "合成数据，仅用于系统验证和未来示例复用",
+  "full_automatic_set": "All listed requests; compact is a subset, not additional inputs",
+  "unit_contract": {
+    "massTonnes": "tFuel",
+    "lcv": "MJ/gFuel",
+    "wtt": "gCO2eq/MJ",
+    "co2/ch4/n2o": "gGHG/gFuel",
+    "slip": "%",
+    "rwd": "ratio",
+    "pricePerTonne": "EUR/tFuel",
+    "euaPricePerTCO2e": "EUR/tCO2e",
+    "complianceImprovementValue": "EUR/tCO2e (synthetic reference value)"
+  },
+  "authority": [
+    "docs/validation/business-case-input-design.md",
+    "docs/validation/business-case-coverage.md"
+  ],
+  "cases": [
+    {
+      "id": "A-2024",
+      "family": "A",
+      "compact": true,
+      "input_sha256": "a843cf7f780edc5c19c30311ae34a80584a9d711c4335eb901881624b491540f",
+      "coverage": [
+        "baseline_only",
+        "year_boundary",
+        "half_scope"
+      ]
+    },
+    {
+      "id": "A-2025",
+      "family": "A",
+      "compact": false,
+      "input_sha256": "638a2e36fa4f08a026a45c7af27e3fcfab4bb751eb00073bdfad5b86b5bcf91a",
+      "coverage": [
+        "baseline_only",
+        "year_boundary",
+        "half_scope"
+      ]
+    },
+    {
+      "id": "A-2030",
+      "family": "A",
+      "compact": false,
+      "input_sha256": "8083033799563d64044a26dbd61063d4fbaf5b0abf5a37048fdef7ae16e883d5",
+      "coverage": [
+        "baseline_only",
+        "year_boundary",
+        "half_scope"
+      ]
+    },
+    {
+      "id": "A-zero-scope",
+      "family": "A",
+      "compact": false,
+      "input_sha256": "ad86cbc08daa5eebd42e45ddcdff6e3c77c226e58a4e75ab90630fd43f822c25",
+      "coverage": [
+        "baseline_only",
+        "zero_scope",
+        "zero_baseline"
+      ]
+    },
+    {
+      "id": "A-missing-fuel-price",
+      "family": "A",
+      "compact": false,
+      "input_sha256": "f4b925c50609ef6ffc5af133edae740a886bb433da7ea3d4799e7831f28a5a51",
+      "coverage": [
+        "baseline_only",
+        "missing_price"
+      ]
+    },
+    {
+      "id": "A-missing-eua-price",
+      "family": "A",
+      "compact": false,
+      "input_sha256": "1184feddc46070621451192d33132b10208152a5281860bacd026b489e12268b",
+      "coverage": [
+        "baseline_only",
+        "missing_price"
+      ]
+    },
+    {
+      "id": "A-manual-zero",
+      "family": "A",
+      "compact": true,
+      "input_sha256": "a046f963294d50e9b2bd0d40ab3b89e3d6a246449afc585be5dca0245d6022cd",
+      "coverage": [
+        "baseline_only",
+        "manual_zero_anchor",
+        "zero_baseline"
+      ]
+    },
+    {
+      "id": "B-default",
+      "family": "B",
+      "compact": true,
+      "input_sha256": "e9d768a23a1859d62e120c53e8d628eeab7c453cec1cf9231e413bc3ec1455eb",
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "default"
+      ]
+    },
+    {
+      "id": "B-eua0",
+      "family": "B",
+      "compact": false,
+      "input_sha256": "cab3882e160a09513655a03f714b43fa20be872b01cabc576f2dc5c96d7dfdfb",
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "eua0"
+      ]
+    },
+    {
+      "id": "B-eua200",
+      "family": "B",
+      "compact": false,
+      "input_sha256": "7edc28d3c958ab1182e78a0a719841789c10b84671988f959cd38389c5ec77c7",
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "eua200"
+      ]
+    },
+    {
+      "id": "B-hvo-budget0",
+      "family": "B",
+      "compact": false,
+      "input_sha256": "e51e11ed3e8282f3ebc7679a4e2107f6e6a8f5deb8477921bb3960b7852ed8a4",
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "hvo-budget0"
+      ]
+    },
+    {
+      "id": "B-hvo-budget1000",
+      "family": "B",
+      "compact": false,
+      "input_sha256": "06e1e2e5d6b9851b56fb172c4aa316c50d8a157313c5c32e9a3ef7bbfcf5466e",
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "hvo-budget1000"
+      ]
+    },
+    {
+      "id": "B-hvo-supply0",
+      "family": "B",
+      "compact": false,
+      "input_sha256": "bcef1e6e34e7d470350f12e6077540d8a25785c12ba4817ad4520a99afe963e4",
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "hvo-supply0"
+      ]
+    },
+    {
+      "id": "B-hvo-supply50",
+      "family": "B",
+      "compact": false,
+      "input_sha256": "366fba2d355e6e888a0e7705d40205e531042c23a0c3d8c7fbd69f53705baa28",
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "hvo-supply50"
+      ]
+    },
+    {
+      "id": "B-hvo-cap005",
+      "family": "B",
+      "compact": false,
+      "input_sha256": "589539e9904aa67fbd87781517812c740d254aeeaee0102227360a6f49c7a865",
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "hvo-cap005"
+      ]
+    },
+    {
+      "id": "B-rfnbo-unqualified",
+      "family": "B",
+      "compact": false,
+      "input_sha256": "1f3d44a73010de633d6444576ee75612e373eb4d4a3a5def8f856aa8c117b004",
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "rfnbo-unqualified"
+      ]
+    },
+    {
+      "id": "B-all-budgets1000",
+      "family": "B",
+      "compact": false,
+      "input_sha256": "9a24c956014aa680f18bff6d1d4dd53fc12009ec90af7016b80513ed9b2e9dfc",
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "all-budgets1000"
+      ]
+    },
+    {
+      "id": "B-hvo-price600",
+      "family": "B",
+      "compact": false,
+      "input_sha256": "74f292593f5d8c8dba9bb1a9d10ad14c040136d33a7669d99e05b92edfae5324",
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "hvo-price600"
+      ]
+    },
+    {
+      "id": "B-reverse",
+      "family": "B",
+      "compact": false,
+      "input_sha256": "90aa127a88c7dc6b3f724e4e652d231f7f0bdd2054bbb393a03898a90f7973c6",
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "reverse"
+      ]
+    },
+    {
+      "id": "B-reference-value100",
+      "family": "B",
+      "compact": false,
+      "input_sha256": "712028f94d1f9dfde8d97db810e5a353d0ffff2b5e3192164cab22c217adf5ae",
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "reference-value100",
+        "reference_value"
+      ]
+    },
+    {
+      "id": "B-combined-constraints",
+      "family": "B",
+      "compact": true,
+      "input_sha256": "5a596c1a12750d7eac2d8d6c918f3bc7368bfd990c3c1371459059a36e0f4dc7",
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "combined-constraints"
+      ]
+    },
+    {
+      "id": "B-missing-price-budget",
+      "family": "B",
+      "compact": false,
+      "input_sha256": "31e340efba5522236d5db1682c472e35f8ad6655e81c9e4d76b1a0e63fd98900",
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "missing-price-budget"
+      ]
+    },
+    {
+      "id": "B-b100-allowed",
+      "family": "B",
+      "compact": false,
+      "input_sha256": "0b0de1056fc6065a04c70be2bf4d9e3b9da3da690ad98e7d80670e24cd50d934",
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "b100-allowed"
+      ]
+    },
+    {
+      "id": "B-b100-forbidden",
+      "family": "B",
+      "compact": false,
+      "input_sha256": "ba2f96c96e2da22cbfaa6cadfece764839804884a28048da93ae3f99d1b2879e",
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "b100-forbidden"
+      ]
+    },
+    {
+      "id": "B-duplicate-ties",
+      "family": "B",
+      "compact": false,
+      "input_sha256": "a24dea33ca0efbefada0b06907ef9d084334f41fa8bf7e613e59510b8e8eea36",
+      "coverage": [
+        "six_quotes",
+        "energy_conservation",
+        "duplicate-ties"
+      ]
+    },
+    {
+      "id": "C-OTTO_MS-2025",
+      "family": "C",
+      "compact": true,
+      "input_sha256": "b83da5ccbdbcdaebf8d79f4d420505ce57404ed5b94704421e7e1a233c857365",
+      "coverage": [
+        "methane_slip",
+        "same_equipment",
+        "ets_gas_year",
+        "bio_qualification",
+        "rfnbo_qualification",
+        "rfnbo_fallback"
+      ]
+    },
+    {
+      "id": "C-OTTO_MS-2026",
+      "family": "C",
+      "compact": true,
+      "input_sha256": "5806538e2723aa4d028ce56153c3874e90c8862eb79b49f378fdafa8b14376fe",
+      "coverage": [
+        "methane_slip",
+        "same_equipment",
+        "ets_gas_year",
+        "bio_qualification",
+        "rfnbo_qualification",
+        "rfnbo_fallback"
+      ]
+    },
+    {
+      "id": "C-OTTO_SS-2025",
+      "family": "C",
+      "compact": false,
+      "input_sha256": "11bb2335d576136101b0e5892b44fe144d640d9583a8ff6998916534d6f2ebc7",
+      "coverage": [
+        "methane_slip",
+        "same_equipment",
+        "ets_gas_year",
+        "bio_qualification",
+        "rfnbo_qualification",
+        "rfnbo_fallback"
+      ]
+    },
+    {
+      "id": "C-OTTO_SS-2026",
+      "family": "C",
+      "compact": false,
+      "input_sha256": "250904702d77636a66b1509123b32c9e2c169268e9cc058afa420436db76aa64",
+      "coverage": [
+        "methane_slip",
+        "same_equipment",
+        "ets_gas_year",
+        "bio_qualification",
+        "rfnbo_qualification",
+        "rfnbo_fallback"
+      ]
+    },
+    {
+      "id": "C-DIESEL_SS-2025",
+      "family": "C",
+      "compact": false,
+      "input_sha256": "a6cc8e1571e3b843bb5299497312e978385fae1ab89cd5eda702722279b3abd6",
+      "coverage": [
+        "methane_slip",
+        "same_equipment",
+        "ets_gas_year",
+        "bio_qualification",
+        "rfnbo_qualification",
+        "rfnbo_fallback"
+      ]
+    },
+    {
+      "id": "C-DIESEL_SS-2026",
+      "family": "C",
+      "compact": false,
+      "input_sha256": "c2e33dcd5be284ee74678d4c72414cd255b7007788ca53376935dde8cd1a4548",
+      "coverage": [
+        "methane_slip",
+        "same_equipment",
+        "ets_gas_year",
+        "bio_qualification",
+        "rfnbo_qualification",
+        "rfnbo_fallback"
+      ]
+    },
+    {
+      "id": "C-LBSI-2025",
+      "family": "C",
+      "compact": false,
+      "input_sha256": "cb15267110f782c02a75ecad607132d010b8e98b49b90b6d1855670644d874d7",
+      "coverage": [
+        "methane_slip",
+        "same_equipment",
+        "ets_gas_year",
+        "bio_qualification",
+        "rfnbo_qualification",
+        "rfnbo_fallback"
+      ]
+    },
+    {
+      "id": "C-LBSI-2026",
+      "family": "C",
+      "compact": false,
+      "input_sha256": "5ba12a83fbb536aa13446f056bff8b16d379a373e7b0b5fe311a7aa0922dc77a",
+      "coverage": [
+        "methane_slip",
+        "same_equipment",
+        "ets_gas_year",
+        "bio_qualification",
+        "rfnbo_qualification",
+        "rfnbo_fallback"
+      ]
+    },
+    {
+      "id": "D-custom-static",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "28e6eecc7d9f417cc107dc038983cf81cb02419d69727bdd533993563b81e6d9",
+      "coverage": [
+        "custom",
+        "STATIC",
+        "field_evidence"
+      ]
+    },
+    {
+      "id": "D-custom-bio_e",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "159d94a51f301bbfbd7c85da41058e26292b8ac5db379c4e226f66c25d691068",
+      "coverage": [
+        "custom",
+        "BIO_E",
+        "field_evidence"
+      ]
+    },
+    {
+      "id": "D-custom-rfnbo_e",
+      "family": "D",
+      "compact": true,
+      "input_sha256": "17405e41e286e08ba8209b320943804e0942d7e6e0085623222694ec4a893956",
+      "coverage": [
+        "custom",
+        "RFNBO_E",
+        "field_evidence"
+      ]
+    },
+    {
+      "id": "D-custom-certified",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "e5075b19b254c5e22f4849de1bd02f829cf9fbf4f11847333108fb6d938a3591",
+      "coverage": [
+        "custom",
+        "CERTIFIED",
+        "field_evidence"
+      ]
+    },
+    {
+      "id": "D-bio-unqualified",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "580a06a2c1fa9f1331814e83c5c87265a0736b19d65efee890dc4b371c4ee29f",
+      "coverage": [
+        "builtin_bio",
+        "bio_qualification",
+        "unqualified"
+      ]
+    },
+    {
+      "id": "D-bio-assumed",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "f678700911c0e70978cf66c8a2343097ed90cdfb5265f744fb010e170415fbea",
+      "coverage": [
+        "builtin_bio",
+        "bio_qualification",
+        "assumed"
+      ]
+    },
+    {
+      "id": "D-bio-verified",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "6ac210c0eb62f07a6eb416f5ebe6ae473d3b467bd674eec79a4e9c21bf2a3953",
+      "coverage": [
+        "builtin_bio",
+        "bio_qualification",
+        "verified"
+      ]
+    },
+    {
+      "id": "D-rfnbo-unqualified",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "a98e89ed1bb09a3f217ef201e815c3b6ec06ba53e972d40cb0778b8d1cd35bc4",
+      "coverage": [
+        "builtin_rfnbo",
+        "rfnbo_qualification",
+        "unqualified"
+      ]
+    },
+    {
+      "id": "D-rfnbo-assumed",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "f0fb6102641af3e7b61611d807c66adbffa30715bf3bde22faf45328205e2011",
+      "coverage": [
+        "builtin_rfnbo",
+        "rfnbo_qualification",
+        "assumed"
+      ]
+    },
+    {
+      "id": "D-rfnbo-verified",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "745ad71a0f0c141d0155817c3353d9cba74772aa247267800751d028b6315e21",
+      "coverage": [
+        "builtin_rfnbo",
+        "rfnbo_qualification",
+        "verified"
+      ]
+    },
+    {
+      "id": "D-rfnbo-ineligible",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "1988997dbe49a097ea72234e76cdfa2fe28c3124492e4108daa73863c427ba3a",
+      "coverage": [
+        "builtin_rfnbo",
+        "rfnbo_qualification",
+        "ineligible"
+      ]
+    },
+    {
+      "id": "D-negative-co2",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "15d9033f540459725c284747426f4ad4fb9c56a802d394b3d3b589716d0e57f1",
+      "coverage": [
+        "invalid_candidate",
+        "negative-co2"
+      ]
+    },
+    {
+      "id": "D-negative-ch4",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "a99fcabe058005fdff702b27fd06cb179e3510701996b7a0f3398e96420f5818",
+      "coverage": [
+        "invalid_candidate",
+        "negative-ch4"
+      ]
+    },
+    {
+      "id": "D-negative-n2o",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "78252c120fba098b7e950e214385a4a8f1c2a8403f46664c38badc199eaacd15",
+      "coverage": [
+        "invalid_candidate",
+        "negative-n2o"
+      ]
+    },
+    {
+      "id": "D-missing-evidence",
+      "family": "D",
+      "compact": true,
+      "input_sha256": "53911153815e39f9b9ee4512dfbbeebf28a0cf9423aa220f5842baaa88e4db09",
+      "coverage": [
+        "invalid_candidate",
+        "missing-evidence"
+      ]
+    },
+    {
+      "id": "D-wrong-unit",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "35013b33a54e6c6134078c6bf5f81a9b2d1a125e8233eb7f158c8e0de28d58f4",
+      "coverage": [
+        "invalid_candidate",
+        "wrong-unit"
+      ]
+    },
+    {
+      "id": "D-nonmethane-slip",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "d75f05b94b765beb7adf4130b3dabd898ad2d94eb32c98ef0ca81368b4670536",
+      "coverage": [
+        "invalid_candidate",
+        "nonmethane-slip"
+      ]
+    },
+    {
+      "id": "D-rwd2-2024",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "e854a1a498ca836a06e3fb5a714c8742faa58f017f76079d2a53ad530015245a",
+      "coverage": [
+        "invalid_candidate",
+        "rwd2-2024"
+      ]
+    },
+    {
+      "id": "D-e283",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "02154170a857e970a2b9f11097bb225a16481868521e25cf3c862247bc378fea",
+      "coverage": [
+        "invalid_candidate",
+        "e283"
+      ]
+    },
+    {
+      "id": "D-unknown-path",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "acc08cda51d411b60865a55bd870b13de5c6428c82b75d8b0a38625ac0769f38",
+      "coverage": [
+        "invalid_candidate",
+        "unknown-path"
+      ]
+    },
+    {
+      "id": "D-missing-price",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "16ed50aa01007c272914d58bdd5908c9a134673e4ab5fc015cef7d30106a953a",
+      "coverage": [
+        "missing_price",
+        "calculable"
+      ]
+    },
+    {
+      "id": "D-confirmation-false",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "932b58773fe47f20fafb516d22b9fa14e9a791d4e7e9b19144d5144e60d722b0",
+      "coverage": [
+        "invalid_case",
+        "confirmation"
+      ]
+    },
+    {
+      "id": "D-smoke-liquid",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "14da176b5a3dbef156d283d8115931afe1360d1a9d6b87c05f685a00192f5695",
+      "coverage": [
+        "builtin_smoke",
+        "liquid"
+      ]
+    },
+    {
+      "id": "D-smoke-fossil-gas",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "e129a9801ef091fc44c31613311e3edd434ae90148924de2d320695394fe6ce0",
+      "coverage": [
+        "builtin_smoke",
+        "fossil-gas"
+      ]
+    },
+    {
+      "id": "D-smoke-bio-liquid",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "af7de8b5004f2083aca29a2f65f80ecf62266621add38918bab86cfb6b86ca02",
+      "coverage": [
+        "builtin_smoke",
+        "bio-liquid"
+      ]
+    },
+    {
+      "id": "D-smoke-bio-gas",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "05afed8cf86bda95635631853c1f0797dc86d39fb04b5eaf2fac918b2d059e69",
+      "coverage": [
+        "builtin_smoke",
+        "bio-gas"
+      ]
+    },
+    {
+      "id": "D-smoke-renewable-liquid",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "d20c6ad09825f33e2dd7291410f33b489d853cbe927bc72c27c00aa8d8594462",
+      "coverage": [
+        "builtin_smoke",
+        "renewable-liquid"
+      ]
+    },
+    {
+      "id": "D-smoke-renewable-gas",
+      "family": "D",
+      "compact": false,
+      "input_sha256": "98d59b6935f213bad8e9e6065f21822e522067fb8314f4a18c33e92b8cf68052",
+      "coverage": [
+        "builtin_smoke",
+        "renewable-gas"
+      ]
+    }
+  ]
+}

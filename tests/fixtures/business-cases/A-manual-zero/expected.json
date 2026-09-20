@@ -1,0 +1,263 @@
+{
+  "reference_version": "business-reference-v1",
+  "disclaimer": "合成数据，仅用于系统验证和未来示例复用",
+  "input_sha256": "a046f963294d50e9b2bd0d40ab3b89e3d6a246449afc585be5dca0245d6022cd",
+  "expected_sha256": "56257f4d266ac06153a48e76a6726a51362ae505ed764f2d71a1871af886499b",
+  "result": {
+    "id": "A-manual-zero",
+    "status": "COMPARABLE",
+    "issues": [],
+    "baseline": {
+      "candidate_id": null,
+      "ratio": "0",
+      "status": "COMPARABLE",
+      "factor_status": "ESTIMATED",
+      "execution_status": "EXECUTION_CONDITIONS_PENDING",
+      "components": [
+        {
+          "role": "BASELINE",
+          "path_id": "SYNTHETIC_ZERO",
+          "equipment_id": "SYNTHETIC_TEST_ICE",
+          "mass_t": "1000",
+          "mass_g": "1000000000",
+          "energy_mj": "40000000",
+          "unburned_mass_g": "0",
+          "burned_mass_g": "1000000000",
+          "lcv": "1/25",
+          "wtt": "0",
+          "rwd": "1",
+          "slip_percent": null,
+          "slip_fraction": "0",
+          "methane": false,
+          "biomass": "0",
+          "combustion_eq": "0",
+          "slip_eq": "0",
+          "ttw_mass_eq": "0",
+          "effective_co2_factor": "0",
+          "raw_by_gas_t": {
+            "CO2": "0",
+            "CH4": "0",
+            "N2O": "0"
+          },
+          "wtt_numerator_g": "0",
+          "ttw_numerator_g": "0",
+          "denominator_mj": "40000000",
+          "factor_status": "ESTIMATED",
+          "qualification": "NOT_DEMONSTRATED",
+          "zero_rating_status": "FOSSIL_TREATMENT",
+          "mode": "STATIC",
+          "source_ids": [
+            "SYNTHETIC:SYNTHETIC_ZERO:lcv",
+            "SYNTHETIC:SYNTHETIC_ZERO:cfCO2",
+            "SYNTHETIC:SYNTHETIC_ZERO:cfCH4",
+            "SYNTHETIC:SYNTHETIC_ZERO:cfN2O",
+            "SYNTHETIC:SYNTHETIC_ZERO:cslip",
+            "SYNTHETIC:SYNTHETIC_ZERO:methaneSlipApplicable",
+            "SYNTHETIC:SYNTHETIC_ZERO:rwd",
+            "SYNTHETIC:SYNTHETIC_ZERO:eligibleBiomassFraction",
+            "SYNTHETIC:SYNTHETIC_ZERO:wtT"
+          ]
+        }
+      ],
+      "physical": {
+        "baseline_mass_t": "1000",
+        "candidate_mass_t": "0",
+        "total_mass_t": "1000",
+        "energy_mj": "40000000"
+      },
+      "ets": {
+        "raw_by_gas_t": {
+          "CO2": "0",
+          "CH4": "0",
+          "N2O": "0"
+        },
+        "raw_co2e_t": "0",
+        "included_gases": [
+          "CO2",
+          "CH4",
+          "N2O"
+        ],
+        "excluded_from_surrender": [],
+        "pre_scope_co2e_t": "0",
+        "geo_co2e_t": "0",
+        "scope_by_gas_t": {
+          "CO2": "0",
+          "CH4": "0",
+          "N2O": "0"
+        },
+        "geo": "1",
+        "surrender": "1",
+        "effective": "1",
+        "euas": "0"
+      },
+      "fueleu": {
+        "status": "VOYAGE_PROPORTIONAL_ESTIMATE",
+        "target": "107113/1250",
+        "denominator_mj": "40000000",
+        "wtt_numerator_g": "0",
+        "ttw_numerator_g": "0",
+        "wtt_intensity": "0",
+        "ttw_intensity": "0",
+        "ghgi": "0",
+        "scoped_energy_mj": "40000000",
+        "balance_g": "3427616000",
+        "balance_t": "428452/125",
+        "classification": "SURPLUS_ESTIMATE",
+        "penalty_eur": "0"
+      },
+      "costs": {
+        "fuel": "0",
+        "eua": "0",
+        "model": "0",
+        "eua_savings": "0",
+        "reference_adjusted": null
+      },
+      "null_reasons": {
+        "percent_deltas.fuel_cost": "ZERO_BASELINE",
+        "percent_deltas.eua_cost": "ZERO_BASELINE",
+        "percent_deltas.model_cost": "ZERO_BASELINE",
+        "percent_deltas.euas": "ZERO_BASELINE",
+        "percent_deltas.ghgi": "ZERO_BASELINE",
+        "percent_deltas.penalty_eur": "ZERO_BASELINE",
+        "percent_deltas.co2_t": "ZERO_BASELINE",
+        "percent_deltas.ch4_t": "ZERO_BASELINE",
+        "percent_deltas.n2o_t": "ZERO_BASELINE",
+        "percent_deltas.raw_co2e_t": "ZERO_BASELINE",
+        "costs.reference_adjusted": "COMPLIANCE_VALUE_NOT_PROVIDED",
+        "components.0.slip_percent": "NOT_APPLICABLE"
+      },
+      "constraint_status": "CONSTRAINT_FEASIBLE",
+      "warnings": [],
+      "deltas": {
+        "fuel_cost": "0",
+        "eua_cost": "0",
+        "model_cost": "0",
+        "euas": "0",
+        "ghgi": "0",
+        "balance_t": "0",
+        "penalty_eur": "0",
+        "co2_t": "0",
+        "ch4_t": "0",
+        "n2o_t": "0",
+        "raw_co2e_t": "0"
+      },
+      "percent_deltas": {
+        "fuel_cost": null,
+        "eua_cost": null,
+        "model_cost": null,
+        "euas": null,
+        "ghgi": null,
+        "balance_t": "0",
+        "penalty_eur": null,
+        "co2_t": null,
+        "ch4_t": null,
+        "n2o_t": null,
+        "raw_co2e_t": null
+      }
+    },
+    "candidates": {},
+    "economics": {
+      "ranking": [
+        {
+          "candidate_id": null,
+          "ratio": "0",
+          "model_cost": "0"
+        }
+      ],
+      "cost_minimum": {
+        "status": "AVAILABLE",
+        "reason": null,
+        "objective": "0",
+        "winners": [
+          {
+            "candidate_id": null,
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "0",
+            "representative_ratio": "0",
+            "ratio_interval": [
+              "0",
+              "0"
+            ],
+            "mathematical_ratio": "0",
+            "mathematical_ratio_interval": [
+              "0",
+              "0"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          }
+        ]
+      },
+      "target_cost_minimum": {
+        "status": "AVAILABLE",
+        "reason": null,
+        "objective": "0",
+        "winners": [
+          {
+            "candidate_id": null,
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "0",
+            "representative_ratio": "0",
+            "ratio_interval": [
+              "0",
+              "0"
+            ],
+            "mathematical_ratio": "0",
+            "mathematical_ratio_interval": [
+              "0",
+              "0"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          }
+        ]
+      },
+      "max_improvement": {
+        "status": "AVAILABLE",
+        "reason": null,
+        "objective": "0",
+        "winners": [
+          {
+            "candidate_id": null,
+            "status": "AVAILABLE",
+            "reason": null,
+            "objective": "0",
+            "representative_ratio": "0",
+            "ratio_interval": [
+              "0",
+              "0"
+            ],
+            "mathematical_ratio": "0",
+            "mathematical_ratio_interval": [
+              "0",
+              "0"
+            ],
+            "upper_inclusive": true,
+            "attained": true
+          }
+        ]
+      },
+      "lines": [
+        {
+          "id": "B0",
+          "candidate_id": null,
+          "ratio": "0",
+          "cost": "0",
+          "improvement": "0"
+        }
+      ],
+      "switch_points": [],
+      "intervals": [
+        {
+          "lower": "0",
+          "upper": null,
+          "winners": [
+            "B0"
+          ]
+        }
+      ]
+    }
+  }
+}

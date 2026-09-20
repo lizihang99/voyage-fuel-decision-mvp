@@ -1,0 +1,21 @@
+{
+  "id": "B-eua0",
+  "family": "B",
+  "name": "零EUA价格",
+  "purpose": "隔离燃料采购成本对排序的影响",
+  "compact": false,
+  "synthetic": true,
+  "assumptions": [
+    "全部案例为合成测试，报价、供应量、预算和资格声明不代表市场或真实认证。",
+    "冻结本地规范独立声明因子；不读取生产因子表、参考计算器或历史输出。",
+    "仅验证同等物理能源下的法规情景；不证明设备适配、燃料可得性或混兑兼容性。",
+    "鹿特丹至汉堡使用1000吨MDO只是合成能源测试，不代表该航段真实燃料需求。"
+  ],
+  "coverage": [
+    "six_quotes",
+    "energy_conservation",
+    "eua0"
+  ],
+  "expected_issues": [],
+  "expected_http_status": 200
+}

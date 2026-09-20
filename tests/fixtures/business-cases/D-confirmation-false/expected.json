@@ -1,0 +1,20 @@
+{
+  "reference_version": "business-reference-v1",
+  "disclaimer": "合成数据，仅用于系统验证和未来示例复用",
+  "input_sha256": "932b58773fe47f20fafb516d22b9fa14e9a791d4e7e9b19144d5144e60d722b0",
+  "expected_sha256": "1b35d5c3a23bfd48bcf86e2c8fd4675d55cce60693e63bea53870a56fb6646a8",
+  "result": {
+    "id": "D-confirmation-false",
+    "status": "BLOCKED",
+    "issues": [
+      {
+        "code": "PORT_OF_CALL_CONFIRMATION_REQUIRED",
+        "scope": "CASE",
+        "candidate_id": null
+      }
+    ],
+    "baseline": null,
+    "candidates": {},
+    "economics": null
+  }
+}

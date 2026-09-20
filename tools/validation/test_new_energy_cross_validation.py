@@ -145,6 +145,15 @@ class IndependentDecisionAssertions:
                 options.append(baseline[metric])
             for case in cases:
                 ref = references[case["id"]][mode]
+                budget_unverified = case["budget"] is not None and any((
+                    case["baseline"]["price"] is None,
+                    case["candidate"]["price"] is None,
+                    case["eua"] is None,
+                ))
+                if mode == "improvement" and budget_unverified:
+                    # Without prices the incremental-budget limit cannot be
+                    # certified. B0 is the only assured maximum-improvement point.
+                    ref = {"exact_ratio": F(0)}
                 if ref is not None and ref["exact_ratio"] is not None:
                     options.append(business_values(case, ref["exact_ratio"])[metric])
             selected = getattr(summary, field)
@@ -183,6 +192,7 @@ class NewEnergyCrossValidationTests(IndependentDecisionAssertions, unittest.Test
         self.assertEqual(target["eua_cost"], F("9867.36"))
         self.assertEqual(target["model_cost"], F("80530.56"))
         self.assertEqual(target["fueleu_compliance_balance_t"], 0)
+        self.assertEqual(target["fueleu_indicative_penalty_eur"], 0)
         delta = business_deltas(case, ".26658")
         self.assertEqual(delta["fuel_cost"], F("10663.2"))
         self.assertEqual(delta["eua_cost"], F("-2132.64"))

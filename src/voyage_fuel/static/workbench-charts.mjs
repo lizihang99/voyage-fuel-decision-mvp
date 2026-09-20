@@ -163,8 +163,8 @@ export function buildSvgRatioRail(candidate, width = 640, height = 190, ratioDec
   }).join("");
   return `<svg class="workbench-ratio-rail" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeSvg(candidate?.candidateId || "候选燃料")} 比例边界轨道">
     <line class="rail" x1="${left}" y1="${axisY}" x2="${right}" y2="${axisY}"></line>
-    <text class="legend-label" x="${left}" y="12">T = 连续边界</text>
-    <text class="legend-label" x="${left + 88}" y="12">R = 实际报告点</text>
+    <text class="legend-label" x="${left}" y="12">计算得到的比例限制</text>
+    <text class="legend-label" x="${left + 126}" y="12">本次已计算的方案</text>
     <text class="axis-label" x="${left}" y="${height - 12}">0%</text>
     <text class="axis-label" x="${right}" y="${height - 12}" text-anchor="end">100%</text>
     ${thresholdMarks}
@@ -196,7 +196,7 @@ export function buildSvgThresholdLanes(candidate, width = 640, ratioDecimals = 4
   }).join("");
   const reportY = headerHeight + thresholds.length * rowHeight + 15;
   const reportRows = reportPoints.length
-    ? `<text class="lane-label" x="12" y="${reportY + 4}">实际报告点</text>
+    ? `<text class="lane-label" x="12" y="${reportY + 4}">本次已计算的方案</text>
       <line class="lane-track report-track" x1="${left}" y1="${reportY}" x2="${right}" y2="${reportY}"></line>
       ${reportPoints.map((item, index) => {
         const markerX = x(finite(item.ratio));

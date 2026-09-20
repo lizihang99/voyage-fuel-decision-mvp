@@ -1,0 +1,87 @@
+{
+  "reportYear": 2030,
+  "departurePort": "NLRTM",
+  "arrivalPort": "DEHAM",
+  "adjacentValidPortOfCallConfirmed": true,
+  "currency": "EUR",
+  "baseline": {
+    "pathId": "MDO",
+    "massTonnes": "1000",
+    "pricePerTonne": "700"
+  },
+  "euaPricePerTCO2e": "80",
+  "candidates": [
+    {
+      "candidateId": "smoke-e_lng_otto_medium_speed",
+      "pathId": "E_LNG_OTTO_MEDIUM_SPEED",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-e_lng_otto_slow_speed",
+      "pathId": "E_LNG_OTTO_SLOW_SPEED",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-e_lng_diesel_slow_speed",
+      "pathId": "E_LNG_DIESEL_SLOW_SPEED",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-e_lng_lbsi",
+      "pathId": "E_LNG_LBSI",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-e_h2_fc",
+      "pathId": "E_H2_FC",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-e_h2_ice",
+      "pathId": "E_H2_ICE",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-e_nh3_fc",
+      "pathId": "E_NH3_FC",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-e_nh3_ice",
+      "pathId": "E_NH3_ICE",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    }
+  ]
+}

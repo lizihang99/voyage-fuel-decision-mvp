@@ -1,0 +1,66 @@
+{
+  "scope": {
+    "geo": "1",
+    "surrender": "1",
+    "fueleu": "1"
+  },
+  "baseline": {
+    "path_id": "MDO",
+    "lcv": "0.0427",
+    "wtt": "14.4",
+    "co2": "3.206",
+    "ch4": "0.00005",
+    "n2o": "0.00018",
+    "slip": null,
+    "methane": false,
+    "rwd": "1",
+    "biomass": "0",
+    "factor_status": "FIXED",
+    "qualification": "NOT_DEMONSTRATED",
+    "mode": "STATIC",
+    "equipment_id": "MDO",
+    "csf_co2": "0",
+    "csf_ch4": "0",
+    "csf_n2o": "0"
+  },
+  "candidates": {
+    "smoke-e_diesel": {
+      "path_id": "MDO",
+      "lcv": "0.0427",
+      "wtt": "14.4",
+      "co2": "3.206",
+      "ch4": "0.00005",
+      "n2o": "0.00018",
+      "slip": null,
+      "methane": false,
+      "rwd": "1",
+      "biomass": "0",
+      "factor_status": "FIXED",
+      "qualification": "NOT_DEMONSTRATED",
+      "mode": "STATIC",
+      "equipment_id": "MDO",
+      "csf_co2": "0",
+      "csf_ch4": "0",
+      "csf_n2o": "0"
+    },
+    "smoke-e_methanol": {
+      "path_id": "METHANOL_NG",
+      "lcv": "0.0199",
+      "wtt": "31.3",
+      "co2": "1.375",
+      "ch4": "0.00005",
+      "n2o": "0.00018",
+      "slip": null,
+      "methane": false,
+      "rwd": "1",
+      "biomass": "0",
+      "factor_status": "FIXED",
+      "qualification": "NOT_DEMONSTRATED",
+      "mode": "STATIC",
+      "equipment_id": "METHANOL_NG",
+      "csf_co2": "0",
+      "csf_ch4": "0",
+      "csf_n2o": "0"
+    }
+  }
+}

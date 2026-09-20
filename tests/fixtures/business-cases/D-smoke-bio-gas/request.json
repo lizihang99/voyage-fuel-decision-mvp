@@ -1,0 +1,69 @@
+{
+  "reportYear": 2030,
+  "departurePort": "NLRTM",
+  "arrivalPort": "DEHAM",
+  "adjacentValidPortOfCallConfirmed": true,
+  "currency": "EUR",
+  "baseline": {
+    "pathId": "MDO",
+    "massTonnes": "1000",
+    "pricePerTonne": "700"
+  },
+  "euaPricePerTCO2e": "80",
+  "candidates": [
+    {
+      "candidateId": "smoke-biolng_otto_ms",
+      "pathId": "BIOLNG_OTTO_MS",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-biolng_otto_ss",
+      "pathId": "BIOLNG_OTTO_SS",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-biolng_diesel_ss",
+      "pathId": "BIOLNG_DIESEL_SS",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-biolng_lbsi",
+      "pathId": "BIOLNG_LBSI",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-bioh2_fc",
+      "pathId": "BIOH2_FC",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-bioh2_ice",
+      "pathId": "BIOH2_ICE",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    }
+  ]
+}

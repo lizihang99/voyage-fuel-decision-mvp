@@ -1,0 +1,21 @@
+{
+  "id": "D-rfnbo-unqualified",
+  "family": "D",
+  "name": "内置电柴油资格分支",
+  "purpose": "检查完整回退、保守E假设与认证E输入",
+  "compact": false,
+  "synthetic": true,
+  "assumptions": [
+    "全部案例为合成测试，报价、供应量、预算和资格声明不代表市场或真实认证。",
+    "冻结本地规范独立声明因子；不读取生产因子表、参考计算器或历史输出。",
+    "仅验证同等物理能源下的法规情景；不证明设备适配、燃料可得性或混兑兼容性。",
+    "核验资格仅为测试接口分支，不是有效认证凭据；FuelEU资格不自动赋予ETS零CO2。"
+  ],
+  "coverage": [
+    "builtin_rfnbo",
+    "rfnbo_qualification",
+    "unqualified"
+  ],
+  "expected_issues": [],
+  "expected_http_status": 200
+}

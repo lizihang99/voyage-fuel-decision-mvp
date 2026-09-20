@@ -1,0 +1,33 @@
+{
+  "reportYear": 2030,
+  "departurePort": "NLRTM",
+  "arrivalPort": "DEHAM",
+  "adjacentValidPortOfCallConfirmed": true,
+  "currency": "EUR",
+  "baseline": {
+    "pathId": "MDO",
+    "massTonnes": "1000",
+    "pricePerTonne": "700"
+  },
+  "euaPricePerTCO2e": "80",
+  "candidates": [
+    {
+      "candidateId": "smoke-e_diesel",
+      "pathId": "E_DIESEL",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-e_methanol",
+      "pathId": "E_METHANOL",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    }
+  ]
+}

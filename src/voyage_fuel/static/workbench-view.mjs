@@ -85,18 +85,6 @@ function changeText(value, kind, display, currency) {
   return `<span class="change ${className}">${direction} ${escapeHtml(magnitude)}${unit ? ` ${escapeHtml(unit)}` : ""}</span>`;
 }
 
-function thresholdRelation(current, threshold) {
-  if (current === null || current === undefined || current === "" || threshold === null || threshold === undefined || threshold === "") {
-    return "当前值或临界值未提供";
-  }
-  const currentNumber = Number(current);
-  const thresholdNumber = Number(threshold);
-  if (!Number.isFinite(currentNumber) || !Number.isFinite(thresholdNumber)) return "无法比较当前值与临界值";
-  if (currentNumber === thresholdNumber) return "当前值等于临界值";
-  const direction = currentNumber > thresholdNumber ? "高于" : "低于";
-  return `当前值${direction}临界值`;
-}
-
 function modelPath(state, candidateId) {
   const candidate = (state.submittedInput?.candidates || []).find((item) => item.candidateId === candidateId);
   return candidate?.pathId || candidateId;
@@ -195,7 +183,7 @@ function renderScenarioTable(state, display) {
 
 function renderDeltaCards(state, detail) {
   return `<div class="workbench-delta-cards" aria-label="移动端 B0 对比">
-    ${detail.changes.map((change) => `<article class="workbench-delta-card">
+    ${detail.changes.map((change) => `<article class="workbench-delta-card"${change.key === "fueleu_compliance_balance_t" ? ' data-guide-anchor="fueleu-balance"' : ""}>
       <strong>${escapeHtml(change.label)}</strong>
       <dl><div><dt>B0</dt><dd>${escapeHtml(displayWithUnit(change.baseline, change.unit, state.display, state.result.currency))}</dd></div><div><dt>当前方案</dt><dd>${escapeHtml(displayWithUnit(change.selected, change.unit, state.display, state.result.currency))}</dd></div><div><dt>变化</dt><dd>${changeText(change.delta, change.unit, state.display, change.unit === "eur" ? "EUR" : state.result.currency)}</dd></div></dl>
     </article>`).join("")}
@@ -209,7 +197,7 @@ function renderDeltaTable(state, detail) {
     <td class="numeric">${escapeHtml(displayWithUnit(change.selected, change.unit, state.display, state.result.currency))}</td>
     <td class="numeric">${changeText(change.delta, change.unit, state.display, change.unit === "eur" ? "EUR" : state.result.currency)}</td>
   </tr>`).join("");
-  return `<div class="table-scroll workbench-delta-table-wrap">
+  return `<div class="table-scroll workbench-delta-table-wrap" data-guide-anchor="cost-breakdown fueleu-balance">
     <table class="workbench-delta-table">
       <caption>B0 基准方案与当前查看方案的绝对值和变化值</caption>
       <thead><tr><th>指标</th><th>B0</th><th>当前方案</th><th>变化</th></tr></thead>
@@ -218,7 +206,7 @@ function renderDeltaTable(state, detail) {
   </div>${renderDeltaCards(state, detail)}`;
 }
 
-function priceDecisionText(current, threshold, status = "") {
+function priceDecisionText(current, threshold, kind, status = "") {
   const normalizedStatus = String(status || "");
   if (normalizedStatus && !["AVAILABLE", "FINITE_NON_NEGATIVE"].includes(normalizedStatus)) {
     return "当前比较条件不足，暂不能判断成本优势";
@@ -232,9 +220,14 @@ function priceDecisionText(current, threshold, status = "") {
     return "当前比较条件不足，暂不能判断成本优势";
   }
   if (currentNumber === thresholdNumber) return "当前价格处于成本平衡点附近";
+  if (kind === "eua") {
+    return currentNumber > thresholdNumber
+      ? "当前碳价已高于成本持平碳价，按当前比较条件具备成本优势"
+      : "当前碳价低于成本持平碳价，按当前比较条件暂无成本优势";
+  }
   return currentNumber > thresholdNumber
-    ? "当前价格高于成本平衡点，按当前比较条件不具备成本优势"
-    : "当前价格低于成本平衡点，按当前比较条件具备成本优势";
+    ? "当前报价高于成本持平价，按当前比较条件暂无成本优势"
+    : "当前报价低于成本持平价，按当前比较条件具备成本优势";
 }
 
 function renderSelectedDetail(state, display, charts) {
@@ -255,9 +248,9 @@ function renderSelectedDetail(state, display, charts) {
     <div><strong>适用假设</strong><p>${escapeHtml(assumptions)}</p></div>
   </div>
   ${renderDeltaTable(state, display.selectedDetail)}
-  <div class="detail-charts">
+  <div class="detail-charts" data-guide-anchor="detail-charts">
     <section class="chart-block"><div class="subsection-heading"><h4>成本变化</h4><span>不含 FuelEU 指示性金额</span></div>${charts.waterfall || '<p class="empty-state">缺少成本所需价格，暂不绘图。</p>'}</section>
-    <section class="chart-block"><div class="subsection-heading"><h4>GHGI 与参考线</h4><span>本航次情景</span></div>${charts.ghgi || '<p class="empty-state">暂无完整 GHGI 或参考线数据。</p>'}</section>
+    <section class="chart-block" data-guide-anchor="ghgi"><div class="subsection-heading"><h4>GHGI 与参考线</h4><span>本航次情景</span></div>${charts.ghgi || '<p class="empty-state">暂无完整 GHGI 或参考线数据。</p>'}</section>
   </div>
   <div class="detail-status-grid">
     <div><span>计算状态</span>${renderStatus(raw.calculation_status)}</div>
@@ -269,29 +262,45 @@ function renderSelectedDetail(state, display, charts) {
 
 function renderSensitivity(state, display) {
   if (!display.sensitivity.candidates.length && !display.sensitivity.switchPoints.length) {
-    return '<p class="empty-state">当前没有候选燃料敏感性结果。B0-only 结果仍可在方案区域查看。</p>';
+    const hasCandidates = Boolean(state.submittedInput?.candidates?.length);
+    return hasCandidates
+      ? '<div class="empty-state"><strong>替代燃料暂时无法参与比较</strong><p>尚未生成用量限制和价格比较结果，请检查候选燃料的输入及计算提示。</p></div>'
+      : '<div class="empty-state"><strong>本次仅计算了原燃料方案</strong><p>尚未添加替代燃料，暂无用量限制和价格比较结果。</p></div>';
   }
   const candidates = display.sensitivity.candidates.map((candidate) => {
+    const rawCandidate = (state.result.candidate_results || []).find((item) => item.candidate_id === candidate.candidateId);
+    if (!rawCandidate?.voyage_result) {
+      const reasons = (rawCandidate?.issues || []).map((issue) => `<li>${escapeHtml(issue.message || issue.code)}</li>`).join("");
+      return `<section class="sensitivity-candidate"><h4>${escapeHtml(fuelLabel(candidate.label))}</h4><strong>替代燃料暂时无法参与比较</strong>${reasons ? `<ul>${reasons}</ul>` : '<p>尚未生成计算结果，请检查该候选燃料的输入及计算提示。</p>'}</section>`;
+    }
     const rail = buildSvgThresholdLanes(candidate, undefined, state.display.ratio);
-    const thresholdRows = candidate.thresholds.map((threshold) => `<tr><th scope="row">${escapeHtml(threshold.label)}</th><td class="numeric">${escapeHtml(formatValue(threshold.value, "ratio", state.display))}</td><td>${threshold.value === null ? "无法判断" : "服务端边界"}</td></tr>`).join("");
-    return `<section class="sensitivity-candidate">
-      <div class="subsection-heading"><div><h4>${escapeHtml(fuelLabel(candidate.label))}</h4><p>${escapeHtml(candidate.candidateId)} · ${escapeHtml(statusLabel(candidate.targetStatus))}</p></div><span>${candidate.reportPoints.length} 个实际报告点</span></div>
-      <div class="sensitivity-legend"><span><i class="legend-dot boundary"></i>连续边界</span><span><i class="legend-dot report"></i>实际报告点</span><span>图上位置为比例范围，右侧显示精确值</span></div>
-      ${rail || '<p class="empty-state">暂无可绘制比例边界。</p>'}
+    const thresholdRows = candidate.thresholds.map((threshold) => {
+      const value = threshold.unavailableBecause ? "未设置" : formatValue(threshold.value, "ratio", state.display);
+      const note = threshold.unavailableBecause || (threshold.value === null ? "当前条件下无法确定" : "根据当前输入计算");
+      return `<tr><th scope="row">${escapeHtml(threshold.label)}</th><td class="numeric">${escapeHtml(value)}</td><td>${escapeHtml(note)}</td></tr>`;
+    }).join("");
+    const guideAnchor = candidate.candidateId === "uco-limited"
+      ? ` data-guide-anchor="supply-uco-limited" data-guide-candidate-id="${escapeHtml(candidate.candidateId)}"`
+      : "";
+    return `<section class="sensitivity-candidate"${guideAnchor}>
+      <div class="subsection-heading"><div><h4>${escapeHtml(fuelLabel(candidate.label))}</h4><p>${escapeHtml(candidate.candidateId)} · ${escapeHtml(statusLabel(candidate.targetStatus))}</p></div><span>本次已计算 ${candidate.reportPoints.length} 个比例方案</span></div>
+      <div class="sensitivity-legend"><span><i class="legend-dot boundary"></i>计算得到的比例限制</span><span><i class="legend-dot report"></i>本次已计算的方案</span><span>图中位置表示候选燃料质量占比，右侧为精确值</span></div>
+      <div class="sensitivity-chart-scroll">${rail || '<p class="empty-state">暂无可绘制比例边界。</p>'}</div>
       <div class="sensitivity-two-col">
-        <div class="table-scroll"><table class="compact-table"><caption>比例边界</caption><thead><tr><th>边界</th><th>比例</th><th>来源</th></tr></thead><tbody>${thresholdRows || '<tr><td colspan="3">暂无边界</td></tr>'}</tbody></table></div>
+        <div><h4>最多能用多少</h4><p>这些比例各自回答不同问题：是否受限、能否达到 GHGI 目标，以及成本最低时应使用多少。</p><div class="table-scroll"><table class="compact-table"><caption>候选燃料质量占比</caption><thead><tr><th>要判断的问题</th><th>比例</th><th>说明</th></tr></thead><tbody>${thresholdRows || '<tr><td colspan="3">暂无约束结果</td></tr>'}</tbody></table></div></div>
         <div class="price-break-even">
+          <div><h4>什么价格更划算</h4><p>“成本持平价”是替代方案与原燃料方案成本相同的价格。燃料价格和碳价分开计算，其他输入保持不变。</p></div>
           <div>
-            <span>候选燃料价格</span>
+            <span>当前替代燃料报价</span>
             <strong>${escapeHtml(displayWithUnit(candidate.currentPrice, "price", state.display, state.result.currency))}</strong>
-            <small>临界值 ${escapeHtml(displayWithUnit(candidate.pcBreakEven, "price", state.display, state.result.currency))} · ${escapeHtml(thresholdRelation(candidate.currentPrice, candidate.pcBreakEven))}</small>
-            <p class="break-even-explanation">${escapeHtml(priceDecisionText(candidate.currentPrice, candidate.pcBreakEven))}</p>
+            <small>碳价不变时，燃料成本持平价 ${escapeHtml(displayWithUnit(candidate.pcBreakEven, "price", state.display, state.result.currency))}</small>
+            <p class="break-even-explanation">${escapeHtml(priceDecisionText(candidate.currentPrice, candidate.pcBreakEven, "candidate"))}</p>
           </div>
           <div>
-            <span>EUA 价格</span>
+            <span>当前 EUA 碳价</span>
             <strong>${escapeHtml(displayWithUnit(candidate.currentEuaPrice, "price", state.display, state.result.currency))}</strong>
-            <small>临界值 ${escapeHtml(displayWithUnit(candidate.peBreakEven, "price", state.display, state.result.currency))} · ${escapeHtml(thresholdRelation(candidate.currentEuaPrice, candidate.peBreakEven))} · ${escapeHtml(statusLabel(candidate.peBreakEvenStatus))}</small>
-            <p class="break-even-explanation">${escapeHtml(priceDecisionText(candidate.currentEuaPrice, candidate.peBreakEven, candidate.peBreakEvenStatus))}</p>
+            <small>燃料报价不变时，碳价成本持平价 ${escapeHtml(displayWithUnit(candidate.peBreakEven, "price", state.display, state.result.currency))} · ${escapeHtml(statusLabel(candidate.peBreakEvenStatus))}</small>
+            <p class="break-even-explanation">${escapeHtml(priceDecisionText(candidate.currentEuaPrice, candidate.peBreakEven, "eua", candidate.peBreakEvenStatus))}</p>
           </div>
         </div>
       </div>
@@ -299,12 +308,12 @@ function renderSensitivity(state, display) {
     </section>`;
   }).join("");
   const switches = display.sensitivity.switchPoints;
-  return `<div class="sensitivity-intro"><p>边界回答“比例能走到哪里”，切换点回答“什么条件变化后推荐会改变”。两者单位不同，分开显示。</p></div>
+  return `
     ${candidates}
     <section class="switch-point-section">
-      <div class="subsection-heading"><div><h4>方案切换点</h4><p>FuelEU 合规改善参考价值变化下的方案排序切换</p></div></div>
+      <div class="subsection-heading"><div><h4>合规改善估值变化时，优势方案何时改变</h4><p>这里假设你给每吨 FuelEU 合规改善赋予一个参考价值。该价值变化到分界点后，成本更低的方案可能改变；它不代表实际收入。</p></div></div>
       ${buildSvgSwitchRail(switches, undefined, undefined, state.display.price) || '<p class="empty-state">暂无可用切换点。</p>'}
-      <div class="table-scroll"><table class="compact-table"><caption>切换点精确值</caption><thead><tr><th>当前占优方案</th><th>切换后方案</th><th>value*</th><th>解释</th></tr></thead><tbody>${switches.map((point) => `<tr><td>${escapeHtml(point.fromScenarioId)}</td><td>${escapeHtml(point.toScenarioId)}</td><td class="numeric">${escapeHtml(displayWithUnit(point.valueStar, "price", state.display, state.result.currency))}</td><td>高于该参考价值后，切换后方案的调整成本更有利</td></tr>`).join("") || '<tr><td colspan="4">暂无切换点</td></tr>'}</tbody></table></div>
+      <div class="table-scroll"><table class="compact-table"><caption>方案变化的合规改善参考价值</caption><thead><tr><th>原先成本更低</th><th>之后成本更低</th><th>参考价值分界点</th><th>说明</th></tr></thead><tbody>${switches.map((point) => `<tr><td>${escapeHtml(point.fromScenarioId)}</td><td>${escapeHtml(point.toScenarioId)}</td><td class="numeric">${escapeHtml(displayWithUnit(point.valueStar, "price", state.display, state.result.currency))} / tCO2e</td><td>参考价值高于此分界点后，后一个方案的调整后成本更低</td></tr>`).join("") || '<tr><td colspan="4">暂无切换点</td></tr>'}</tbody></table></div>
     </section>`;
 }
 
@@ -346,10 +355,10 @@ export function createWorkbenchView(root, callbacks = {}) {
     };
     content.innerHTML = `
       <div class="workbench-toolbar">
-        <div><span class="eyebrow">决策目标</span><p class="toolbar-note">先选关注目标，再查看全部报告方案和当前方案变化。</p><nav class="workbench-result-nav" aria-label="结果区域导航"><a href="#workbench-goal-cards">核心结论</a><a href="#workbench-scenario-table">方案比较</a><a href="#workbench-sensitivity">敏感性与边界</a></nav></div>
+        <div><span class="eyebrow">决策目标</span><p class="toolbar-note">先选关注目标，再查看全部报告方案和当前方案变化。</p><nav class="workbench-result-nav" aria-label="结果区域导航"><a href="#workbench-goal-cards">核心结论</a><a href="#workbench-scenario-table">方案比较</a><a href="#workbench-sensitivity">用量限制与价格影响</a></nav></div>
         <button type="button" class="button secondary" data-edit-inputs>编辑输入</button>
       </div>
-      <section id="workbench-goal-cards" class="workbench-section goal-section" aria-labelledby="goal-heading">
+      <section id="workbench-goal-cards" class="workbench-section goal-section" aria-labelledby="goal-heading" data-guide-anchor="goals">
         <div class="section-heading compact"><div><h3 id="goal-heading">三类核心决策结论</h3><p class="section-note">三类结论是入口，完整方案仍在下方保留。</p></div><span class="section-count">${display.goalCards.length} 个目标</span></div>
         <div class="workbench-goal-cards">${renderGoalCards(state, display)}</div>
       </section>
@@ -375,10 +384,10 @@ export function createWorkbenchView(root, callbacks = {}) {
           <span><i class="scatter-key unverified"></i>约束未验证</span>
         </div>
       </section>
-      <section id="workbench-sensitivity" class="workbench-section sensitivity-section" aria-labelledby="sensitivity-heading">
-        <div class="section-heading compact"><div><h3 id="sensitivity-heading">敏感性与边界</h3><p class="section-note">比例边界、临界价格和切换点分别表达不同问题。</p></div></div>
+      <details id="workbench-sensitivity" class="workbench-section sensitivity-section">
+        <summary class="section-heading compact"><div><h3 id="sensitivity-heading">用量限制与价格影响</h3><p class="section-note">根据你填写的预算、供应量和使用比例限制，查看替代燃料最多能用多少；结合价格分析，判断什么条件下使用它更省钱。</p></div></summary>
         ${renderSensitivity(state, display)}
-      </section>
+      </details>
       <details id="workbench-evidence" class="workbench-section workbench-details">
         ${renderEvidence(state, display)}
       </details>`;
@@ -408,6 +417,15 @@ export function createWorkbenchView(root, callbacks = {}) {
       state = selectScenario(state, scenarioId);
       renderModel();
     });
+    try {
+      callbacks.onRendered?.({
+        display,
+        displayConfig: { ...state.display },
+        selectedScenarioId: state.selectedScenarioId,
+      });
+    } catch (error) {
+      console.error("teaching guide render callback failed", error);
+    }
   }
 
   return {

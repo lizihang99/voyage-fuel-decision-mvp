@@ -1,0 +1,48 @@
+{
+  "scope": {
+    "geo": "1",
+    "surrender": "1",
+    "fueleu": "1"
+  },
+  "baseline": {
+    "path_id": "MDO",
+    "lcv": "0.0427",
+    "wtt": "14.4",
+    "co2": "3.206",
+    "ch4": "0.00005",
+    "n2o": "0.00018",
+    "slip": null,
+    "methane": false,
+    "rwd": "1",
+    "biomass": "0",
+    "factor_status": "FIXED",
+    "qualification": "NOT_DEMONSTRATED",
+    "mode": "STATIC",
+    "equipment_id": "MDO",
+    "csf_co2": "0",
+    "csf_ch4": "0",
+    "csf_n2o": "0"
+  },
+  "candidates": {
+    "bio": {
+      "path_id": "UCO_FAME",
+      "lcv": "0.037",
+      "wtt": "-22827/370",
+      "co2": "2.834",
+      "ch4": "0.00005",
+      "n2o": "0.00018",
+      "slip": null,
+      "methane": false,
+      "rwd": "1",
+      "biomass": "0.5",
+      "factor_status": "ESTIMATED",
+      "qualification": "ASSUMED_ELIGIBLE",
+      "mode": "BIO_E",
+      "equipment_id": "UCO_FAME",
+      "csf_co2": "0",
+      "csf_ch4": "0",
+      "csf_n2o": "0",
+      "e": "14.9"
+    }
+  }
+}

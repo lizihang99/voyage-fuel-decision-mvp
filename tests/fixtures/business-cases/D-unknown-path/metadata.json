@@ -1,0 +1,26 @@
+{
+  "id": "D-unknown-path",
+  "family": "D",
+  "name": "未知且不完整路径",
+  "purpose": "检查候选局部阻断，不影响独立对照与共享基准",
+  "compact": false,
+  "synthetic": true,
+  "assumptions": [
+    "全部案例为合成测试，报价、供应量、预算和资格声明不代表市场或真实认证。",
+    "冻结本地规范独立声明因子；不读取生产因子表、参考计算器或历史输出。",
+    "仅验证同等物理能源下的法规情景；不证明设备适配、燃料可得性或混兑兼容性。",
+    "无效候选不提供解析快照；保留独立有效对照和B0。"
+  ],
+  "coverage": [
+    "invalid_candidate",
+    "unknown-path"
+  ],
+  "expected_issues": [
+    {
+      "code": "MISSING_REQUIRED_FACTOR",
+      "scope": "CANDIDATE",
+      "candidate_id": "invalid"
+    }
+  ],
+  "expected_http_status": 200
+}

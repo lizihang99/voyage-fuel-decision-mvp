@@ -18,9 +18,7 @@
     <div class="topbar-actions">
       <span id="calculation-boundary-status" class="status-chip">航次级估算 · 不含年度罚款结算</span>
       {% if view_mode == "legacy" %}
-      <a class="button secondary view-link" href="/?view=workbench">试用新版工作台</a>
-      {% else %}
-      <a class="button secondary view-link" href="/?view=legacy">返回旧版</a>
+      <a class="button secondary view-link" href="/?view=workbench">决策工作台</a>
       {% endif %}
       <button id="export-csv" class="button secondary" type="button" disabled>下载 CSV</button>
       <button id="export-pdf" class="button secondary" type="button" disabled>下载 PDF</button>
@@ -29,7 +27,22 @@
 
   <main class="page-shell">
     <section class="workspace input-workspace" aria-labelledby="input-heading">
-      <div class="section-heading"><div><p class="eyebrow">输入工作区</p><h2 id="input-heading">航次与燃料假设</h2></div><span class="required-note">带 * 为必填</span></div>
+      <div class="section-heading">
+        <div><p class="eyebrow">输入工作区</p><h2 id="input-heading">航次与燃料假设</h2></div>
+        <div class="input-heading-actions">
+          <span class="required-note">带 * 为必填</span>
+          <div class="example-picker">
+            <button id="try-examples" class="button secondary" type="button" aria-haspopup="menu" aria-expanded="false" disabled>试用示例</button>
+            <a class="example-guide-link" href="/examples/guide" target="_blank" rel="noopener">案例说明</a>
+            <div id="example-menu" class="example-menu" role="menu" hidden>
+              <button type="button" role="menuitem" data-example="basic">基础计算</button>
+              <button type="button" role="menuitem" data-example="comparison">多燃料比较</button>
+            </div>
+            <span id="example-status" class="status-chip synthetic-status" role="status" hidden></span>
+            <span id="example-error" class="example-error" role="alert" aria-live="polite"></span>
+          </div>
+        </div>
+      </div>
       <form id="case-form" novalidate>
         <fieldset>
           <legend>航次边界</legend>
@@ -98,16 +111,20 @@
       </form>
     </section>
 
-    {% if view_mode == "legacy" %}
+    {% if view_mode == "workbench" %}
+    {% include "workbench_results.html" %}
+    <details id="calculation-details" class="workspace calculation-details" hidden>
+      <summary>查看计算明细</summary>
+    {% endif %}
     <section class="workspace results-workspace" aria-labelledby="results-heading">
-      <div class="section-heading"><div><p class="eyebrow">结果工作区</p><h2 id="results-heading">比较与依据</h2></div><span id="result-run-status" class="status-chip muted">尚未计算</span></div>
+      <div class="section-heading"><div><p class="eyebrow">结果工作区</p><h2 id="results-heading">比较与依据</h2></div><div class="result-heading-status">{% if view_mode == "legacy" %}<span id="example-result-status" class="status-chip synthetic-status" hidden></span>{% endif %}<span id="result-run-status" class="status-chip muted">尚未计算</span></div></div>
       <div id="result-boundary-summary" class="boundary-summary" role="status">提交输入后，这里会显示航次级 FuelEU / EU ETS 计算边界。</div>
       <p id="calculation-boundary-note" class="boundary-note" data-boundary="voyage-level proportional estimate">Boundary: voyage-level proportional estimate; not a formal annual penalty; not a procurement recommendation; independent physical lifecycle WtW reduction is not provided. EXECUTION_CONDITIONS_PENDING.</p>
       <div class="tabs" role="tablist" aria-label="结果视图">
-        <button class="tab active" role="tab" aria-selected="true" aria-controls="overview-panel" data-tab="overview-panel">Overview</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="scenarios-panel" data-tab="scenarios-panel">Scenarios</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="thresholds-panel" data-tab="thresholds-panel">Thresholds</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="evidence-panel" data-tab="evidence-panel">Evidence</button>
+        <button class="tab active" role="tab" aria-selected="true" aria-controls="overview-panel" data-tab="overview-panel">{{ "计算概览" if view_mode == "workbench" else "Overview" }}</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="scenarios-panel" data-tab="scenarios-panel">{{ "场景明细" if view_mode == "workbench" else "Scenarios" }}</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="thresholds-panel" data-tab="thresholds-panel">{{ "约束与阈值" if view_mode == "workbench" else "Thresholds" }}</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="evidence-panel" data-tab="evidence-panel">{{ "计算依据" if view_mode == "workbench" else "Evidence" }}</button>
       </div>
       <div id="overview-panel" class="tab-panel active" role="tabpanel">
         <div id="overview-metrics" class="metric-grid"><p class="empty-state">暂无结果。</p></div>
@@ -130,8 +147,8 @@
       </div>
       <div id="result-issues" class="issue-list" aria-live="polite"></div>
     </section>
-    {% else %}
-    {% include "workbench_results.html" %}
+    {% if view_mode == "workbench" %}
+    </details>
     {% endif %}
 
     <section id="display-precision" class="settings-strip" aria-labelledby="display-heading">

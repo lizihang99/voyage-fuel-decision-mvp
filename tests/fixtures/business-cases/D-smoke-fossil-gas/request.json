@@ -1,0 +1,105 @@
+{
+  "reportYear": 2030,
+  "departurePort": "NLRTM",
+  "arrivalPort": "DEHAM",
+  "adjacentValidPortOfCallConfirmed": true,
+  "currency": "EUR",
+  "baseline": {
+    "pathId": "MDO",
+    "massTonnes": "1000",
+    "pricePerTonne": "700"
+  },
+  "euaPricePerTCO2e": "80",
+  "candidates": [
+    {
+      "candidateId": "smoke-lng_otto_medium_speed",
+      "pathId": "LNG_OTTO_MEDIUM_SPEED",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-lng_otto_slow_speed",
+      "pathId": "LNG_OTTO_SLOW_SPEED",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-lng_diesel_slow_speed",
+      "pathId": "LNG_DIESEL_SLOW_SPEED",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-lng_lbsi",
+      "pathId": "LNG_LBSI",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-h2_ng_fc",
+      "pathId": "H2_NG_FC",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-h2_ng_ice",
+      "pathId": "H2_NG_ICE",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-lpg_propane",
+      "pathId": "LPG_PROPANE",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-lpg_butane",
+      "pathId": "LPG_BUTANE",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-nh3_ng_fc",
+      "pathId": "NH3_NG_FC",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    },
+    {
+      "candidateId": "smoke-nh3_ng_ice",
+      "pathId": "NH3_NG_ICE",
+      "pricePerTonne": "1000",
+      "specifiedBlendRatios": [],
+      "maxBlendRatio": "0",
+      "candidateAllowsPureUse": true,
+      "qualificationStatus": "NOT_DEMONSTRATED"
+    }
+  ]
+}

@@ -105,6 +105,16 @@ def index(request: Request, view: str | None = Query(default=None)) -> HTMLRespo
     )
 
 
+@app.get("/examples/guide", response_class=HTMLResponse)
+def examples_guide(request: Request) -> HTMLResponse:
+    """Serve the optional short guide for the two synthetic examples."""
+    return _templates.TemplateResponse(
+        request=request,
+        name="examples_guide.html",
+        context={},
+    )
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     """Provide a minimal liveness check without creating server state."""

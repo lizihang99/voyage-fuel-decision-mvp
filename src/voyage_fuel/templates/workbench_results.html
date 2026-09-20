@@ -1,8 +1,12 @@
 <section id="workbench-root" class="workspace workbench-results" data-workbench-view hidden>
   <div class="section-heading">
     <div><p class="eyebrow">决策工作台</p><h2>方案比较与投入产出</h2></div>
-    <span id="workbench-status" class="status-chip muted">尚未计算</span>
+    <div class="result-heading-status">
+      <label class="teaching-guide-toggle"><input id="teaching-guide-toggle" type="checkbox" checked disabled> 显示指引</label>
+      <span id="example-result-status" class="status-chip synthetic-status" hidden></span><span id="workbench-status" class="status-chip muted">尚未计算</span>
+    </div>
   </div>
+  <div id="teaching-guide-intro" class="teaching-guide-intro" role="note" hidden></div>
   <div id="workbench-boundary" class="boundary-summary" role="status">
     完成计算后，这里会显示目标、方案、成本变化和 FuelEU 参考线。
   </div>
