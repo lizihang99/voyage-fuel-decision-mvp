@@ -174,11 +174,18 @@ class WebApiTests(unittest.TestCase):
             "/api/calculate",
             "/api/export/csv",
             "/api/export/pdf",
-            "voyage-level",
-            "not a formal annual penalty",
-            "not a procurement recommendation",
-            "independent physical lifecycle WtW reduction",
+            "航次级比例估算",
+            "不等于正式年度结算结果",
+            "不构成采购建议",
+            "独立物理生命周期减排评估（WtW）",
             "EXECUTION_CONDITIONS_PENDING",
+            "试用示例",
+            "/examples/guide",
+            "合成条件",
+            "真人新手试用",
+            "pip install pytest",
+            "result_snapshot_id",
+            "resultSnapshotId",
         )
         for fragment in required:
             self.assertIn(fragment, readme, fragment)

@@ -216,10 +216,10 @@ class SpecificationMatrixTests(unittest.TestCase):
         ):
             self.assertIn(fragment.casefold(), pdf_text.casefold())
         for fragment in (
-            "voyage-level",
-            "not a formal annual penalty",
-            "not a procurement recommendation",
-            "independent physical lifecycle WtW reduction",
+            "航次级比例估算",
+            "不等于正式年度结算结果",
+            "不构成采购建议",
+            "独立物理生命周期减排评估（WtW）",
             "EXECUTION_CONDITIONS_PENDING",
         ):
             self.assertIn(fragment.casefold(), readme.casefold())
